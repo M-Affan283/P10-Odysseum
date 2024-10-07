@@ -1,0 +1,8 @@
+{
+  "name": "odysseum-main-server",
+  "version": "1.0.0",
+  "description": " Main backend server for Odysseum to handle all API requests.",
+  "main": "server.js",
+  "author": "P-10",
+  "license": "Apache"
+}
