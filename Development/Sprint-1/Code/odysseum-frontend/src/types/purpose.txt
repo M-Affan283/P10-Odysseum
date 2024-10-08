@@ -1,0 +1,1 @@
+This folder will be used to contain files for any user defined datatypes if needed.
