@@ -31,7 +31,7 @@ In both folders, using your terminal run the following terminal commands. The bu
   npm install
 ```
 
-Additionally we will be using MongoDB for our database. I have created an account on MongoDB Atlas. However, if you wish to use MongoDB locally, install the MongoDB Community Server from [here](https://www.mongodb.com/try/download/community). The installer will also you to if you wish to download MongoDB Compass. You must select it for local database access.
+Additionally we will be using MongoDB for our database. I have created an account on MongoDB Atlas. However, if you wish to use MongoDB locally, install the MongoDB Community Server from [here](https://www.mongodb.com/try/download/community). The installer will also ask you if you wish to download MongoDB Compass. You must select it for local database access.
 If it doesn't you can download MongoDB Compass manually from [here](https://www.mongodb.com/try/download/compass).
 
 Once installed, create a new connection to in MongoDB compass and create a database with name `OdysseumDataBase` and collection with name `OdysseumCollection`. You can then run the node server.
