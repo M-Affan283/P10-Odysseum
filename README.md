@@ -1,6 +1,13 @@
 # Odysseum
 ## Group 10 Senior Year Project
 
+## Table of Contents
+
+1. [Pre-Requisites](#pre-requisites)
+2. [Managing Odysseum Repository](#managing-odysseum-repository)
+3. [Running the Project](#running-the-project)
+4. [File Directories Present](#file-directories-present)
+
 ### Pre-Requisites
 Install nodemon by typing the following command in your terminal.
 ``` npm install -g nodemon ```
@@ -23,6 +30,12 @@ In both folders, using your terminal run the following terminal commands. The bu
   cd ../oddyseum-frontend
   npm install
 ```
+
+Additionally we will be using MongoDB for our database. I have created an account on MongoDB Atlas. However, if you wish to use MongoDB locally, install the MongoDB Community Server from [here](https://www.mongodb.com/try/download/community). The installer will also you to if you wish to download MongoDB Compass. You must select it for local database access.
+If it doesn't you can download MongoDB Compass manually from [here](https://www.mongodb.com/try/download/compass).
+
+Once installed, create a new connection to in MongoDB compass and create a database with name `OdysseumDataBase` and collection with name `OdysseumCollection`. You can then run the node server.
+
 
 ### Managing Odysseum Repository
 
@@ -75,7 +88,11 @@ Start of by opening two terminals in the directory. Then run the following:
 ```
   #Terminal 1
   cd server
-  nodemon server.js
+  nodemon server.js local (if you wish to use local MongoDB database)
+
+  or
+
+  nodemon server.js remote (if you wish to use MongoDB Atlas database)
 
   #Terminal 2
   cd odysseum-frontend
