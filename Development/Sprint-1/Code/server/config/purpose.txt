@@ -1,4 +1,4 @@
 Contains configuration files for the application, such as database connection settings and API keys.
 Examples: 
 │       ├── db.js (MongoDB connection setup)
-│       └── cloudinary.js (Cloudinary configuration)
+│       └── firebase.js (For Image/Video Storage)

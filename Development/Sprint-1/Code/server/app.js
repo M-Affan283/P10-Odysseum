@@ -18,6 +18,15 @@ import { checkServerHealth } from './utils/serverHealthUtils.js';
 const app = express();
 
 // Initial Middleware. Remaning middleware (e.g. jwt,multer) will be added in their respective files
+
+
+// Clear console on every request so that it is easier to read logs
+app.use((req,res,next)=>
+{
+    console.clear();
+    next();
+})
+
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
