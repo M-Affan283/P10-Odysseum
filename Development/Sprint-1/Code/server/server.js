@@ -15,10 +15,10 @@ import dotenv from 'dotenv';
 import app from './app.js';
 import http from 'http'; // for messaging
 import { setupSocket } from './socket.js';
-
+import { ERROR_MESSAGES } from './utils/constants.js';
 
 dotenv.config({
-    path: './config/config.env'
+    path: './config.env'
 });
 
 
@@ -53,7 +53,7 @@ mongoose.connect(MONGO_URI)
 })
 .catch((error)=>
 {
-    console.log("Error connecting to MongoDB",error);
+    console.log(ERROR_MESSAGES.DATABASE_CONNECTION_ERROR, ": ", error);
 })
 
 

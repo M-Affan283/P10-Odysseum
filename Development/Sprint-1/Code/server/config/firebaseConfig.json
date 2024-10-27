@@ -1,0 +1,14 @@
+{
+    "type": "service_account",
+    "project_id": "odysseumstorage",
+    "private_key_id": "3dc76731caf451226407a9668354fc21bb464715",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVo7lfaXnMEuzc\nZz43lTyHfiGR+Tx+RYIv4xNidMdIrj2v6r6wehBF9r3mDWgTC+b3EtnmFrD+YmBX\nkd3CDlr60bRdUyzA4fsRJIFDKFmGdJfGpwEi7XReF4mJYm4k6y/gDNQI3kLqzoCY\nbkLnblpOsuMvTPts+2Cy9KAytUvlQ+a6NJJP2pglVg5+kZeD6XN3CL137xe5+aVe\n5EgH/4IU8UHZJCSci03fS6q9IYKKknaTQCR/fVz4a6ybtCFD/o3NH+oMpaYVm2/0\npZMT41r+zpUgDCBsq8p24wz7cDJil1yKjgGCad4uL7Y+pymBKZoVwyV6ykDAG6HM\nN5D/K67JAgMBAAECggEAAIME5aqeBRQihyCkMIPmAjkWIYBkWbUW68BygnDfLVhl\ng29fh5KzSUefCtcLYchMhFkCNp/lSqa3rl4GFvnr09/+u56AY/HmpRLeUGffVwge\nePZbdVb2SWdrB+45b1M06Sd+toq5xFA8VKEm/eDwzHF3Q9y+WXN8ttEJNTXj+aef\n3V9pqO7eywt0PpjBh5nxkl4pRI0zYrjexd/4i3sQAfV8nUA571b4Mg7J6WxaFiTb\nhffJsaJ/idBm64cIaeCv/MRIdcDb2DrnDtdVzKP9RzXR1nJL/0NiGMuyi3cRQDle\nGilh8RmgnNhd0Na85N5WwyYja+iZtrugxaBJuXMKkQKBgQD6OpETXUI+oykr4222\nGu5dMzVfmSlbqs247lO2CHqrBS0K+d4jePeTxROyE5RXHvnrt2VhFfW0HStG87QT\nXhymbZmo0Q7tgpoV5vk5lykOB354Y6rjvp1PKoPiMTiaqGLL7vWd7MTsfnutQK9i\nSCfowPflyYnRmTLIPZql6kxwRQKBgQDakR9dxbSECr2I13h21xaGRELXAEAhR9MQ\nulu1Imaxhf369/30zVAALC48zP56goPjMcR8m8O1ZFEi6u42zuPBIR8otv4aQ4T1\nYDEDGzzhBdQcTUgOHFC/fZ/VvCykS/LPVlIbDWDtp5WbaK7WiifMQWOXqrGPOEnc\nZ2GlZSb2tQKBgQD2vS92x7vdpeegJkd1jQLEFg2oMY/tmvP2SdNzqNLEtnre2ton\nYk3GgUtViib47UuFGjc2T4ATVbvp378OZfucRHCDXXn5y5GCzVmtZxeNhOg5cBX/\nMmNNv9+B+AUXw7h/3SaGzgS0Klhr01/dascnpLgM9vkWG5lOiChpOCqdfQKBgQCf\nBgW/UXCUvcfHP5arSLVfvVywV8NRM5Py0NSWxs/XC/mN10+UBKnXZk3B+RiShFF3\nRSeDzkUnvjR2Zl4pzH/Tbcjg87uP2l5rtbATZYb25im86dGqSpnJqZpYhVApvgSN\nLG4Stro2T78/UnwbJmvsZgsTN6N24+qBjUpzb1RZHQKBgCuNUYOAY0iOqNHhlLOe\nWwNKXKDMuD+kQzan0VQHRNs2dJQ8s/W9jGxm3pd6aJXdomVUaADg2Ky2m+phy4KG\nmdU6KHg97rai9yQPF00GXpWB/5tmj6EWkmPeaksr4RREDrPpJIMlJP2+U5GaHlJQ\nsfTYmk+gSaqpsPk6PuKrQapv\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-fchq2@odysseumstorage.iam.gserviceaccount.com",
+    "client_id": "104865587126472308482",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fchq2%40odysseumstorage.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+  }
+  
