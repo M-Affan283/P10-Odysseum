@@ -12,15 +12,15 @@ This file contain initial setup for the server, such as connecting to the databa
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import app from './app.js';
 import http from 'http'; // for messaging
-import { setupSocket } from './socket.js';
 import { ERROR_MESSAGES } from './utils/constants.js';
+import { setupSocket } from './socket.js';
 
 dotenv.config({
     path: './config.env'
 });
 
+const app = (await import('./app.js')).default; //importing using this so that app.js can access the environment variables
 
 const server = http.createServer(app);
 
@@ -55,10 +55,3 @@ mongoose.connect(MONGO_URI)
 {
     console.log(ERROR_MESSAGES.DATABASE_CONNECTION_ERROR, ": ", error);
 })
-
-
-
-
-
-
-

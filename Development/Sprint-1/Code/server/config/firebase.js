@@ -10,6 +10,8 @@ admin.initializeApp({
 });
 
 const db = admin.firestore(); //might need might not
-const bucket = admin.storage().bucket(); // This is the bucket we are using for the project. We will store user images here.
+const storage = admin.storage().bucket(); // This is the bucket we are using for the project. We will store user images here.
 
-export { db,bucket };
+export { db,storage };
+
+// console.log(process.env.FIREBASE_STORAGE_BUCKET_NAME);
