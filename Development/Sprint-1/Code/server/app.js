@@ -15,6 +15,9 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { checkServerHealth } from './utils/serverHealthUtils.js';
 
+import post_router from './routes/postRouter.js';
+import user_router from './routes/userRouter.js';
+
 const app = express();
 
 // Initial Middleware. Remaning middleware (e.g. jwt,multer) will be added in their respective files
@@ -32,9 +35,11 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+console.log(process.env.ACCESS_KEY_SECRET)
 
 // HEALTH CHECK (for AWS)
+//------------------ Routes (add later) ------------------- //
+
 const SERVER_START_TIME = new Date()
 
 app.get('/', async (req,res)=>
@@ -44,7 +49,9 @@ app.get('/', async (req,res)=>
     return res.status(200).json(health);
 })
 
-//------------------ Routes (add later) ------------------- //
+
+app.use('/api/user', user_router);
+app.use('/api/post', post_router);
 // ------------------------ ------------------------------ //
 
 export default app;

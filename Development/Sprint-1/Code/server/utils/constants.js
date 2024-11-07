@@ -8,6 +8,11 @@ Author: Affan
 
 */
 
+/**
+ * Common Error messages to be used in the application
+ * @constant ERROR_MESSAGES'
+ */
+
 const ERROR_MESSAGES = { //add more error messages as needed
     INTERNAL_SERVER_ERROR: "Internal server error",
     INVALID_CREDENTIALS: "Invalid username or password",
@@ -40,7 +45,27 @@ const ERROR_MESSAGES = { //add more error messages as needed
     INVALID_GROUP: "Invalid group",
     DATABASE_CONNECTION_ERROR: "Error connecting to database",
     MISSING_FIELDS: "Please fill in all fields",
+    NO_FILE_UPLOADED: "No file uploaded",
+    NO_FILE_PATH: "No file path provided",
+    NO_USER_ID: "No user ID provided",
+    NO_LOCATION_ID: "No location ID provided",
+    FILE_DELETE_ERROR: "Error deleting file",
+    NO_POST_ID: "No post ID provided",
+    NO_TEXT: "No text provided",
+    SERVER_ERROR: "Internal Server error. Check the server logs for more information",
+    NO_COMMENTS: "No comments found",
+    NO_COMMENT_ID: "No comment ID provided",
+    CANNOT_REPLY_TO_REPLY: "Cannot reply to a reply",
+    NOT_FOLLOWING: "You are not following this user",
+    NO_POSTS: "No posts found",
+    NO_REQUESTOR_ID: "No requestor ID provided",
+    NO_CURSORS: "No cursors provided for pagination",
 }
+
+/**
+ * Common Success messages to be used in the application
+ * @constant SUCCESS_MESSAGES
+*/
 
 const SUCCESS_MESSAGES = { //add more success messages as needed
     USER_REGISTERED: "User registered successfully",
@@ -65,14 +90,32 @@ const SUCCESS_MESSAGES = { //add more success messages as needed
     CHAT_CREATED: "Chat created successfully",
     GROUP_CREATED: "Group created successfully",
     GROUP_UPDATED: "Group updated successfully",
-    GROUP_DELETED: "Group deleted successfully"
+    GROUP_DELETED: "Group deleted successfully",
+    FILE_DELETED: "File deleted successfully",
+    NO_FILES: "No files to delete",
+    USER_FOLLOWED: "User followed successfully",
+    USER_UNFOLLOWED: "User unfollowed successfully",
+    COMMENTS_FOUND: "Comments found successfully",
+    REPLY_ADDED: "Reply added successfully",
+    FILES_UPLOADED: "Files uploaded successfully",
 }
+
+
+/**
+ * Common Regex patterns to be used in the application
+ * @constant REGEX_PATTERNS
+ * @property {RegExp} EMAIL - email should be in the format of text@text
+ * @property {RegExp} USERNAME - username should be at least 3 characters long and can contain letters, numbers, dots, underscores, and hyphens
+ * @property {RegExp} PASSWORD - password should be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, and one number and one special character
+ * @property {RegExp} IMAGE_TYPE - file type should be jpg, jpeg, png
+ * @property {RegExp} VIDEO_TYPE - file type should be mp4, avi, mov, or flv
+*/
 
 const REGEX_PATTERNS =  {
     EMAIL: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/, //email should be in the format of text@text
     USERNAME: /^[a-zA-Z0-9._-]{3,}$/, //username should be at least 3 characters long and can contain letters, numbers, dots, underscores, and hyphens
     PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/, //password should be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, and one number and one special character
-    IMAGE_TYPE: /\.(jpg|jpeg|png|gif)$/i, //file type should be jpg, jpeg, png, or gif
+    IMAGE_TYPE: /\.(jpg|jpeg|png|gif)$/i, //file type should be jpg, jpeg, png
     VIDEO_TYPE: /\.(mp4|avi|mov|flv)$/i //file type should be mp4, avi, mov, or flv
 }
     

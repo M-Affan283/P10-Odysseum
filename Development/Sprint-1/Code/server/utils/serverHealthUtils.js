@@ -11,7 +11,7 @@ Author: Affan
 import os from 'os';
 import pidusage from 'pidusage';
 
-export const formatTime = (milliseconds) => {
+const formatTime = (milliseconds) => {
     const seconds = Math.floor(milliseconds / 1000);
     const days = Math.floor(seconds / (3600 * 24));
     const hours = Math.floor((seconds % (3600 * 24)) / 3600);
@@ -21,7 +21,7 @@ export const formatTime = (milliseconds) => {
     return `${days}d ${hours}h ${minutes}m ${secs}s`;
 }
 
-export const formatBytes = (bytes) => {
+const formatBytes = (bytes) => {
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
     const size = Math.abs(bytes);
     const index = size ? Math.floor(Math.log(size) / Math.log(1024)) : 0;
@@ -29,13 +29,20 @@ export const formatBytes = (bytes) => {
     return bytes < 0 ? `-${formattedSize}` : formattedSize;
 }
 
-export const formatCpuUsage = (cpuUsage) => {
+const formatCpuUsage = (cpuUsage) => {
     return {
         user: (cpuUsage.user / 1000).toFixed(2) + ' ms', // Convert microseconds to milliseconds
         system: (cpuUsage.system / 1000).toFixed(2) + ' ms',
         total: ((cpuUsage.user + cpuUsage.system) / 1000).toFixed(2) + ' ms'
     };
 }
+
+
+/**
+ * Function to check the health of the server
+ * @param {Date} SERVER_START_TIME - Start time of the server
+ * @returns {Object} - Object containing server health information
+ */
 
 export const checkServerHealth = async (SERVER_START_TIME) => {
     const currentTime = new Date();

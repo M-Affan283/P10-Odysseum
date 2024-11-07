@@ -8,9 +8,9 @@ Author: Affan
 
 */
 
-import { User } from "../../models/User";
+import { User } from "../../models/User.js";
 import bcrypt from 'bcryptjs';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES,REGEX_PATTERNS } from "../../utils/constants";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES,REGEX_PATTERNS } from "../../utils/constants.js";
 import validator from "validator";
 
 export const registerUser = async (req,res) =>

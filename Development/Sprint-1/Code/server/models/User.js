@@ -11,6 +11,32 @@ Author: Affan
 
 import mongoose from "mongoose";
 
+
+/**
+ * User Schema
+ * @param {String} firstName - The first name of the user
+ * @param {String} lastName - The last name of the user
+ * @param {String} email - The email address of the user
+ * @param {String} username - The username of the user
+ * @param {String} password - The hashed password of the user
+ * @param {String} profilePicture - The URL to the user's profile picture
+ * @param {String} bio - The bio of the user
+ * @param {String} location - The location of the user
+ * @param {Array} followers - An array of user IDs who follow the user
+ * @param {Array} following - An array of user IDs who the user follows
+ * @param {Boolean} emailVerified - A flag to indicate if the user's email is verified
+ * @param {String} role - The role of the user (user, admin, businessOwner)
+ * @param {String} resetPasswordToken - The token for resetting the user's password
+ * @param {Date} resetPasswordExpire - The expiration date for the reset password token
+ * @param {String} verificationToken - The token for verifying the user's email address
+ * @param {Date} verificationExpire - The expiration date for the verification token
+ * @param {Boolean} twoFactorEnabled - A flag to indicate if two-factor authentication is enabled
+ * @param {String} twoFactorSecret - The secret key for two-factor authentication
+ * @param {String} refreshToken - The refresh token for the user's session
+ * @param {Boolean} newUser - A flag to indicate if the user is a new user
+ * @param {Timestamp} createdAt - The timestamp when the user was created
+ * @param {Timestamp} updatedAt - The timestamp when the user was last updated
+ */
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -120,12 +146,13 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
         default: '',
+    },
+
+    isDeactivated: {
+        type: Boolean,
+        default: false
     }
-    }, 
-    
-    {
-        timestamps: true
-    }
-);
+
+}, {timestamps: true});
 
 export const User = mongoose.model('User', userSchema, 'User');
