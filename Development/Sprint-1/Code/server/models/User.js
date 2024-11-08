@@ -1,16 +1,13 @@
-/*
-
+/*  
+Author/s: Affan & Haroon
 Filename: User.js
-
-This file contains the schema for the User model. It defines the structure of the user document in the MongoDB database.
-
-Author: Affan
-
-
+Description:
+    This file contains the schema for the User model. 
+    It defines the structure of the user document in the MongoDB database.
 */
 
 import mongoose from "mongoose";
-
+import bookmarkSchema from "./Bookmark";
 
 /**
  * User Schema
@@ -37,6 +34,7 @@ import mongoose from "mongoose";
  * @param {Timestamp} createdAt - The timestamp when the user was created
  * @param {Timestamp} updatedAt - The timestamp when the user was last updated
  */
+
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -151,7 +149,11 @@ const userSchema = new mongoose.Schema({
     isDeactivated: {
         type: Boolean,
         default: false
-    }
+    },
+    
+    // Adding the bookmark field.
+    // It is a list that containes all the bookmarks associated with the user
+    bookmarks: [bookmarkSchema]
 
 }, {timestamps: true});
 
