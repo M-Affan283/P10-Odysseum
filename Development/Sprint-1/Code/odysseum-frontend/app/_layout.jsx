@@ -33,6 +33,7 @@ const RootLayout = () => {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="search/[query]" options={{ title: "Search Results" }} />
       {/* this is the main screen. the name 'index' means refer to the index.jsx file in the app folder */}
     </Stack>
   );
