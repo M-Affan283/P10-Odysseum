@@ -43,39 +43,37 @@ const TabsLayout = () => {
   return (
     <>
       <Tabs
-        screenOptions={{
-          tabBarShowLabel: false, // Hide labels as they are being shown in the TabIcon component
-          tabBarActiveTintColor: "#800080",
-          tabBarInactiveTintColor: "#CDCDE0",
-          tabBarStyle: {
-            backgroundColor: "#161622",
-            borderTopWidth: 1,
-            borderTopColor: "#232533",
-            height: 50,
-          }
-        }}
-      >
-        {tabs.map((tab, index) => (
-          <Tabs.Screen
-            key={index}
-            name={tab.name}
-            options={{
-              title: tab.name.charAt(0).toUpperCase() + tab.name.slice(1),
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon
-                  icon={tab.icon}
-                  name={tab.name.charAt(0).toUpperCase() + tab.name.slice(1)}
-                  color={color}
-                  focused={focused}
-                />
-              ),
-            }}
-          />
-        ))}
-      </Tabs>
+          screenOptions={{
+            tabBarShowLabel: false, // Hide labels as they are being shown in the TabIcon component
+            tabBarActiveTintColor: "#800080",
+            tabBarInactiveTintColor: "#CDCDE0",
+            tabBarStyle: {
+              backgroundColor: "#161622",
+              borderTopWidth: 1,
+              borderTopColor: "#232533",
+              height: 50,
+            }
+          }}
+        >
+          {tabs.map((tab, index) => (
+            <Tabs.Screen
+              key={index}
+              name={tab.name}
+              options={{
+                title: tab.name.charAt(0).toUpperCase() + tab.name.slice(1),
+                headerShown: false,
+                tabBarIcon: ({ color, focused }) => (
+                  <TabIcon
+                    icon={tab.icon}
+                    name={tab.name.charAt(0).toUpperCase() + tab.name.slice(1)}
+                    color={color}
+                    focused={focused}
+                  />
+                ),
+              }}
+            />
+          ))}
+        </Tabs>
     </>
   );
-};
-
-export default TabsLayout;
+}

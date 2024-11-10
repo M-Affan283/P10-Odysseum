@@ -7,7 +7,7 @@ import Toast from "react-native-toast-message"
 // SplashScreen.preventAutoHideAsync(); //prevent the splash screen from hiding automatically
 
 const RootLayout = () => {
-  // this will refer to the index.jsx file in the app folder since it is the main file
+   // this will refer to the index.jsx file in the app folder since it is the main file
 
   // const [initializing, setInitializing] = useState(true); //when user opens app check for any initializations. Refresh and access tokens, already logged in, fetch preliminary data, etc.
 
@@ -29,7 +29,7 @@ const RootLayout = () => {
   // }, [initializing])
 
   // if(initializing) return null;
-
+  
   return (
     <>
       <Stack>
