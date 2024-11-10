@@ -29,7 +29,6 @@ export const registerUser = async (req,res) =>
     {
         //check if user already exists
         const userExists = await User.findOne({$or: [{email: email}, {username: username}]});
-
         if(userExists) return res.status(400).json({success:false, message: ERROR_MESSAGES.USER_EXISTS});
 
         //hash password

@@ -9,6 +9,7 @@ Author: Affan
 */
 
 import { User } from "../../models/User.js";
+import { Location } from "../../models/Location.js";
 import { SUCCESS_MESSAGES,ERROR_MESSAGES } from "../../utils/constants.js";
 
 /**
@@ -42,6 +43,22 @@ const getAllUsers = async (req,res) =>
     }
 
 }
+const getAllLocations = async (req,res) =>
+    {
+        try
+        {
+            const locations = await Location.find({});
+            return res.status(200).json({message: SUCCESS_MESSAGES.USERS_FOUND, locations: locations});
+    
+        }
+        catch(error)
+        {
+            console.log(error);
+            return res.status(500).json({error: ERROR_MESSAGES.SERVER_ERROR});
+        }
+    
+    }
+
 
 /**
  * Get a user by their id. This function if for when users click on a user profile.
@@ -182,4 +199,4 @@ const getUserBySearchParams = async (req,res) =>
 
 }
 
-export { getAllUsers, getUserById, getUserByUsername, getUserBySearchParams };
+export { getAllUsers, getAllLocations, getUserById, getUserByUsername, getUserBySearchParams };

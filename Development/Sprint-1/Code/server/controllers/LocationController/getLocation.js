@@ -1,6 +1,6 @@
 // File: controllers/getLocation.js
 
-//author: Luqman
+//author: Luqman, Shahrez, Affan
 
 import { Location } from "../../models/Location.js";
 import { ERROR_MESSAGES } from "../../utils/constants.js";
@@ -10,7 +10,9 @@ import { ERROR_MESSAGES } from "../../utils/constants.js";
  * @param {Object} req - Request object containing the search parameters.
  * @param {Object} res - Response object.
  */
+
 export const searchLocations = async (req, res) => {
+
   const { searchParam="", limit = 5, lastId } = req.query;
 
   if (!searchParam) return res.status(400).json({ error: ERROR_MESSAGES.NO_SEARCH_PARAM });
