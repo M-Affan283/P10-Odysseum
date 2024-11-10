@@ -28,20 +28,24 @@ import { uploadFile } from "../../services/firebaseService.js";
  */
 export const createPost = async (req,res) =>
 {
-    const { creatorId, caption, locationId } = req.body;
+    const { creatorId, caption /*,locationId*/ } = req.body; //uncomment locationId later
     const files = req.files;
-
+    console.log(req.body)
+    console.log(req.files)
     if(!creatorId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
-    if(!locationId) return res.status(400).json({error: ERROR_MESSAGES.NO_LOCATION_ID});
+    // if(!locationId) return res.status(400).json({error: ERROR_MESSAGES.NO_LOCATION_ID}); //uncomment later
     // if(!files || files.length === 0) return res.status(400).json({error: ERROR_MESSAGES.NO_FILES});
 
     try
     {
         const user = await User.findById(creatorId);
-        const location = await Location.findById(locationId);
+        // const location = await Location.findById(locationId); //uncomment later
 
-        if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
-        if(!location) return res.status(404).json({error: ERROR_MESSAGES.LOCATION_NOT_FOUND});
+        if(!user){
+            console.log("User not found")
+            return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
+        }
+        // if(!location) return res.status(404).json({error: ERROR_MESSAGES.LOCATION_NOT_FOUND}); // uncomment later
 
         const fileURLS = await uploadFile(files, creatorId);
 
@@ -51,7 +55,7 @@ export const createPost = async (req,res) =>
             creatorId: creatorId,
             caption: caption,
             mediaUrls: fileURLS.urls,
-            location: location
+            // location: location //uncomment later
         });
 
         await post.save();

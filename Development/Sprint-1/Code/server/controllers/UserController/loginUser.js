@@ -17,8 +17,9 @@ export const loginUser = async (req, res) =>
 {
     //user can login with either email or username
     const { identifier, password } = req.body;
-
-    if(!identifier || !password) return res.status(400).json({success:false, message: ERROR_MESSAGES.INVALID_IDENTIFIER});
+    // console.log(req.body)
+    console.log("Logging in user", identifier, " " ,password);
+    if(!identifier || !password) return res.status(400).json({success:false, message: ERROR_MESSAGES.MISSING_FIELDS});
 
     try
     {
@@ -53,9 +54,11 @@ export const loginUser = async (req, res) =>
                     profilePicture: user.profilePicture,
                     bio: user.bio,
                     role: user.role,
-                    newUser: newuser
+                    newUser: newuser,
+                    following: user.following,
+                    followers: user.followers
                 },
-                accessToken: accessToken //send access token in response. store in react native secure store
+                // accessToken: accessToken //send access token in response. store in react native secure store
             })
     }
     catch(error)

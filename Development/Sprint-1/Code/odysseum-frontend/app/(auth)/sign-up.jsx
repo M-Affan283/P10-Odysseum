@@ -1,11 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import SignUpScreen from '../../src/screens/SignUpScreen'
 
 const SignUp = () => {
   return (
-    <View>
-      <Text>SignUp</Text>
-    </View>
+    <SignUpScreen/>
   )
 }
 

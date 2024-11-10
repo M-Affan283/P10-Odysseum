@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //------------------ Route Configurations ------------------- //
 
-app.get('/', async (req,res)=>
+app.post('/health', async (req,res)=>
 {
     let health = await checkServerHealth(SERVER_START_TIME);
 

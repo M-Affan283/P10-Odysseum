@@ -13,7 +13,7 @@ import { registerUser } from "../controllers/UserController/registerUser.js";
 import { loginUser, oAuthLoginUser } from "../controllers/UserController/loginUser.js";
 import { followUser } from "../controllers/UserController/followUser.js";
 import { getAllUsers, getUserById, getUserByUsername, getUserBySearchParams } from "../controllers/UserController/getUser.js";
-// import { updateUser } from "../controllers/UserController/updateUser.js";
+import { updateUserBio } from "../controllers/UserController/updateUser.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
 
 const userRouter = express.Router();

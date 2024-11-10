@@ -89,7 +89,7 @@ export const deleteFiles = async (filePathList = []) => {
 // const fileBuffer = fs.readFileSync(filepath)
 
 // const files = [{buffer: fileBuffer, originalname: 'testimg.png', mimetype: 'image/png'}]
-// const userId = ''
+// const userId = '10292103849179'
 
 // uploadFile(files, userId).then((result) => {
 //     console.log(result)

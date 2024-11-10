@@ -17,16 +17,16 @@ mongoose.connect(MONGO_URI)
     .then(() => {
         console.log("\nConnected to MongoDB");
 
-        // Initializing HTTP server and socket server
-        const server = http.createServer(app)
-        const io = setupSocket(server);         // socket server will run in paraller to express server
-        
-        // Starting the server and listening for incoming requests
-        server.listen(PORT, () => {
-            console.log(`${environment.toUpperCase()} Server running on port ${PORT} at ${new Date().toLocaleString()}`);
-        });
+
+    const io = setupSocket(server); // setup socket.io server. will now run in parallel with express server
+
+    server.listen(PORT, '0.0.0.0' ,()=>
+    {
+        console.log(`${environment.toUpperCase()} Server running on port ${PORT} at ${new Date().toLocaleString()}`);
     })
-    .catch((error)=> {
-        console.log("Could not connect");
-        console.log(ERROR_MESSAGES.DATABASE_CONNECTION_ERROR, ": ", error);
-    });
+
+})
+.catch((error)=>
+{
+    console.log(ERROR_MESSAGES.DATABASE_CONNECTION_ERROR, ": ", error);
+})

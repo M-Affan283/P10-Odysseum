@@ -122,7 +122,7 @@ const getUserBySearchParams = async (req,res) =>
     const {requestorId, limit=10 ,searchParam, lastId} = req.body;
 
     if(!requestorId || !searchParam) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
-    if(!lastId) return res.status(400).json({error: ERROR_MESSAGES.NO_CURSOR});
+    // if(!lastId) return res.status(400).json({error: ERROR_MESSAGES.NO_CURSOR});
 
     try
     {
