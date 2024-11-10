@@ -13,33 +13,49 @@ const app = (await import('./app.js')).default;
 // Test location to insert
 const locations = [
     {
-        name: "New York City",
+        name: "Chitral, KPK",
         coordinates: {
             type: "Point",
-            coordinates: [-122.4194, 37.7749],
+            coordinates: [0, 0],
         },
-        description: "The largest city in the United States.",
+        description: "A beautiful isolated valley in the Khyber Pakhtunkhwa province.",
     },
     {
-        name: "San Francisco",
+        name: "Nathia Gali, KPK",
         coordinates: {
             type: "Point",
-            coordinates: [-122.4194, 37.7749],
+            coordinates: [0, 0],
         },
-        description: "A popular tourist destination in California.",
+        description: "A hill station and mountain resort town with stunning views and plenty of hiking trails.",
     },
     {
-        name: "Tokyo",
+        name: "Murree, Punjab",
         coordinates: {
             type: "Point",
-            coordinates: [139.6917, 35.6895],
+            coordinates: [0, 0],
         },
-        description: "The capital city of Japan.",
+        description: "A beautiful mountain resort city situated 30km from the capital city of Pakistan.",
+    },
+    {
+        name: "Fairy Meadows, Gilgit-Baltistan",
+        coordinates: {
+            type: "Point",
+            coordinates: [0, 0],
+        },
+        description: "A stunning area of grassland near one of the base camp sites of Nanga Parbat.",
+    },
+    {
+        name: "Swat, KPK",
+        coordinates: {
+            type: "Point",
+            coordinates: [0, 0],
+        },
+        description: "A stunningly beautiful valley with winding roads and many trekking locations scattered throughout.",
     },
 ]
 
 // Creating function to add locations
-const addLocations = async() => {
+const addLocations = async () => {
     try {
         await Location.insertMany(locations);
         console.log("Locations inserted.")
@@ -56,7 +72,7 @@ mongoose.connect(MONGO_URI)
         console.log("\nConnected to MongoDB");
         addLocations();
     })
-    .catch((error)=> {
+    .catch((error) => {
         console.log("Could not connect");
     });
 

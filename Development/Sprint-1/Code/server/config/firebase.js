@@ -1,5 +1,5 @@
 import admin from "firebase-admin";
-import serviceAccount from "./firebaseConfig.json" assert { type: "json" };
+import serviceAccount from "./firebaseConfig.json" with { type: "json" };
 
 const FIREBASE_STORAGE_BUCKET_NAME='gs://odysseumstorage.appspot.com'
 admin.initializeApp({
