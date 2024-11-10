@@ -8,6 +8,7 @@ import axios from "axios"; //change to custom axios instance later
 
 
 const SignUpScreen = () => {
+  
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
