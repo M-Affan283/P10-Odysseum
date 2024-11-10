@@ -8,13 +8,8 @@ export default function App() {
     <View style={styles.container}>
       <Text style={styles.title}>Odysseum!</Text>
       <StatusBar style="auto" />
-      {/* Adjusted Link paths based on common folder structure */}
-      <Link href="/home" style={styles.link}>
-        <Text style={styles.linkText}>Home</Text>
-      </Link>
-      <Link href="/search/example" style={styles.link}> 
-        <Text style={styles.linkText}>Search</Text> 
-      </Link>
+        
+      <Link href="/HomeScreen" className="text-blue-700">Home</Link>
     </View>
   );
 }

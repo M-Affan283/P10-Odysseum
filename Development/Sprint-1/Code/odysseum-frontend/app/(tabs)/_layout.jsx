@@ -1,71 +1,65 @@
-import { View, Text, Image } from "react-native";
-import { Tabs, Redirect } from "expo-router";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Tabs } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons'; // imporing icons from Expo's vector icons
 
-//In the main screen we will have 5 bottom tabs. Home, Inbox, Createm and Profile and one extra which will come later.
-// Like tiktok, the progile page will have the user profile data and then tabs in them for the user to look at their post, saved posts, liked posts, etc.
+// Importing screens
+import HomeScreen from './HomeScreen';
 
-const TabIcon = ({ icon, name, color, focused }) => {
+export default function TabLayout() {
   return (
-    <View className="items-center justify-center gap-2">
-      <MaterialIcons name={icon} size={24} color={color} className="w-6 h-6" />
-      <Text className={`${focused ? "font-semibold" : "font-normal"} text-xs`}>
-        {name}
-      </Text>
-    </View>
-  );
-};
-
-const tabs = [
-  {
-    name: "Home",
-    icon: "home",
-    // component: Home,
-  },
-  {
-    name: "Inbox",
-    icon: "message",
-    // component: Inbox,
-  },
-  {
-    name: "Create",
-    icon: "add",
-    // component: Create,
-  },
-  {
-    name: "Profile",
-    icon: "person",
-    // component: Profile,
-  },
-]
-
-const TabsLayout = () => {
-  return (
-    <>
-      <Tabs
+    <Tabs
         screenOptions={{
-          tabBarShowLabel: false, // Hide labels as they are being shown in the TabIcon component
-           
+            // tabBarShowLabel: false,             // hides the labels. Only icons will be displayed.
+            tabBarActiveTintColor: 'blue',      // changes the color of the active tab icon.
+            tabBarInactiveTintColor: 'gray',    // changes the color of remaining inactive tab icons.
         }}
-      >
-        <Tabs.Screen
-          name="home"
-          options={{
-            title: "Home",
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon="home"
-                name="Home"
-                color={color}
-                focused={focused}
-              />
-            ),
-          }}
+    >
+        {/* Home Screen Tab */}
+        <Tabs.Screen 
+            name="HomeScreen"   // .jsx file name for screen
+            options={{
+                title: 'Home',  // title that will be shown in the header (if headerShown: true)
+                headerShown: false, 
+                tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="home" size={size} color={color} />
+                )
+            }}
         />
-      </Tabs>
-    </>
-  );
-};
 
-export default TabsLayout;
+        {/* Inbox Screen Tab */}
+        <Tabs.Screen 
+            name="InboxScreen" 
+            options={{
+                title: 'Inbox',   
+                headerShown: false, 
+                tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="mail" size={size} color={color} />
+                )
+            }}
+        />
+
+        {/* Create Screen Tab */}
+        <Tabs.Screen 
+            name="CreateScreen" 
+            options={{
+                title: 'Create',   
+                headerShown: false, 
+                tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="photo" size={size} color={color} />
+                )
+            }}
+        />
+
+        {/* Profile Screen Tab */}
+        <Tabs.Screen 
+            name="ProfileScreen" 
+            options={{
+                title: 'Profile',   
+                headerShown: false, 
+                tabBarIcon: ({ color, size }) => (
+                    <MaterialIcons name="person" size={size} color={color} />
+                )
+            }}
+        />
+    </Tabs>
+  );
+}

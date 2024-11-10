@@ -7,7 +7,7 @@ Description:
 */
 
 import mongoose from "mongoose";
-import bookmarkSchema from "./Bookmark";
+import bookmarkSchema from "./Bookmark.js";
 
 /**
  * User Schema
