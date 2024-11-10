@@ -24,17 +24,17 @@ const LoginScreen = () => {
 
     setSubmitting(true);
 
-    axiosInstance.post("/user/login", form)
+    axios.post("http://localhost:8000/api/user/login", form)
     .then(async (res) => {
       if (res.data.success) {
         //get user from zustand store and update it
         //store access token in secure store
         //navigate to home screen
 
-        // console.log(res.data);
+        console.log(res.data);
         await setUser(res.data.user);
-        // console.log("LOGGED IN USER")
-        // console.log(user)
+        console.log("LOGGED IN USER")
+        console.log(user)
         // await logout();
         router.dismissAll(); //dismiss all screens
         router.replace("/home");
@@ -49,6 +49,9 @@ const LoginScreen = () => {
       setError(err.response.data.message);
       setSubmitting(false);
     });
+
+    router.dismissAll(); //dismiss all screens
+    router.replace("/home");
   };
 
   return (

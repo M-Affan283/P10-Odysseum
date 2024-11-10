@@ -20,16 +20,16 @@ import { SUCCESS_MESSAGES,ERROR_MESSAGES } from "../../utils/constants.js";
  */
 const getAllUsers = async (req,res) =>
 {
-    const { requestorId } = req.body;
+    // const { requestorId } = req.body;
 
-    if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
+    // if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
 
     try
     {
-        const requestor = await User.findById(requestorId);
+        // const requestor = await User.findById(requestorId);
 
-        if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
-        if(requestor.role !== 'admin') return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        // if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
+        // if(requestor.role !== 'admin') return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
 
         const users = await User.find({});
         return res.status(200).json({message: SUCCESS_MESSAGES.USERS_FOUND, users: users});

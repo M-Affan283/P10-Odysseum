@@ -13,7 +13,7 @@ const SearchScreen = () => {
   const handleSearch = async () => {
     try {
       if (searchType === 'profiles') {
-        const profileResponse = await fetch(`http://localhost:3000/api/users/search`, {
+        const profileResponse = await fetch(`"http://192.168.68.67:8000/api/users/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ searchParam: query })
@@ -21,7 +21,7 @@ const SearchScreen = () => {
         const profileResults = await profileResponse.json();
         setProfiles(profileResults.users || []);
       } else if (searchType === 'locations') {
-        const locationResponse = await fetch(`http://localhost:3000/api/locations/search`, {
+        const locationResponse = await fetch(`"http://192.168.68.67:8000/api/locations/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ searchParam: query })

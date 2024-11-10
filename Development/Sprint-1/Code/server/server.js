@@ -9,7 +9,8 @@ import { setupSocket } from './socket.js';
 // Initializing dotenv file
 dotenv.config({ path: './config.env' });
 
-const environment = process.argv[2] || 'remote';
+// const environment = process.argv[2] || 'remote';
+const environment = 'remote';
 const MONGO_URI = environment === 'local' ? process.env.MONGODB_URI_LOCAL : process.env.MONGODB_URI_REMOTE;
 const PORT = process.env.PORT || 8000;
 const app = (await import('./app.js')).default;
