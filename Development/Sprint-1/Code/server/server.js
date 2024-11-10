@@ -24,8 +24,6 @@ const app = (await import('./app.js')).default; //importing using this so that a
 
 const server = http.createServer(app);
 
-
-
 // Connect to MongoDB
 
 //Local if mongodb compass is being used or remote if mongodb atlas is being used
