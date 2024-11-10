@@ -1,10 +1,10 @@
 //  Author: Haroon Khawaja
 
 import mongoose from "mongoose";
-import { User } from "../../models/User";
+import { User } from "../../models/User.js";
 
 // Reading all the bookmarks of a user
-export const getBookmarks = async (req, res) => {
+export const readBookmark = async (req, res) => {
     try {
         const { userId } = req.params;
 

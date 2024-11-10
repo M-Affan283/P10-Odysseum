@@ -16,6 +16,12 @@ import { getAllUsers, getAllLocations, getUserById, getUserByUsername, getUserBy
 import { updateUserBio } from "../controllers/UserController/updateUser.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
 
+
+// Bookmark CRUD
+import { addBookmark } from "../controllers/BookmarkController/addBookmark.js";
+import { deleteBookmark } from "../controllers/BookmarkController/deleteBookmark.js";
+import { readBookmark } from "../controllers/BookmarkController/readBookmark.js";
+
 const userRouter = express.Router();
 
 // Testing routes (without middleware)
@@ -29,8 +35,11 @@ userRouter.get("/getById", getUserById);
 userRouter.get("/getByUsername", getUserByUsername);
 userRouter.get("/search", getUserBySearchParams);
 userRouter.post("/updateUserBio", updateUserBio);
-// user_router.post("/update", updateUser);
 
+// Bookmarking routes
+userRouter.post("/addBookmark", addBookmark);
+
+// user_router.post("/update", updateUser);
 // Routes with middleware (login and register do not require jwt middleware)
 // user_router.post("/register", UserController.registerUser);
 // user_router.post("/login", UserController.loginUser);

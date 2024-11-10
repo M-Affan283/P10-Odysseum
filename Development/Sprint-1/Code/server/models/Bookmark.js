@@ -11,12 +11,12 @@ const bookmarkSchema = new mongoose.Schema({
         required: true,
     },
     // Bookmarked location webpage url
-    location_url: {
-        type: String, 
-        required: true, 
-    },
+    // location_url: {
+    //     type: String, 
+    //     required: true, 
+    // },
     // Tag list for the bookmarked location
-    tags: [String],
+    // tags: [String],
     createdAt: {
         type: Date,
         default: Date.now

@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { Location } from './models/Location.js';
 import { User } from './models/User.js';
 
+
 // Importing routes
 import userRouter from './routes/userRouter.js';
 import postRouter from './routes/postRouter.js';
@@ -40,6 +41,7 @@ app.get('/health', async (req,res)=>
 })
 
 app.use('/api/user', userRouter)
+app.use('/api/post', postRouter)
 // app.use("/api/locations", locationRouter);
 
 
