@@ -15,12 +15,12 @@ const SearchScreen = () => {
     setError('');
     try {
       const [profileResponse, locationResponse] = await Promise.all([
-        fetch(`http://localhost:3000/api/users/search`, {
+        fetch(`http://192.168.100.24:3000/api/users/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ searchParam: searchTerm }),
         }),
-        fetch(`http://localhost:3000/api/locations/search`, {
+        fetch(`http://192.168.100.24:3000/api/locations/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ searchParam: searchTerm }),

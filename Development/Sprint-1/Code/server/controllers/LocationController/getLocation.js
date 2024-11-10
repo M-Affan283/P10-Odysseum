@@ -11,7 +11,7 @@ import { ERROR_MESSAGES } from "../../utils/constants.js";
  * @param {Object} res - Response object.
  */
 export const searchLocations = async (req, res) => {
-  const { searchParam, limit = 10, lastId } = req.body;
+  const { searchParam="", limit = 5, lastId } = req.query;
 
   if (!searchParam) return res.status(400).json({ error: ERROR_MESSAGES.NO_SEARCH_PARAM });
 
@@ -20,10 +20,19 @@ export const searchLocations = async (req, res) => {
       name: { $regex: searchParam, $options: 'i' },
     };
 
-    if (lastId) searchQuery._id = { $gt: lastId };
+    if (lastId) searchQuery._id = { $gt: lastId }; //if lastid is not given that means it is the first page
 
-    const locations = await Location.find(searchQuery).limit(Number(limit)).sort({ _id: 1 }).exec();
+    let locations = await Location.find(searchQuery).limit(Number(limit)).sort({ _id: 1 }).exec();
     const hasMore = locations.length === Number(limit);
+
+    // change locations to send only name. once user clicks on the location, then we can fetch the location details
+    locations = locations.map(location => {
+      return {
+        _id: location._id,
+        name: location.name,
+      };
+    });
+
 
     return res.status(200).json({
       locations,

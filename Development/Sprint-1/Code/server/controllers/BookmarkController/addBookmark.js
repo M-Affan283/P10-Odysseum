@@ -1,8 +1,8 @@
 //  Author: Haroon Khawaja
 
 import mongoose from "mongoose";
-import { User } from "../../models/User";
-
+import { User } from "../../models/User.js";
+import { Location } from "../../models/Location.js"
 // Adding a new bookmark
 export const addBookmark = async (req, res) => {
     try {

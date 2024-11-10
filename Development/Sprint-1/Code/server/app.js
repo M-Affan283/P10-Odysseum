@@ -5,11 +5,11 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 // import { db, storage } from './config/firebase.js'
 
-
 // Importing routes
 import userRouter from './routes/userRouter.js';
 import postRouter from './routes/postRouter.js';
-// import locationRouter from "./routes/locationRouter.js";
+import locationRouter from "./routes/locationRouter.js";
+import { checkServerHealth } from './utils/serverHealthUtils.js';
 
 // Initializing variables
 const app = express();
@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //------------------ Route Configurations ------------------- //
 
-app.post('/health', async (req,res)=>
+app.get('/health', async (req,res)=>
 {
     let health = await checkServerHealth(SERVER_START_TIME);
 
@@ -38,7 +38,7 @@ app.post('/health', async (req,res)=>
 
 app.use('/api/user', userRouter)
 app.use('/api/post', postRouter)
-// app.use("/api/locations", locationRouter);
+app.use("/api/location", locationRouter);
 
 /////////////////////////////////////////////////////////////////
 
