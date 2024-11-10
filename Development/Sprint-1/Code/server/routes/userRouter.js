@@ -16,17 +16,17 @@ import { getAllUsers, getUserById, getUserByUsername, getUserBySearchParams } fr
 // import { updateUser } from "../controllers/UserController/updateUser.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
 
-const user_router = express.Router();
+const userRouter = express.Router();
 
 // Testing routes (without middleware)
-user_router.post("/register", registerUser);
-user_router.post("/login", loginUser);
-user_router.post("/login/oauth", oAuthLoginUser);
-user_router.post("/follow", followUser);
-user_router.get("/getAll", getAllUsers);
-user_router.get("/getById", getUserById);
-user_router.get("/getByUsername", getUserByUsername);
-user_router.get("/search", getUserBySearchParams);
+userRouter.post("/register", registerUser);
+userRouter.post("/login", loginUser);
+userRouter.post("/login/oauth", oAuthLoginUser);
+userRouter.post("/follow", followUser);
+userRouter.get("/getAll", getAllUsers);
+userRouter.get("/getById", getUserById);
+userRouter.get("/getByUsername", getUserByUsername);
+userRouter.get("/search", getUserBySearchParams);
 // user_router.post("/update", updateUser);
 
 // Routes with middleware (login and register do not require jwt middleware)
@@ -39,4 +39,4 @@ user_router.get("/search", getUserBySearchParams);
 // user_router.get("/search", verifyToken, UserController.getUserBySearchParams);
 // user_router.post("/update", verifyToken, UserController.updateUser);
 
-export default user_router;
+export default userRouter;
