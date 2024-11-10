@@ -3,9 +3,44 @@ import { View, Text, StyleSheet, Button, TextInput, ActivityIndicator, FlatList,
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from 'axios';
 import filter from "lodash.filter"
+import { Modal, TouchableOpacity } from "react-native";
+import useUserStore from '../context/userStore'
 
 const HomeScreen = () => {
+    // ==== BOOKMARKING ====
+    // Initializing constants for bookmarking
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(null);
+    const user = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+
+    const openModal = (location) => {
+        setSelectedLocation(location);
+        setIsModalVisible(true);
+    }
     
+    const API_BOOKMARK = "http://192.168.68.67:8000/api/user/addBookmark/"
+    const bookmarkLocation = async(location) => {
+        try {
+
+            console.log(location)
+            const response = await axios.post(API_BOOKMARK, {
+                userId: user._id,
+                title: location
+            });
+            if (response.status == 201) {
+                console.log(response.data.message + ": " + location);
+            }
+            else {
+                setError("Something went wrong, please try again.")
+            }
+
+        } catch (error) {
+            setError(error);
+        }
+    }
+
+    // ==== SEARCHING ====
     // Initializng constants
     const [userData, setUserData] = useState([]);
     const [locationData, setLocationData] = useState([]);
@@ -111,20 +146,21 @@ const HomeScreen = () => {
                 keyExtractor={(item) => item._id}
                 renderItem={({ item }) => (
                     searchQuery !== "" ? (
-                    <View style={styles.displays}>
-                        {item.firstName ? (
-                            <>
-                            <Text style={styles.textName}>{item.firstName + ' ' + item.lastName}</Text>
-                            <Text style={styles.textEmail}>{item.username}</Text>
-                            </>
-                        ): (
-                            <>
-                            <Text style={styles.textName}>{item.name}</Text>
-                            <Text style={styles.textEmail}>{item.description}</Text>
-                            </>
-                        )}
-                        
-                    </View>
+                    <TouchableOpacity onPress={() => openModal(item)}>
+                        <View style={styles.displays}>
+                            {item.firstName ? (
+                                <>
+                                <Text style={styles.textName}>{item.firstName + ' ' + item.lastName}</Text>
+                                <Text style={styles.textEmail}>{item.username}</Text>
+                                </>
+                            ): (
+                                <>
+                                <Text style={styles.textName}>{item.name}</Text>
+                                <Text style={styles.textEmail}>{item.description}</Text>
+                                </>
+                            )}
+                        </View>
+                    </TouchableOpacity>
                     ) : null            
                 )}
             />
@@ -132,13 +168,23 @@ const HomeScreen = () => {
                 <Text style={styles.heading}>
                     Welcome To Odyssuem: A Voyage For Travellers
                 </Text>
-
-                <Button
-                    title="Explore Destinations"
-                    onPress={() => alert("Explore destinations clicked")}
-                    style={styles.button}
-                />
             </View>
+        
+        <Modal
+            visible={isModalVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setIsModalVisible(false)}
+        >   
+            <View style={styles.modalBackground}>
+                <View style={styles.modalView}>
+                    <Text style={styles.modalTitle}>{selectedLocation?.name}</Text>
+                    <Text style={styles.modalDescription}>{selectedLocation?.description}</Text>
+                    <Button title="Bookmark" onPress={() => bookmarkLocation(selectedLocation?.name)} />
+                    <Button title="Close" onPress={() => setIsModalVisible(false)} />
+                </View>
+            </View>
+        </Modal>
 
         </SafeAreaView>
     )
@@ -150,22 +196,7 @@ const styles = StyleSheet.create({
         verticalAlign: 'center',
         marginHorizontal: 20,
         paddingTop: 20,
-        width: '%100',
-    },
-    searchBar: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderColor: "#ccc",
-        borderWidth: 1,
-        borderRadius: 8,
-        width: '300%',
-    },
-    safeAreaView: {
-        justifyContent: 'center',
-        verticalAlign: 'center',
-        marginHorizontal: 20,
-        paddingTop: 20,
-        width: 400,
+        width: '93%',
     },
     searchBar: {
         paddingHorizontal: 20,
@@ -182,9 +213,6 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         color: 'black',
     },
-    button: {
-        marginBottom: 10,
-    },
     displays: {
         width:"200%",
     },
@@ -197,7 +225,31 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginLeft: 10,
         color: "grey"
-    }
+    },
+    modalBackground: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },    
+    modalView: {
+        width: '80%',
+        height: '60%',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 40,
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    modalDescription: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 20,
+    },
 });
 
 export default HomeScreen;

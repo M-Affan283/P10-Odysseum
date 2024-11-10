@@ -84,30 +84,24 @@ const UserProfileScreen = () => {
         }
     }
 
-    const updateUserBio = async () =>
-    {
-        try
-        {
+    // Updates user bio
+    const updateUserBio = async () => {
+        try {
             axios.post('http://192.168.68.67:8000/api/user/updateUserBio', {userId: user._id, bio: form.bio})
-            .then((res)=>
-            {
+            .then((res) => {
                 console.log("message: ", res.data.message);
-
                 setUser({
                     ...user,
                     bio: form.bio,
                     // profilePicture: form.profilePicture
                 })
-
             })
-            .catch((error) =>
-            {
+            .catch((error) => {
                 console.log(error);
                 setError(error.message);
             })
         }
-        catch(error)
-        {
+        catch(error) {
             setError(error.message);
         }
     }
@@ -138,6 +132,7 @@ const UserProfileScreen = () => {
                     </Text>
                 </View>
              )}
+
             //show user data and logout button in header
             ListHeaderComponent={() => (
                 <View className='w-full flex justify-center items-center mt-6 mb-12 px-4'>
@@ -150,7 +145,8 @@ const UserProfileScreen = () => {
                         <Image source={{uri: user.profilePicture}} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover' />
                     </View>
 
-                    <InfoBox title={user?.username} containerStyles="mt-7" titleStyles="text-lg"/>
+                    <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
+                    <Text style={{ fontSize: 15, color: "grey" }}>{user?.username}</Text>
 
                     <View className="mt-5 flex flex-row space-x-5">
                         <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/>
@@ -164,11 +160,8 @@ const UserProfileScreen = () => {
                             <InfoBox title={user?.bio || '...'} subtitle="Click to update bio" containerStyles="p-2" titleStyles="text-base" />
                         </TouchableOpacity>
 
-                        
 
                     </View>
-
-
                 </View>
             )}
         />

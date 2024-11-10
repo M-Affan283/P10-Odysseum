@@ -7,6 +7,7 @@ Description:
 */
 
 import mongoose from "mongoose";
+import bookmarkSchema from "../models/Bookmark.js"
 
 /**
  * User Schema
@@ -152,13 +153,13 @@ const userSchema = new mongoose.Schema({
     
     // Adding the bookmark field.
     // It is a list that containes all the bookmarks associated with the user
-    // bookmarks: [bookmarkSchema]
+    bookmarks: [bookmarkSchema]
 
     //array of location ids that the user has bookmarked
-    bookmarks: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Location'
-    }]
+    // bookmarks: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Location'
+    // }]
 
 }, {timestamps: true});
 

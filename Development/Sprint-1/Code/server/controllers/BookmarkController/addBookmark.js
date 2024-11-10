@@ -6,15 +6,20 @@ import { Location } from "../../models/Location.js"
 // Adding a new bookmark
 export const addBookmark = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const { title, url, tags} = req.body;
+        // NO URLS OR TAGS RIGHT NOW
+        // const { userId } = req.params;
+        // const { title, url, tags} = req.body;
         
+        const { userId, title } = req.body;
+        const url = "none";
+        const tags = "none";
+
         // Find if user exists
         const user = await User.findById(userId);
         if (!user) return res.statis(404).json({ message: "User not found"});
         
         // Creating a new bookmark
-        const newBookmark = { title, url, tags };
+        const newBookmark = { title };
         user.bookmarks.push(newBookmark);
         await user.save();
 

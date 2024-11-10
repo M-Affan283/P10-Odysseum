@@ -1,7 +1,7 @@
 //  Author: Haroon Khawaja
 
 import mongoose from "mongoose";
-import { User } from "../../models/User";
+import { User } from "../../models/User.js";
 
 // Deleting a specific bookmark
 export const deleteBookmark = async (req, res) => {
