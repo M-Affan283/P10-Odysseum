@@ -5,9 +5,11 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 // import { db, storage } from './config/firebase.js'
 
+
 // Importing routes
 import userRouter from './routes/userRouter.js';
 import postRouter from './routes/postRouter.js';
+import locationRouter from "./routes/locationRouter.js";
 
 // Initializing variables
 const app = express();
@@ -36,7 +38,6 @@ app.get('/', async (req,res)=>
 
 app.use('/api/user', userRouter)
 app.use('/api/post', postRouter)
-
-// ------------------------------------------------------- //
+app.use("/api/locations", locationRouter);
 
 export default app;
