@@ -13,7 +13,7 @@ import { registerUser } from "../controllers/UserController/registerUser.js";
 import { loginUser, oAuthLoginUser } from "../controllers/UserController/loginUser.js";
 import { followUser } from "../controllers/UserController/followUser.js";
 import { getAllUsers, getUserById, getUserByUsername, getUserBySearchParams } from "../controllers/UserController/getUser.js";
-// import { updateUser } from "../controllers/UserController/updateUser.js";
+import { updateUserBio } from "../controllers/UserController/updateUser.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
 
 const user_router = express.Router();
@@ -27,7 +27,7 @@ user_router.get("/getAll", getAllUsers);
 user_router.get("/getById", getUserById);
 user_router.get("/getByUsername", getUserByUsername);
 user_router.get("/search", getUserBySearchParams);
-// user_router.post("/update", updateUser);
+user_router.post("/updateUserBio", updateUserBio);
 
 // Routes with middleware (login and register do not require jwt middleware)
 // user_router.post("/register", UserController.registerUser);

@@ -10,7 +10,7 @@ Author: Affan
 */
 
 import multer from "multer";
-
+import { ERROR_MESSAGES } from "../utils/constants.js";
 
 // Setup multer middleware to handle file uploads
 /**
@@ -19,7 +19,7 @@ import multer from "multer";
 const upload = multer({
     storage: multer.memoryStorage(), // store files in memory
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10 MB file size limit
+        fileSize: 20 * 1024 * 1024, // 20 MB file size limit
     },
     fileFilter: (req, file, cb) => { // only allow images and videos
         if (file.mimetype.startsWith('image') || file.mimetype.startsWith('video')) {

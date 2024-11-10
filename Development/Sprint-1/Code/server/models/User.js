@@ -131,8 +131,8 @@ const userSchema = new mongoose.Schema({
         default: 'user'
     },
 
-    resetPasswordToken: String, // for password reset
-    resetPasswordExpire: Date, 
+    // resetPasswordToken: String, // for password reset
+    // resetPasswordExpire: Date, 
     
     verificationToken: String, // for email verification (if we want to add email verification)
     verificationExpire: Date,

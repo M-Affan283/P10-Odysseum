@@ -24,39 +24,67 @@ import { ERROR_MESSAGES,SUCCESS_MESSAGES } from "../../utils/constants.js";
  */
 const getUserPosts = async (req,res) =>
 {
-    const { requestorId, userId } = req.body;
-
-    if(!userId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
-    if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_REQUESTOR_ID});
+    const { requestorId, userId } = req.query;
+    // console.log(req.query)
+    if(!userId) return res.status(400).json({message: ERROR_MESSAGES.NO_USER_ID});
+    if(!requestorId) return res.status(400).json({message: ERROR_MESSAGES.NO_REQUESTOR_ID});
 
     try
     {
         const user = await User.findById(userId);
         const requestor = await User.findById(requestorId);
 
-        if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
-        if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.REQUESTOR_NOT_FOUND});
-
+        if(!user)
+        {
+            console.log("User not found");
+            return res.status(404).json({message: ERROR_MESSAGES.USER_NOT_FOUND});
+        }
+        if(!requestor)
+        {
+            console.log("Requestor not found");
+            return res.status(404).json({message: ERROR_MESSAGES.REQUESTOR_NOT_FOUND});
+        }
         //check if the requestor is following the user whose posts are being fetched or if the requestor is the user whose posts are being fetched
-        if(!requestor.following.includes(userId) && userId !== requestorId) return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        if(!requestor.following.includes(userId))
+        {
+            //if the requestor is not following the user, then the requestor must be the user whose posts are being fetched
+            if(userId !== requestorId) return res.status(401).json({message: ERROR_MESSAGES.UNAUTHORIZED});
+        }
 
-        if(user.isDeactivated) return res.status(401).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
+        if(user.isDeactivated)
+        {
+            console.log("User is deactivated");
+            return res.status(401).json({message: ERROR_MESSAGES.USER_NOT_FOUND});
+        }
 
         //sort by most recent
-        const posts = await Post.find({userId: userId}).sort({createdAt: -1});
+        let posts = await Post.find({creatorId: userId}).sort({createdAt: -1});
 
-        if(!posts) return res.status(404).json({error: ERROR_MESSAGES.NO_POSTS});
+        if(!posts) return res.status(200).json({message: ERROR_MESSAGES.NO_POSTS, posts: []});
 
         //no need to get comments for each post. only get the number of comments for each post
-        const numberOfComments = await Comment.countDocuments({postId: posts._id});
+        let postIds = posts.map(post => post._id);
+        let commentCounts = await Comment.aggregate([
+            { $match: { postId: { $in: postIds } } },
+            { $group: { _id: '$postId', count: { $sum: 1 } } }
+        ]);
 
+        // console.log(commentCounts)
 
-        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: posts, numberOfComments: numberOfComments});
+        let postsWithCommentCount = posts.map(post => {
+            let commentCount = commentCounts.find(count => count._id.equals(post._id));
+            post = {...post._doc, commentCount: commentCount ? commentCount.count : 0};
+            return post;
+        });
+
+        // console.log(postsWithCommentCount)
+
+        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: postsWithCommentCount});
     }
     catch(error)
     {
         console.log(error);
-        return res.status(500).json({error: error.message});
+        return res.status(500).json({message: error.message});
     }
 
 }
@@ -80,14 +108,24 @@ const getFollowingPosts = async (req,res) => //find the posts of the users the c
         if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
         //sort by most recent
-        const posts = await Post.find({userId: {$in: requestor.following}, isDeactivated: false}).sort({createdAt: -1});
+        const posts = await Post.find({creatorId: {$in: requestor.following}, isDeactivated: false}).sort({createdAt: -1});
 
         if(!posts) return res.status(404).json({error: ERROR_MESSAGES.NO_POSTS});
 
         //no need to get comments for each post. only get the number of comments for each post
-        const numberOfComments = await Comment.countDocuments({postId: posts._id});
+        const postIds = posts.map(post => post._id);
+        const commentCounts = await Comment.aggregate([
+            { $match: { postId: { $in: postIds } } },
+            { $group: { _id: '$postId', count: { $sum: 1 } } }
+        ]);
 
-        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: posts, numberOfComments: numberOfComments});
+        const postsWithCommentCount = posts.map(post => {
+            const commentCount = commentCounts.find(count => count._id.toString() === post._id.toString());
+            post.commentCount = commentCount ? commentCount.count : 0;
+            return post;
+        });
+
+        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: postsWithCommentCount});
     }
     catch(error)
     {
@@ -118,7 +156,11 @@ const getSinglePost = async (req,res) =>
         if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
         //check if the requestor is following the user who created the post or if the requestor is the user who created the post
-        if(post.userId !== requestorId && !requestor.following.includes(post.userId)) return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        if(!requestor.following.includes(post.creatorId))
+        {
+            //if the requestor is not following the user, then the requestor must be the user who created the post
+            if(post.creatorId !== requestorId) return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        }
 
         //no need to get comments for each post. only get the number of comments for each post
         const numberOfComments = await Comment.countDocuments({postId: postId});

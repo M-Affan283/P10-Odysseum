@@ -45,7 +45,7 @@ mongoose.connect(MONGO_URI)
 
     const io = setupSocket(server); // setup socket.io server. will now run in parallel with express server
 
-    server.listen(PORT, ()=>
+    server.listen(PORT, '0.0.0.0' ,()=>
     {
         console.log(`${environment.toUpperCase()} Server running on port ${PORT} at ${new Date().toLocaleString()}`);
     })

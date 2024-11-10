@@ -15,7 +15,7 @@ Author: Affan
 
 const ERROR_MESSAGES = { //add more error messages as needed
     INTERNAL_SERVER_ERROR: "Internal server error",
-    INVALID_CREDENTIALS: "Invalid username or password",
+    INVALID_CREDENTIALS: "Invalid email/username or password",
     INVALID_EMAIL: "Invalid email",
     INVALID_USERNAME: "Invalid username",
     EMAIL_ALREADY_EXISTS: "Email already exists",
@@ -60,6 +60,7 @@ const ERROR_MESSAGES = { //add more error messages as needed
     NO_POSTS: "No posts found",
     NO_REQUESTOR_ID: "No requestor ID provided",
     NO_CURSORS: "No cursors provided for pagination",
+    REQUESTOR_NOT_FOUND: "Requestor not found",
 }
 
 /**

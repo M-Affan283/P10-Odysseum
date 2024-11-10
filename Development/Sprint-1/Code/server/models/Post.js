@@ -42,10 +42,11 @@ const postSchema = new mongoose.Schema({
         ref: 'User'
     }],
 
-    location: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Location'
-    }
+    // uncomment later once location schema is created and populated
+    // location: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Location'
+    // }
 
 }, { timestamps: true });
 

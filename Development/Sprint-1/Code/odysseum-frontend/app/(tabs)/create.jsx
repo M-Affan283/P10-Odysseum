@@ -1,11 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import CreatePostScreen from '../../src/screens/CreatePostScreen'
 
 const Create = () => {
   return (
-    <View>
-      <Text>Create</Text>
-    </View>
+    <CreatePostScreen/>
   )
 }
 

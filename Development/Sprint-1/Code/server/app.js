@@ -35,14 +35,12 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-console.log(process.env.ACCESS_KEY_SECRET)
-
 // HEALTH CHECK (for AWS)
 //------------------ Routes (add later) ------------------- //
 
 const SERVER_START_TIME = new Date()
 
-app.get('/', async (req,res)=>
+app.post('/health', async (req,res)=>
 {
     let health = await checkServerHealth(SERVER_START_TIME);
 

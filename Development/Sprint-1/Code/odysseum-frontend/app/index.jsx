@@ -1,14 +1,15 @@
-import { Link } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Link } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Text, View, TouchableOpacity, ScrollView, Image } from "react-native";
+import WelcomeScreen from "../src/screens/WelcomeScreen";
+import UserProfileScreen from "../src/screens/UserProfileScreen";
 
 export default function App() {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-3xl">Odysseum!</Text>
-      <StatusBar style="auto" />
-      <Link href="/home" className="text-blue-700">Home</Link>
-    </View>
+    <>
+      <WelcomeScreen />
+      {/* <UserProfileScreen /> */}
+      <StatusBar backgroundColor="#161622" style="light" />
+    </>
   );
 }
-

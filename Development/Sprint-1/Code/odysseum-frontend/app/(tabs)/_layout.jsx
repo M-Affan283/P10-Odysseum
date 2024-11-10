@@ -9,7 +9,7 @@ const TabIcon = ({ icon, name, color, focused }) => {
   return (
     <View className="items-center justify-center gap-2">
       <MaterialIcons name={icon} size={24} color={color} className="w-6 h-6" />
-      <Text className={`${focused ? "font-semibold" : "font-normal"} text-xs`}>
+      <Text className={`${focused ? "font-semibold" : "font-normal"} text-xs items-center justify-center`} style={{color: color}}>
         {name}
       </Text>
     </View>
@@ -18,26 +18,26 @@ const TabIcon = ({ icon, name, color, focused }) => {
 
 const tabs = [
   {
-    name: "Home",
+    name: "home",
     icon: "home",
     // component: Home,
   },
   {
-    name: "Inbox",
-    icon: "message",
+    name: "inbox",
+    icon: "inbox",
     // component: Inbox,
   },
   {
-    name: "Create",
+    name: "create",
     icon: "add",
     // component: Create,
   },
   {
-    name: "Profile",
+    name: "profile",
     icon: "person",
     // component: Profile,
   },
-]
+];
 
 const TabsLayout = () => {
   return (
@@ -45,24 +45,34 @@ const TabsLayout = () => {
       <Tabs
         screenOptions={{
           tabBarShowLabel: false, // Hide labels as they are being shown in the TabIcon component
-           
+          tabBarActiveTintColor: "#800080",
+          tabBarInactiveTintColor: "#CDCDE0",
+          tabBarStyle: {
+            backgroundColor: "#161622",
+            borderTopWidth: 1,
+            borderTopColor: "#232533",
+            height: 50,
+          }
         }}
       >
-        <Tabs.Screen
-          name="home"
-          options={{
-            title: "Home",
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon="home"
-                name="Home"
-                color={color}
-                focused={focused}
-              />
-            ),
-          }}
-        />
+        {tabs.map((tab, index) => (
+          <Tabs.Screen
+            key={index}
+            name={tab.name}
+            options={{
+              title: tab.name.charAt(0).toUpperCase() + tab.name.slice(1),
+              headerShown: false,
+              tabBarIcon: ({ color, focused }) => (
+                <TabIcon
+                  icon={tab.icon}
+                  name={tab.name.charAt(0).toUpperCase() + tab.name.slice(1)}
+                  color={color}
+                  focused={focused}
+                />
+              ),
+            }}
+          />
+        ))}
       </Tabs>
     </>
   );
