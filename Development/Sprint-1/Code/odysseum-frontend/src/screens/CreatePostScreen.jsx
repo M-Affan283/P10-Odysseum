@@ -78,7 +78,7 @@ const CreatePostScreen = () => {
 
     try
     {
-      axios.post("http://192.168.100.24:8000/api/post/create", formData, {
+      axios.post("http://192.168.68.67:8000/api/post/create", formData, {
         headers: {
           'accept': 'application/json',
           'Content-Type': 'multipart/form-data'

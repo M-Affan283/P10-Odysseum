@@ -18,7 +18,6 @@ export const loginUser = async (req, res) =>
     //user can login with either email or username
     const { identifier, password } = req.body;
     // console.log(req.body)
-    console.log("Logging in user", identifier, password);
     if(!identifier || !password) return res.status(400).json({success:false, message: ERROR_MESSAGES.MISSING_FIELDS});
 
     try

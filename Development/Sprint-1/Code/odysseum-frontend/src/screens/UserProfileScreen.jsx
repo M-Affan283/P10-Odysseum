@@ -46,7 +46,7 @@ const UserProfileScreen = () => {
         setLoading(true);
         try
         {
-            axios.get(`http://192.168.31.190:8000/api/post/getUserPosts`, {
+            axios.get(`http://192.168.68.67:8000/api/post/getUserPosts`, {
                 params: {
                     requestorId: user._id,
                     userId: user._id
@@ -87,7 +87,7 @@ const UserProfileScreen = () => {
     {
         try
         {
-            axios.post('http://192.168.100.24:8000/api/user/updateUserBio', {userId: user._id, bio: form.bio})
+            axios.post('http://192.168.68.67:8000/api/user/updateUserBio', {userId: user._id, bio: form.bio})
             .then((res)=>
             {
                 console.log(res.data.message);

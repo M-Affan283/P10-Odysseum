@@ -24,20 +24,20 @@ const LoginScreen = () => {
 
     setSubmitting(true);
 
-    axios.post("http://localhost:8000/api/user/login", form)
+    axios.post("http://192.168.68.67:8000/api/user/login", form)
     .then(async (res) => {
       if (res.data.success) {
         //get user from zustand store and update it
         //store access token in secure store
         //navigate to home screen
 
-        console.log(res.data);
         await setUser(res.data.user);
-        console.log("LOGGED IN USER")
-        console.log(user)
+        
         // await logout();
         router.dismissAll(); //dismiss all screens
         router.replace("/home");
+        console.log("LOGGED IN USER")
+
         //if user ie new take to screen where user can update profile (add bio, profile picture etc) otherwise take to home screen
         // res.data.user.newUser ? router.replace("/update-profile") : router.replace("/home");
       }
@@ -49,9 +49,6 @@ const LoginScreen = () => {
       setError(err.response.data.message);
       setSubmitting(false);
     });
-
-    router.dismissAll(); //dismiss all screens
-    router.replace("/home");
   };
 
   return (
