@@ -31,6 +31,7 @@ const SignUpScreen = () => {
     setSubmitting(true);
 
     axios.post("http://192.168.68.67:8000/api/user/register", form)
+
     .then((res) =>
     {
         if (res.data.success) 

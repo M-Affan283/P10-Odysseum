@@ -160,6 +160,21 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         width: '300%',
     },
+    safeAreaView: {
+        justifyContent: 'center',
+        verticalAlign: 'center',
+        marginHorizontal: 20,
+        paddingTop: 20,
+        width: 400,
+    },
+    searchBar: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderColor: "#ccc",
+        borderWidth: 1,
+        borderRadius: 8,
+        width: '300%',
+    },
     heading: {
         fontSize: 24,
         fontWeight: 'bold',

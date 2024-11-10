@@ -99,6 +99,7 @@ const SUCCESS_MESSAGES = { //add more success messages as needed
     COMMENTS_FOUND: "Comments found successfully",
     REPLY_ADDED: "Reply added successfully",
     FILES_UPLOADED: "Files uploaded successfully",
+    USER_UPDATED: "User updated successfully",
 }
 
 

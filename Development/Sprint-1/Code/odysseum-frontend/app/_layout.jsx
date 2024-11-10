@@ -39,7 +39,8 @@ const RootLayout = () => {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         {/* this is the tabs layout in the tabs folder we add a stack screen for it here because it is part of the root layout */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        {/* <Stack.Screen name="/search/[query]" options={{ headerShown: false }} /> */}
+        {/* this is the search layout in the search folder we add a stack screen for it here because it is part of the root layout */}
+        <Stack.Screen name="search/[query]" options={{ headerShown: false }} />
       </Stack>
 
       {/* for further configuration check docs */}

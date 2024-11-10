@@ -11,6 +11,9 @@ import { User } from './models/User.js';
 import userRouter from './routes/userRouter.js';
 import postRouter from './routes/postRouter.js';
 
+import locationRouter from "./routes/locationRouter.js";
+import { checkServerHealth } from './utils/serverHealthUtils.js';
+
 // Initializing variables
 const app = express();
 const SERVER_START_TIME = new Date()
@@ -29,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //------------------ Route Configurations ------------------- //
 
-app.post('/health', async (req,res)=>
+app.get('/health', async (req,res)=>
 {
     let health = await checkServerHealth(SERVER_START_TIME);
 
@@ -37,8 +40,7 @@ app.post('/health', async (req,res)=>
 })
 
 app.use('/api/user', userRouter)
-app.use('/api/post', postRouter)
-
 // app.use("/api/locations", locationRouter);
+
 
 export default app;

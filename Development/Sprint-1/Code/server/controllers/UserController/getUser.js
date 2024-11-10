@@ -69,8 +69,8 @@ const getAllLocations = async (req,res) =>
 */
 const getUserById = async (req,res) =>
 {
-    const {requestorId, userToViewId} = req.body;
-
+    const {requestorId, userToViewId} = req.query;
+    console.log(req.query)
     if(!requestorId || !userToViewId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
 
     try
@@ -78,12 +78,18 @@ const getUserById = async (req,res) =>
         const requestor = await User.findById(requestorId);
         const userToView = await User.findById(userToViewId);
 
+        console.log(requestor, " ", userToView);
+
         if(!requestor || !userToView) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
         if(userToView.isDeactivated) return res.status(403).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
-        if(requestor.following.includes(userToViewId) && userToView.followers.includes(requestorId)) return res.status(200).json({message: SUCCESS_MESSAGES.USER_FOUND, user: userToView});
-        else return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        if(!requestor.following.includes(userToViewId))
+        {
+            if(requestorId !== userToViewId) return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        }
+
+        return res.status(200).json({message: SUCCESS_MESSAGES.USER_FOUND, user: userToView});
     }
     catch(error)
     {
@@ -102,7 +108,7 @@ const getUserById = async (req,res) =>
 */
 const getUserByUsername = async (req,res) =>
 {
-    const {requestorId, username} = req.body;
+    const {requestorId, username} = req.query;
 
     if(!requestorId || !username) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
 
@@ -115,8 +121,12 @@ const getUserByUsername = async (req,res) =>
 
         if(userToView.isDeactivated) return res.status(403).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
-        if(requestor.following.includes(userToView._id) && userToView.followers.includes(requestorId)) return res.status(200).json({message: SUCCESS_MESSAGES.USER_FOUND, user: userToView});
-        else return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        if(!requestor.following.includes(userToView._id))
+        {
+            if(requestorId !== userToView._id) return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        }
+
+        return res.status(200).json({message: SUCCESS_MESSAGES.USER_FOUND, user: userToView});
     }
     catch(error)
     {
@@ -136,8 +146,8 @@ const getUserByUsername = async (req,res) =>
  */
 const getUserBySearchParams = async (req,res) =>
 {
-    const {requestorId, limit=10 ,searchParam, lastId} = req.body;
-
+    const {requestorId, limit=5 ,searchParam="", lastId} = req.query;
+    console.log(req.query)
     if(!requestorId || !searchParam) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
     // if(!lastId) return res.status(400).json({error: ERROR_MESSAGES.NO_CURSOR});
 
@@ -147,20 +157,29 @@ const getUserBySearchParams = async (req,res) =>
 
         if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
-        const searchQuery = {
-            $or: [
-                {username: { $regex: searchParam, $options: 'i' }},
-                {firstName: { $regex: searchParam, $options: 'i' }},
-                {lastName: { $regex: searchParam, $options: 'i' }},
-                {isDeactivated: false}
-            ]
-        };  
+        let searchQuery = {
+            isDeactivated: false  // Always filter out deactivated users
+        };
+
+        if (searchParam) {
+            searchQuery.username = { $regex: searchParam.toLowerCase(), $options: 'i' };
+        }
 
         if(lastId) searchQuery._id = { $gt: lastId };
 
-        const users = await User.find(searchQuery).limit(Number(limit)).sort({_id: 1}).exec();
+        let users = await User.find(searchQuery).limit(Number(limit)).sort({_id: 1}).exec();
 
         const hasMore = users.length === Number(limit) ? true : false; // if the number of users returned is equal to the limit, then there are potentially more users to fetch
+        
+
+        // console.log(users);
+        // change users to send only username. once user clicks on the username, then we can fetch the user details
+        users = users.map(user => {
+            return {
+                _id: user._id,
+                username: user.username
+            }
+        });
 
         return res.status(200).json({
             users: users,

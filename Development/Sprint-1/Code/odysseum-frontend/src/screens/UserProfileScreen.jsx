@@ -25,8 +25,9 @@ const UserProfileScreen = () => {
 
     const userLogout = () =>
     {
+        console.log("Logging out user: ", user.username);
         logout();
-        // router.dismissAll();
+        router.dismissAll();
         router.replace('/sign-in')
     }
 
@@ -90,12 +91,12 @@ const UserProfileScreen = () => {
             axios.post('http://192.168.68.67:8000/api/user/updateUserBio', {userId: user._id, bio: form.bio})
             .then((res)=>
             {
-                console.log(res.data.message);
+                console.log("message: ", res.data.message);
 
                 setUser({
                     ...user,
                     bio: form.bio,
-                    profilePicture: form.profilePicture
+                    // profilePicture: form.profilePicture
                 })
 
             })
@@ -163,37 +164,7 @@ const UserProfileScreen = () => {
                             <InfoBox title={user?.bio || '...'} subtitle="Click to update bio" containerStyles="p-2" titleStyles="text-base" />
                         </TouchableOpacity>
 
-                        {/*  Open a modal to update bio */}
-                        <Modal visible={updateBio} animationType='slide' transparent={true} onRequestClose={() => setUpdateBio(false)}>
-
-                        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-                            <View className="bg-white p-6 rounded-lg w-80">
-                                <Text className="text-xl font-semibold mb-4">Update Bio</Text>
-                                <TextInput
-                                    value={form.bio}
-                                    onChangeText={(text) => setForm({ ...form, bio: text })}
-                                    placeholder="Enter your new bio"
-                                    multiline
-                                    numberOfLines={4}
-                                    className="border border-gray-300 p-3 rounded-md mb-4"
-                                />
-                                <TouchableOpacity
-                                    onPress={updateUserBio}
-                                    className="bg-primary p-3 rounded-lg items-center"
-                                >
-                                    <Text className="text-white font-semibold">Submit</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => setUpdateBio(false)}
-                                    className="mt-4 items-center"
-                                >
-                                    <Text className="text-red-500">Cancel</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-
-                        </Modal>
+                        
 
                     </View>
 
@@ -201,6 +172,38 @@ const UserProfileScreen = () => {
                 </View>
             )}
         />
+
+        {/*  Open a modal to update bio */}
+        <Modal visible={updateBio} animationType='slide' transparent={true}>
+
+            <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+                <View className="bg-white p-6 rounded-lg w-80">
+                    <Text className="text-xl font-semibold mb-4">Update Bio</Text>
+                    <TextInput
+                        value={form.bio}
+                        onChangeText={(text) => setForm({ ...form, bio: text })}
+                        placeholder="Enter your new bio"
+                        multiline
+                        numberOfLines={4}
+                        className="border border-gray-300 p-3 rounded-md mb-4"
+                    />
+                    <TouchableOpacity
+                        onPress={()=> {updateUserBio(); setUpdateBio(false)}}
+                        className="bg-primary p-3 rounded-lg items-center"
+                    >
+                        <Text className="text-white font-semibold">Submit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setUpdateBio(false)}
+                        className="mt-4 items-center"
+                    >
+                        <Text className="text-red-500">Cancel</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+
+        </Modal>
 
     </SafeAreaView>
   )
