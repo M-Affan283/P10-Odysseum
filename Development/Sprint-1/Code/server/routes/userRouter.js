@@ -27,6 +27,7 @@ userRouter.get("/getAll", getAllUsers);
 userRouter.get("/getById", getUserById);
 userRouter.get("/getByUsername", getUserByUsername);
 userRouter.get("/search", getUserBySearchParams);
+userRouter.post("/updateUserBio", updateUserBio);
 // user_router.post("/update", updateUser);
 
 // Routes with middleware (login and register do not require jwt middleware)
