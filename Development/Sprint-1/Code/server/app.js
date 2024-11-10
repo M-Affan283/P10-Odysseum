@@ -17,6 +17,7 @@ import { checkServerHealth } from './utils/serverHealthUtils.js';
 
 import post_router from './routes/postRouter.js';
 import user_router from './routes/userRouter.js';
+import locationRouter from "./routes/locationRouter.js";
 
 const app = express();
 
@@ -52,6 +53,8 @@ app.get('/', async (req,res)=>
 
 app.use('/api/user', user_router);
 app.use('/api/post', post_router);
+app.use("/api/locations", locationRouter);
+
 // ------------------------ ------------------------------ //
 
 export default app;
