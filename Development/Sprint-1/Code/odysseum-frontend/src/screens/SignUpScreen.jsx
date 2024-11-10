@@ -8,6 +8,7 @@ import axios from "axios"; //change to custom axios instance later
 
 
 const SignUpScreen = () => {
+  
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -29,7 +30,7 @@ const SignUpScreen = () => {
 
     setSubmitting(true);
 
-    axios.post("http://localhost:8000/api/user/register", form)
+    axios.post("http://192.168:8000/api/user/register", form)
     .then((res) =>
     {
         if (res.data.success) 
