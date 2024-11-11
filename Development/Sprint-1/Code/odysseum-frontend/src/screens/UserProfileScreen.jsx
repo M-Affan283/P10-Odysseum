@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import useUserStore from '../context/userStore'
 import { router, useFocusEffect } from 'expo-router'
 import axios from 'axios'
+import axiosInstance from '../utils/axios'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import InfoBox from '../components/InfoBox';
 
@@ -27,7 +28,7 @@ const UserProfileScreen = () => {
     {
         console.log("Logging out user: ", user.username);
         logout();
-        router.dismissAll();
+        // router.dismissAll();
         router.replace('/sign-in')
     }
 
@@ -47,7 +48,7 @@ const UserProfileScreen = () => {
         setLoading(true);
         try
         {
-            axios.get(`http://192.168.68.67:8000/api/post/getUserPosts`, {
+            axiosInstance.get(`/post/getUserPosts`, {
                 params: {
                     requestorId: user._id,
                     userId: user._id
@@ -87,7 +88,7 @@ const UserProfileScreen = () => {
     // Updates user bio
     const updateUserBio = async () => {
         try {
-            axios.post('http://192.168.68.67:8000/api/user/updateUserBio', {userId: user._id, bio: form.bio})
+            axiosInstance.post('/user/updateUserBio', {userId: user._id, bio: form.bio})
             .then((res) => {
                 console.log("message: ", res.data.message);
                 setUser({

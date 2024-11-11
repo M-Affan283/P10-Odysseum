@@ -24,7 +24,7 @@ const LoginScreen = () => {
 
     setSubmitting(true);
 
-    axios.post("http://192.168.68.67:8000/api/user/login", form)
+    axiosInstance.post("/user/login", form)
     .then(async (res) => {
       if (res.data.success) {
         //get user from zustand store and update it

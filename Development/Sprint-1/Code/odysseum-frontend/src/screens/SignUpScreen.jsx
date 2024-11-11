@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "../components/FormField";
 import Toast from "react-native-toast-message";
 import axios from "axios"; //change to custom axios instance later
-
+import axiosInstance from "../utils/axios";
 
 const SignUpScreen = () => {
   
@@ -30,7 +30,7 @@ const SignUpScreen = () => {
 
     setSubmitting(true);
 
-    axios.post("http://192.168.68.67:8000/api/user/register", form)
+    axiosInstance.post("/user/register", form)
 
     .then((res) =>
     {

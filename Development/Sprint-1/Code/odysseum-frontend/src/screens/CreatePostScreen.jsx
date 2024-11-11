@@ -5,6 +5,7 @@ import FormField from '../components/FormField'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
+import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
 
 const CreatePostScreen = () => {
@@ -78,7 +79,7 @@ const CreatePostScreen = () => {
 
     try
     {
-      axios.post("http://192.168.68.67:8000/api/post/create", formData, {
+      axiosInstance.post("/post/create", formData, {
         headers: {
           'accept': 'application/json',
           'Content-Type': 'multipart/form-data'

@@ -1,6 +1,7 @@
 // File: app/search/[query].jsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import axiosInstance from '../../src/utils/axios';
 
 const SearchScreen = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,17 +15,22 @@ const SearchScreen = () => {
     setLoading(true);
     setError('');
     try {
+      // const [profileResponse, locationResponse] = await Promise.all([
+      //   fetch(`http://192.168.100.24:3000/api/users/search`, {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ searchParam: searchTerm }),
+      //   }),
+      //   fetch(`http://192.168.100.24:3000/api/locations/search`, {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ searchParam: searchTerm }),
+      //   }),
+      // ]);
+
       const [profileResponse, locationResponse] = await Promise.all([
-        fetch(`http://192.168.100.24:3000/api/users/search`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ searchParam: searchTerm }),
-        }),
-        fetch(`http://192.168.100.24:3000/api/locations/search`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ searchParam: searchTerm }),
-        }),
+        axiosInstance.post('/users/search', { searchParam: searchTerm }),
+        axiosInstance.post('/locations/search', { searchParam: searchTerm }),
       ]);
       const profileData = await profileResponse.json();
       const locationData = await locationResponse.json();
