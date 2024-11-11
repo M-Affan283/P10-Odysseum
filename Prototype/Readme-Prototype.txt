@@ -61,3 +61,5 @@ ADDITIONAL INFORMATION
 
 There may be a possibility that the we were not able to deploy the backend server on an online hosting platform. But we will do so before our presentation on 18th November.
 
+EDIT: We were able to deploy the server on render.com. The prototype app should work as expected. However since we are using a free instance of render the server can initially take time to spin up so the first request will take at least a minute to respond.
+
