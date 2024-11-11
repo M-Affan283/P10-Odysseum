@@ -1,5 +1,12 @@
+
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+// Now you can use `require` to load JSON
+const serviceAccount = require('./firebaseConfig.json');
+
 import admin from "firebase-admin";
-import serviceAccount from "./firebaseConfig.json" assert { type: "json" };
+// import serviceAccount from "./firebaseConfig.json" assert { type: "json" };
 
 const FIREBASE_STORAGE_BUCKET_NAME='gs://odysseumstorage.appspot.com'
 admin.initializeApp({
