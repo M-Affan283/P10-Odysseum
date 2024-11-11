@@ -5,6 +5,7 @@ import axios from 'axios';
 import filter from "lodash.filter"
 import { Modal, TouchableOpacity } from "react-native";
 import useUserStore from '../context/userStore'
+import axiosInstance from "../utils/axios";
 
 const HomeScreen = () => {
     // ==== BOOKMARKING ====
@@ -24,10 +25,16 @@ const HomeScreen = () => {
         try {
 
             console.log(location)
-            const response = await axios.post(API_BOOKMARK, {
+            // const response = await axios.post(API_BOOKMARK, {
+            //     userId: user._id,
+            //     title: location
+            // });
+
+            const response = await axiosInstance.post("/user/addBookmark", {
                 userId: user._id,
                 title: location
             });
+            
             if (response.status == 201) {
                 console.log(response.data.message + ": " + location);
             }
@@ -86,14 +93,17 @@ const HomeScreen = () => {
     }
 
     // APIs
-    const API_USERS = "http://192.168.68.67:8000/api/user/getAll"
-    const API_LOCATIONS = "http://192.168.68.67:8000/api/user/getAllLocs"
+    const API_USERS = "http://192.168.31.190:8000/api/user/getAll"
+    const API_LOCATIONS = "http://192.168.31.190:8000/api/user/getAllLocs"
 
     // Function fetches data
     const fetchData = async(url) => {
         try {
-            const response = await axios.get(API_USERS);
-            const loc_response = await axios.get(API_LOCATIONS);
+            // const response = await axios.get(API_USERS);
+            // const loc_response = await axios.get(API_LOCATIONS);
+
+            const response = await axiosInstance.get("/user/getAll");
+            const loc_response = await axiosInstance.get("/user/getAllLocs");
 
             setUserData(response.data.users);
             setLocationData(loc_response.data.locations);
@@ -134,7 +144,7 @@ const HomeScreen = () => {
             <TextInput
                 placeholder="Search"
                 clearButtonMode="always"
-                style={styles.searchBar}
+                // style={styles.searchBar}
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={searchQuery}
