@@ -17,7 +17,7 @@ const API_BASE_URL = `https://p10-odysseum.onrender.com/api`;
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000,
+    // timeout: 10000,
     headers: {
         "Content-Type": "application/json", // we can change this to mutlipart/form-data if we need to send files in the frontend file for post creation
     },
