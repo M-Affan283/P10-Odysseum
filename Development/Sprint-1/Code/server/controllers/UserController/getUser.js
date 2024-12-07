@@ -1,11 +1,6 @@
 /*
-
-filename: getUser.js
-
-This file contains the controller function for getting a user by their id (admin) or username or email (admins) or all users. It checks if the user exists in the database and returns the user details if found.
-
-Author: Affan
-
+    filename: getUser.js
+    Author: Affan
 */
 
 import { User } from "../../models/User.js";
@@ -21,16 +16,16 @@ import { SUCCESS_MESSAGES,ERROR_MESSAGES } from "../../utils/constants.js";
  */
 const getAllUsers = async (req,res) =>
 {
-    // const { requestorId } = req.body;
+    const { requestorId } = req.body;
 
-    // if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
+    if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
 
     try
     {
-        // const requestor = await User.findById(requestorId);
+        const requestor = await User.findById(requestorId);
 
-        // if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
-        // if(requestor.role !== 'admin') return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
+        if(requestor.role !== 'admin') return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
 
         const users = await User.find({});
         return res.status(200).json({message: SUCCESS_MESSAGES.USERS_FOUND, users: users});
@@ -43,21 +38,7 @@ const getAllUsers = async (req,res) =>
     }
 
 }
-const getAllLocations = async (req,res) =>
-    {
-        try
-        {
-            const locations = await Location.find({});
-            return res.status(200).json({message: SUCCESS_MESSAGES.USERS_FOUND, locations: locations});
-    
-        }
-        catch(error)
-        {
-            console.log(error);
-            return res.status(500).json({error: ERROR_MESSAGES.SERVER_ERROR});
-        }
-    
-    }
+
 
 
 /**
@@ -84,9 +65,22 @@ const getUserById = async (req,res) =>
 
         if(userToView.isDeactivated) return res.status(403).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
-        if(!requestor.following.includes(userToViewId))
-        {
-            if(requestorId !== userToViewId) return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        //assume all profiles are public for now
+        // if(!requestor.following.includes(userToViewId))
+        // {
+        //     if(requestorId !== userToViewId) return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        // }
+
+        //only send the necessary user details for security reasons
+        userToView = {
+            firstName: userToView.firstName,
+            lastName: userToView.lastName,
+            username: userToView.username,
+            profilePicture: userToView.profilePicture,
+            bio: userToView.bio,
+            location: userToView.location,
+            followers: userToView.followers,
+            following: userToView.following,
         }
 
         return res.status(200).json({message: SUCCESS_MESSAGES.USER_FOUND, user: userToView});
@@ -121,10 +115,11 @@ const getUserByUsername = async (req,res) =>
 
         if(userToView.isDeactivated) return res.status(403).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
-        if(!requestor.following.includes(userToView._id))
-        {
-            if(requestorId !== userToView._id) return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
-        }
+        //assume all profiles are public for now
+        // if(!requestor.following.includes(userToView._id))
+        // {
+        //     if(requestorId !== userToView._id) return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        // }
 
         return res.status(200).json({message: SUCCESS_MESSAGES.USER_FOUND, user: userToView});
     }
@@ -199,4 +194,4 @@ const getUserBySearchParams = async (req,res) =>
 
 }
 
-export { getAllUsers, getAllLocations, getUserById, getUserByUsername, getUserBySearchParams };
+export { getAllUsers, getUserById, getUserByUsername, getUserBySearchParams };
