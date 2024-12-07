@@ -1,16 +1,11 @@
 /*
-
-Filename: postRouter.js
-
-This file contains the routes for the post-related API endpoints. It defines the routes for creating, updating, deleting, and fetching posts.
-
-Author: Affan
-
+    Filename: postRouter.js
+    Author: Affan
 */
 
 import express from "express";
 import { createPost } from "../controllers/PostContoller/createPost.js";
-import { getUserPosts, getFollowingPosts, getSinglePost } from "../controllers/PostContoller/getPost.js";
+import { getUserPosts, getFollowingPosts, getPostById } from "../controllers/PostContoller/getPost.js";
 import { updatePost } from "../controllers/PostContoller/updatePost.js";
 import { deletePost } from "../controllers/PostContoller/deletePost.js";
 import upload from "../middleware/multerMiddleware.js";
@@ -20,7 +15,7 @@ const postRouter = express.Router();
 
 // Testing routes (without middleware)
 postRouter.post("/create", upload.array("media", 5), createPost);
-postRouter.get("/getSingle", getSinglePost);
+postRouter.get("/getById", getPostById);
 postRouter.get("/getUserPosts", getUserPosts);
 postRouter.get("/getFollowingPosts", getFollowingPosts);
 postRouter.post("/update", updatePost);

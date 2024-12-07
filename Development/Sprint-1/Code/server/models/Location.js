@@ -1,12 +1,3 @@
-/* Filename: Location.js
-
-    This file contains the schema for the Location model. 
-    It defines the structure of the location document in the MongoDB database.
-    While each location will have an ID, the location name will be unique. 
-    This is because we want to avoid having multiple locations with the same name. 
-    For example, we don't want two locations named "New York City" in our database.
-*/
-
 import mongoose from "mongoose";
 
 /**
@@ -22,6 +13,11 @@ const locationSchema = new mongoose.Schema({
         type: String,
         unique: true,
         required: [true, 'Please provide a location name'],
+    },
+
+    imageUrl: {
+        type: String,
+        // required: [true, 'Please provide an image URL'], make true later
     },
     // Coordinates are stored in GeoJSON format. GeoJSON is a format for encoding a variety of geographic data structures. It supports various types of geometries, such as Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, and GeometryCollection.
     coordinates: {

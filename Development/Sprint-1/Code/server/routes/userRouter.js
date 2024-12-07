@@ -1,18 +1,13 @@
 /*
-
-Filename: userRouter.js
-
-This file contains the routes for the user-related API endpoints. It defines the routes for creating, updating, deleting, and fetching users.
-
-Author: Affan
-
+    Filename: userRouter.js
+    Author: Affan
 */
 
 import express from "express";
 import { registerUser } from "../controllers/UserController/registerUser.js";
 import { loginUser, oAuthLoginUser } from "../controllers/UserController/loginUser.js";
 import { followUser } from "../controllers/UserController/followUser.js";
-import { getAllUsers, getAllLocations, getUserById, getUserByUsername, getUserBySearchParams } from "../controllers/UserController/getUser.js";
+import { getAllUsers, getUserById, getUserByUsername, getUserBySearchParams } from "../controllers/UserController/getUser.js";
 import { updateUserBio } from "../controllers/UserController/updateUser.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
 
@@ -30,7 +25,6 @@ userRouter.post("/login", loginUser);
 userRouter.post("/login/oauth", oAuthLoginUser);
 userRouter.post("/follow", followUser);
 userRouter.get("/getAll", getAllUsers);
-userRouter.get("/getAllLocs", getAllLocations);
 userRouter.get("/getById", getUserById);
 userRouter.get("/getByUsername", getUserByUsername);
 userRouter.get("/search", getUserBySearchParams);
