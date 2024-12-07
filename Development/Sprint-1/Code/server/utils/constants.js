@@ -1,11 +1,6 @@
 /*
-
-Filename: constants.js
-
-This file contains all the constants used in the application. This includes error messages, success messages, regex patterns, etc.
-
-Author: Affan
-
+    Filename: constants.js
+    Author: Affan
 */
 
 /**
@@ -61,6 +56,9 @@ const ERROR_MESSAGES = { //add more error messages as needed
     NO_REQUESTOR_ID: "No requestor ID provided",
     NO_CURSORS: "No cursors provided for pagination",
     REQUESTOR_NOT_FOUND: "Requestor not found",
+    LOCATION_NOT_FOUND: "Location not found",
+    LOCATION_ALREADY_EXISTS: "Location already exists",
+    
 }
 
 /**
@@ -100,6 +98,7 @@ const SUCCESS_MESSAGES = { //add more success messages as needed
     REPLY_ADDED: "Reply added successfully",
     FILES_UPLOADED: "Files uploaded successfully",
     USER_UPDATED: "User updated successfully",
+    LOCATION_ADDED: "Location added successfully",
 }
 
 

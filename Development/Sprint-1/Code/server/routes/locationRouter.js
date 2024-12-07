@@ -1,8 +1,12 @@
 import express from "express";
-import { searchLocations } from "../controllers/LocationController/getLocation.js";
+import { getAllLocations,searchLocations, getLocationById } from "../controllers/LocationController/getLocation.js";
+import { addLocation } from "../controllers/LocationController/addLocation.js";
 
 const locationRouter = express.Router();
 
+locationRouter.post("/addLocation", addLocation);
+locationRouter.get("/getAllLocs", getAllLocations);
 locationRouter.get("/search", searchLocations);
+locationRouter.get("/getById", getLocationById);
 
 export default locationRouter;
