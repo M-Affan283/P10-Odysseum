@@ -1,11 +1,13 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "../components/FormField";
-import axios from "axios"; //change to custom axios instance later
+import Toast from "react-native-toast-message";
 import useUserStore from "../context/userStore";
 import axiosInstance from "../utils/axios";
+
+
 const LoginScreen = () => {
   const [form, setForm] = useState({
     identifier: "",
@@ -41,12 +43,20 @@ const LoginScreen = () => {
         //if user ie new take to screen where user can update profile (add bio, profile picture etc) otherwise take to home screen
         // res.data.user.newUser ? router.replace("/update-profile") : router.replace("/home");
       }
-      setSubmitting(false);
     })
     .catch((err) => {
       //display error message in screen
       console.log(err);
       setError(err.response.data.message);
+      Toast.show({
+        type: "error",
+        position: "top",
+        text1: "Error",
+        text2: err.response.data.message,
+        visibilityTime: 3000,
+      })
+    })
+    .finally(() => {
       setSubmitting(false);
     });
   };
@@ -98,10 +108,6 @@ const LoginScreen = () => {
               Sign up
             </Link>
           </View>
-
-          {error && (
-            <Text className="text-red-500 text-center mt-5">{error}</Text>
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>
