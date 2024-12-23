@@ -1,13 +1,6 @@
 /*
-
-Filename: getPosts.js
-
-This file contains the controller function for getting all posts. It fetches all posts from the database and returns them to the client.
-
-Author: Affan
-
-
-
+    Filename: getPosts.js
+    Author: Affan
 */
 
 
@@ -44,12 +37,14 @@ const getUserPosts = async (req,res) =>
             console.log("Requestor not found");
             return res.status(404).json({message: ERROR_MESSAGES.REQUESTOR_NOT_FOUND});
         }
+
+        //assume all profiles are public for now
         //check if the requestor is following the user whose posts are being fetched or if the requestor is the user whose posts are being fetched
-        if(!requestor.following.includes(userId))
-        {
-            //if the requestor is not following the user, then the requestor must be the user whose posts are being fetched
-            if(userId !== requestorId) return res.status(401).json({message: ERROR_MESSAGES.UNAUTHORIZED});
-        }
+        // if(!requestor.following.includes(userId))
+        // {
+        //     //if the requestor is not following the user, then the requestor must be the user whose posts are being fetched
+        //     if(userId !== requestorId) return res.status(401).json({message: ERROR_MESSAGES.UNAUTHORIZED});
+        // }
 
         if(user.isDeactivated)
         {
@@ -90,7 +85,8 @@ const getUserPosts = async (req,res) =>
 }
 
 /**
- * Get all posts of the users the current user is following
+ * Get all posts of the users the current user is following. 
+ * TODO: Must paginate this.
  * @param {Object} req - request object. Must contain requestorId.
  * @param {Object} res - response object
  * @returns {Object} - response object
@@ -135,45 +131,49 @@ const getFollowingPosts = async (req,res) => //find the posts of the users the c
 }
 
 /**
- * Get a single post of a user. Ideally it is not a use case for the cleint to get a single post. It is used for internal purposes.
+ * Get a single post of a user. Ideally it is not a use case for the client to get a single post. It is used for internal purposes.
  * @param {Object} req - request object. Must contain requestorId and postId. 
  * @param {Object} res - response object
  * @returns {Object} - response object
  */
-const getSinglePost = async (req,res) =>
+const getPostById = async (req,res) =>
 {
-    const { requestorId, postId } = req.body;
+    const { requestorId, postId } = req.query;
 
     if(!postId) return res.status(400).json({error: ERROR_MESSAGES.NO_POST_ID});
     if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_REQUESTOR_ID});
 
     try
     {
-        const post = await Post.findById(postId);
+        //populate creatorId to get only username and profile picture
+        let post = await Post.findById(postId).populate('creatorId', 'username profilePicture'); 
         const requestor = await User.findById(requestorId);
 
         if(!post) return res.status(404).json({error: ERROR_MESSAGES.INVALID_POST});
         if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
-        //check if the requestor is following the user who created the post or if the requestor is the user who created the post
-        if(!requestor.following.includes(post.creatorId))
-        {
-            //if the requestor is not following the user, then the requestor must be the user who created the post
-            if(post.creatorId !== requestorId) return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
-        }
+        //assume all profiles are public for now
+        // //check if the requestor is following the user who created the post or if the requestor is the user who created the post
+        // if(!requestor.following.includes(post.creatorId))
+        // {
+        //     //if the requestor is not following the user, then the requestor must be the user who created the post
+        //     if(post.creatorId !== requestorId) return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        // }
 
         //no need to get comments for each post. only get the number of comments for each post
         const numberOfComments = await Comment.countDocuments({postId: postId});
 
-        return res.status(200).json({message: SUCCESS_MESSAGES.POST_FOUND, post: post, numberOfComments: numberOfComments});
+        post = {...post._doc, commentCount: numberOfComments, likes: post.likes.length};
+
+        return res.status(200).json({message: SUCCESS_MESSAGES.POST_FOUND, post: post});
 
     }
     catch(error)
     {
         console.log(error);
-        return res.status(500).json({error: error.message});
+        return res.status(500).json({error: error});
     }
 }
 
 
-export { getUserPosts, getFollowingPosts, getSinglePost };
+export { getUserPosts, getFollowingPosts, getPostById };

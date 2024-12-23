@@ -65,7 +65,8 @@ const commentSchema = new mongoose.Schema({
 
     creatorId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, 'Please provide a creator ID']
+        required: [true, 'Please provide a creator ID'],
+        ref: 'User'
     },
 
     text: {

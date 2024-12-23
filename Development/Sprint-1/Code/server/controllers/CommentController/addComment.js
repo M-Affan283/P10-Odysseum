@@ -8,9 +8,9 @@ Author: Affan
 
 */
 
-import { Post, Comment } from "../../models/Post";
-import { User } from "../../models/User";
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../utils/constants";
+import { Post, Comment } from "../../models/Post.js";
+import { User } from "../../models/User.js";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../utils/constants.js";
 
 /**
  * Adds a comment to a post
@@ -29,9 +29,9 @@ export const addTopComment = async (req,res) =>
     try
     {
         const post = await Post.findById(postId);
-        const user = await User.findById(creatorId);
-
         if(!post) return res.status(404).json({error: ERROR_MESSAGES.INVALID_POST});
+        
+        const user = await User.findById(creatorId);
         if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
         if(creatorId.toString() !== post.creatorId.toString())
@@ -48,6 +48,7 @@ export const addTopComment = async (req,res) =>
         }
         else
         {
+            //if the creator of the post is adding the comment, set owner to true. this will be used in the frontend to show that the comment is by the owner of the post
             const comment = new Comment({
                 postId: postId,
                 creatorId: creatorId,
@@ -83,12 +84,12 @@ export const addReplyComment = async (req,res) =>
 
     try
     {
-        const comment = await Comment.findById(comment);
-        const user = await User.findById(creatorId);
+        const comment = await Comment.findById(commentId); //find the comment to which the reply is being added
+        const creator = await User.findById(creatorId);
         const post = await Post.findById(postId);
 
         if(!comment) return res.status(404).json({error: ERROR_MESSAGES.INVALID_COMMENT});
-        if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
+        if(!creator) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
         if(!post) return res.status(404).json({error: ERROR_MESSAGES.INVALID_POST});
 
         if(comment.isReply) return res.status(400).json({error: ERROR_MESSAGES.CANNOT_REPLY_TO_REPLY});
