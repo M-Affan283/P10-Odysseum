@@ -1,21 +1,10 @@
 /*
-
-Filename: createPost.js
-
-This file contains the controller function for creating a new post. It c creates a new post in the database. The user can then view the post on their feed.
-
-Author: Affan
-
-
-Postt will also contain photo/s and video/s. We use firebase-admin to get and store image based on userIds. So dynamic fodlers in each firestore.
-
-Mutleer might also be  needed,
-
+    Filename: createPost.js
+    Author: Affan
 */
 
-import { Post, Comment } from "../../models/Post.js";
+import { Post } from "../../models/Post.js";
 import { User } from "../../models/User.js";
-import { Location } from "../../models/Location.js";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../utils/constants.js";
 import { uploadFile } from "../../services/firebaseService.js";
 
