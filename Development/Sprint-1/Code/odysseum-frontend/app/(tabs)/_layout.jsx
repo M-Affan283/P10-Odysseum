@@ -20,22 +20,22 @@ const tabs = [
   {
     name: "home",
     icon: "home",
-    // component: Home,
   },
   {
     name: "inbox",
     icon: "inbox",
-    // component: Inbox,
   },
   {
     name: "create",
     icon: "add",
-    // component: Create,
+  },
+  {
+    name: "bookmark",
+    icon: "bookmark",
   },
   {
     name: "profile",
     icon: "person",
-    // component: Profile,
   },
 ];
 
