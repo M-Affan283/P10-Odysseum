@@ -10,7 +10,7 @@ Author: Affan
 
 
 import { Comment } from "../../models/Post.js";
-import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../utils/constants";
+import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../utils/constants.js";
 
 
 //also show what req should contain
@@ -23,15 +23,16 @@ import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../utils/constants";
  */
 export const getCommentsByPostId = async (req, res) => 
 {
-    const { postId } = req.params;
+    const { postId } = req.query;
 
     if(!postId) return res.status(400).json({error: ERROR_MESSAGES.NO_POST_ID});
 
     try
     {
-        const comments = await Comment.find({postId: postId}); //will return an array of comments
+        //find comment populated creatorId with username and profile picture
+        const comments = await Comment.find({postId: postId}).populate('creatorId', 'username profilePicture');
 
-        if(!comments) return res.status(404).json({error: ERROR_MESSAGES.NO_COMMENTS});
+        if(!comments) return res.status(200).json({comments: []});
 
         return res.status(200).json({message: SUCCESS_MESSAGES.COMMENTS_FOUND, comments: comments});
 
