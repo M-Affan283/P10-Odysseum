@@ -1,265 +1,169 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Button, TextInput, ActivityIndicator, FlatList, Image } from 'react-native';
+import { View, Text, StyleSheet, Button, TextInput, FlatList, Image, Dimensions, SectionList } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
-import axios from 'axios';
-import filter from "lodash.filter"
-import { Modal, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import useUserStore from '../context/userStore'
 import axiosInstance from "../utils/axios";
+import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import FindUserImg from '../../assets/FindUserJPG.jpg';
+import DiscoverLocationImg from '../../assets/DiscoverLocationJPG.jpg';
+import PostCard from "../components/PostCard";
+
+import Carousel from "react-native-reanimated-carousel";
+
+const tempPosts = [
+    {
+      _id: "6730787a070ca3617028ad30",
+      "creatorId": {
+            "_id": "672f358fb3e56fac046d76a5",
+            "username": "affantest",
+            "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+        },
+      caption: "Hi this is a caption",
+      mediaUrls: [
+        "https://plus.unsplash.com/premium_photo-1685086785641-1c4dbf5853b2?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://firebasestorage.googleapis.com/v0/b/odysseumstorage.appspot.com/o/672f358fb3e56fac046d76a5%2F5a4c5f16-b526-48e9-a8b8-56150d33febc_43784.jpg?alt=media&token=e8d4c066-06db-4a62-8d5a-de9703f61433",
+      ],
+      likes: [],
+      createdAt: "2024-11-10T09:10:18.147Z",
+    },
+    {
+      _id: "67307bbe0fe5cfaf17cbe7c4",
+      "creatorId": {
+            "_id": "672f358fb3e56fac046d76a5",
+            "username": "affantest",
+            "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+        },
+      caption: "Second post",
+      mediaUrls: [
+        "https://firebasestorage.googleapis.com/v0/b/odysseumstorage.appspot.com/o/672f358fb3e56fac046d76a5%2Ff59e94b0-f6ee-4b31-9eec-18fe905368fa_37042.jpg?alt=media&token=659018b2-3a81-43ef-9edb-610b68c4a4c7",
+      ],
+      likes: [],
+    },
+    {
+      _id: "67307bbe0fe5cfaf17cbe7c2",
+      "creatorId": {
+            "_id": "672f358fb3e56fac046d76a5",
+            "username": "affantest",
+            "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+        },
+      caption: "third post",
+      mediaUrls: [
+        "https://firebasestorage.googleapis.com/v0/b/odysseumstorage.appspot.com/o/672f358fb3e56fac046d76a5%2Ff59e94b0-f6ee-4b31-9eec-18fe905368fa_37042.jpg?alt=media&token=659018b2-3a81-43ef-9edb-610b68c4a4c7",
+        "https://plus.unsplash.com/premium_photo-1685086785054-d047cdc0e525?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ],
+      likes: [],
+    },
+    {
+      _id: "67307bbe0fe5cfaf171be7c4",
+      "creatorId": {
+            "_id": "672f358fb3e56fac046d76a5",
+            "username": "affantest",
+            "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+        },
+      caption: "4th post",
+      mediaUrls: [
+        "https://images.unsplash.com/photo-1517404215738-15263e9f9178?q=80&w=1770&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      ],
+      likes: [],
+    },
+  ]
 
 const HomeScreen = () => {
-    // ==== BOOKMARKING ====
-    // Initializing constants for bookmarking
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedLocation, setSelectedLocation] = useState(null);
-    const user = useUserStore((state) => state.user);
-    const setUser = useUserStore((state) => state.setUser);
-
-    const openModal = (location) => {
-        setSelectedLocation(location);
-        setIsModalVisible(true);
-    }
     
-    const API_BOOKMARK = "http://192.168.68.67:8000/api/user/addBookmark/"
-    const bookmarkLocation = async(location) => {
-        try {
-
-            console.log(location)
-            // const response = await axios.post(API_BOOKMARK, {
-            //     userId: user._id,
-            //     title: location
-            // });
-
-            const response = await axiosInstance.post("/user/addBookmark", {
-                userId: user._id,
-                title: location
-            });
-            
-            if (response.status == 201) {
-                console.log(response.data.message + ": " + location);
-            }
-            else {
-                setError("Something went wrong, please try again.")
-            }
-
-        } catch (error) {
-            setError(error);
-        }
-    }
-
-    // ==== SEARCHING ====
-    // Initializng constants
-    const [userData, setUserData] = useState([]);
-    const [locationData, setLocationData] = useState([]);
-
-    const [filteredUserData, setFilteredUserData] = useState([]);
-    const [filteredLocationData, setFilteredLocationData] = useState([]);
-
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    // Query searching/handling
-    const handleSearch = (query) => {
-        setSearchQuery(query);
-        const formattedQuery = query.toLowerCase();
-
-        // Filtering users based on search query
-        const filteredUsers = filter(userData, (user) => contains(user, formattedQuery));
-        setFilteredUserData(filteredUsers)
-
-        // Filtering locations based on search query
-        const filteredLocations = filter(locationData, (loc) => containsLoc(loc, formattedQuery));
-        setFilteredLocationData(filteredLocations)
-    }
-
-    // Filters the queries
-    const contains = (item, query) => {
-        const { firstName, lastName, email, username } = item;
-        return (
-            (firstName && lastName && (firstName + lastName).toLowerCase().includes(query.trim())) ||
-            (firstName && firstName.trim().toLowerCase().includes(query)) ||
-            (lastName && lastName.toLowerCase().includes(query)) ||
-            (username && username.toLowerCase().includes(query)) ||
-            (email && email.toLowerCase().includes(query))
-
-        );
-    }
-    const containsLoc = (item, query) => {
-        const { name } = item;
-        return (
-            (name && name.toLowerCase().includes(query))
-        );
-    }
-
-    // APIs
-    const API_USERS = "http://192.168.31.190:8000/api/user/getAll"
-    const API_LOCATIONS = "http://192.168.31.190:8000/api/user/getAllLocs"
-
-    // Function fetches data
-    const fetchData = async(url) => {
-        try {
-            // const response = await axios.get(API_USERS);
-            // const loc_response = await axios.get(API_LOCATIONS);
-
-            const response = await axiosInstance.get("/user/getAll");
-            const loc_response = await axiosInstance.get("/user/getAllLocs");
-
-            setUserData(response.data.users);
-            setLocationData(loc_response.data.locations);
-        } catch (error) {
-            setError(error);
-        } finally {
-            setIsLoading(false)
-        }
-    }
- 
-    // Constantly fetches data
-    useEffect(() => {
-        setIsLoading(false);
-        fetchData();
-    }, []);
-
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator
-                    size={"large"} color={"#5500dc"}                
-                />
-            </View>
-        )
-    }
-    if (error) {
-        return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <Text>
-                    Error in fetching data... Please check your internet connection
-                </Text>
-            </View>
-        )
-    }
+    const sections = [
+      {
+        title: 'Home',
+        data: [],
+        renderItem: ()=>null
+      },
+      {
+        title: 'StickyHeader',
+        data: [],
+      },
+      {
+        title: 'Posts',
+        data: tempPosts,
+      }
+    ]
 
     return (
-        <SafeAreaView style={styles.safeAreaView}>
-            <TextInput
-                placeholder="Search"
-                clearButtonMode="always"
-                // style={styles.searchBar}
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={searchQuery}
-                onChangeText={(query) => handleSearch(query)}
-            />
 
-            <FlatList
-                data={[...filteredUserData, ...filteredLocationData]}
-                keyExtractor={(item) => item._id}
-                renderItem={({ item }) => (
-                    searchQuery !== "" ? (
-                    <TouchableOpacity onPress={() => openModal(item)}>
-                        <View style={styles.displays}>
-                            {item.firstName ? (
-                                <>
-                                <Text style={styles.textName}>{item.firstName + ' ' + item.lastName}</Text>
-                                <Text style={styles.textEmail}>{item.username}</Text>
-                                </>
-                            ): (
-                                <>
-                                <Text style={styles.textName}>{item.name}</Text>
-                                <Text style={styles.textEmail}>{item.description}</Text>
-                                </>
-                            )}
-                        </View>
-                    </TouchableOpacity>
-                    ) : null            
-                )}
-            />
-            <View>
-                <Text style={styles.heading}>
-                    Welcome To Odyssuem: A Voyage For Travellers
-                </Text>
-            </View>
-        
-        <Modal
-            visible={isModalVisible}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setIsModalVisible(false)}
-        >   
-            <View style={styles.modalBackground}>
-                <View style={styles.modalView}>
-                    <Text style={styles.modalTitle}>{selectedLocation?.name}</Text>
-                    <Text style={styles.modalDescription}>{selectedLocation?.description}</Text>
-                    <Button title="Bookmark" onPress={() => bookmarkLocation(selectedLocation?.name)} />
-                    <Button title="Close" onPress={() => setIsModalVisible(false)} />
+        <SafeAreaView className="flex-1 bg-primary h-full">
+            <SectionList 
+              sections={sections}
+              keyExtractor={(item, index) => item._id || index.toString()}
+              ListHeaderComponent={() => (
+                <View className="flex-1 bg-primary">
+                    <View className="flex-1 mx-5 py-3 flex-row justify-between items-center mb-5 space-y-6 mt-3">
+                        <Text className="font-dsbold text-white" style={{fontSize: 50}}>Home</Text>
+                    </View>
                 </View>
-            </View>
-        </Modal>
+              )}
+              stickySectionHeadersEnabled={true}
+              stickyHeaderHiddenOnScroll={true}
+              renderSectionHeader={({section}) => {
+                if(section.title === 'StickyHeader')
+                {
+                  return <StickyHeaderComponent />
+                }
+                  
+                  return null;
+                }}
+                
+                renderItem={({item}) => (
+                  <SafeAreaView className="flex-1 items-center justify-center">
+                    <PostCard post={item} />
+                  </SafeAreaView>
+              )}
 
+            />
         </SafeAreaView>
     )
 }
 
-const styles = StyleSheet.create({
-    safeAreaView: {
-        justifyContent: 'center',
-        verticalAlign: 'center',
-        marginHorizontal: 20,
-        paddingTop: 20,
-        width: '93%',
-    },
-    searchBar: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderColor: "#ccc",
-        borderWidth: 1,
-        borderRadius: 8,
-        width: '300%',
-    },
-    heading: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        alignContent: 'center',
-        color: 'black',
-    },
-    displays: {
-        width:"200%",
-    },
-    textName: {
-        fontSize: 17,
-        marginLeft: 10,
-        fontWeight: "600",
-    },
-    textEmail: {
-        fontSize: 14,
-        marginLeft: 10,
-        color: "grey"
-    },
-    modalBackground: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },    
-    modalView: {
-        width: '80%',
-        height: '60%',
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 40,
-        justifyContent: 'space-around',
-        alignItems: 'center',
-    },
-    modalTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    modalDescription: {
-        fontSize: 16,
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-});
+
+const StickyHeaderComponent = React.forwardRef((props, ref) => {
+    return (
+        <View className="space-y-4">
+            <View className=" mb-3 justify-between">
+                {/* user and location search buttons */}
+                <View className="flex-row gap-5 p-2 bg-primary">
+                     <TouchableOpacity className="flex justify-end relative p-0 space-y-2 mb-4" style={{ width: '44%', height: 100 }} /*onPress={()=> router.push(`/location/${bookmark._id}`)}*/>
+                        <Image source={FindUserImg}  className="absolute rounded-lg h-full w-full" />
+                    
+                        <LinearGradient
+                            colors={['transparent', 'rgba(0,0,0,1)']}
+                            style={{width: '100%', height: 30, borderBottomLeftRadius: 5, borderBottomRightRadius: 5}}
+                            start={{ x: 0.5, y: 0 }}
+                            end={{ x: 0.5, y: 1 }}
+                            className="absolute bottom-0"
+                        />
+            
+                        <Text className="text-white font-dsregular mb-1 text-lg"> Find Users </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity className="flex justify-end relative p-0 space-y-2 mb-4" style={{ width: '44%', height: 100 }} onPress={()=> router.push('/location')}>
+                        <Image source={DiscoverLocationImg}  className="absolute rounded-lg h-full w-full" />
+                    
+                        <LinearGradient
+                            colors={['transparent', 'rgba(0,0,0,1)']}
+                            style={{width: '100%', height: 30, borderBottomLeftRadius: 5, borderBottomRightRadius: 5}}
+                            start={{ x: 0.5, y: 0 }}
+                            end={{ x: 0.5, y: 1 }}
+                            className="absolute bottom-0"
+                        />
+            
+                        <Text className="text-white font-dsregular mb-1 text-lg"> Discover Locations </Text>
+                    </TouchableOpacity>
+
+                    
+                </View>
+            </View>
+        </View>
+    )
+})
+
 
 export default HomeScreen;
