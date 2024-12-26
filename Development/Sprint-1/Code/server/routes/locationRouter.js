@@ -5,7 +5,7 @@ import { addLocation } from "../controllers/LocationController/addLocation.js";
 const locationRouter = express.Router();
 
 locationRouter.post("/addLocation", addLocation);
-locationRouter.get("/getAllLocs", getAllLocations);
+locationRouter.get("/getAllLocations", getAllLocations);
 locationRouter.get("/search", searchLocations);
 locationRouter.get("/getById", getLocationById);
 
