@@ -3,9 +3,10 @@ import {useState, useEffect, useCallback} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import useUserStore from '../context/userStore'
 import { router, useFocusEffect } from 'expo-router'
-import axios from 'axios'
+import Toast from 'react-native-toast-message';
 import axiosInstance from '../utils/axios'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Foundation from '@expo/vector-icons/Foundation';
 import InfoBox from '../components/InfoBox';
 
 const UserProfileScreen = () => {
@@ -15,7 +16,7 @@ const UserProfileScreen = () => {
     const setUser = useUserStore((state) => state.setUser);
     const logout = useUserStore((state) => state.logout);
 
-    const [posts, setPosts] = useState([]);
+    const [posts, setPosts] = useState(user?.posts || []);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [updateBio, setUpdateBio] = useState(false);
@@ -33,14 +34,17 @@ const UserProfileScreen = () => {
     }
 
 
-    // this hook will run when the screen is focused meaning when the user navigates to this screen again since the screen is already mounted
-    useFocusEffect(
-        useCallback(() => {
-            // Do something when the screen is focused
-            getPosts();
-        }, [])
-    );
+    //UNCOMMENT THIS TO GET USER POSTS
 
+    // this hook will run when the screen is focused meaning when the user navigates to this screen again since the screen is already mounted
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         // Do something when the screen is focused
+    //         getPosts();
+    //     }, [])
+    // );
+
+    ////////////////////////////////////
 
     const getPosts = async () =>
     {
@@ -65,8 +69,6 @@ const UserProfileScreen = () => {
                 {
                     console.log("User has no posts");
                 }
-
-                
             })
             .catch((error) =>
             {
@@ -91,6 +93,7 @@ const UserProfileScreen = () => {
             axiosInstance.post('/user/updateUserBio', {userId: user._id, bio: form.bio})
             .then((res) => {
                 console.log("message: ", res.data.message);
+
                 setUser({
                     ...user,
                     bio: form.bio,
@@ -110,26 +113,30 @@ const UserProfileScreen = () => {
     //show username, profile picture, bio, number of followers, number of following, number of posts, then in a scrollview and gridview (like instagram) show the posts. also show logout button
   return (
     <SafeAreaView className="bg-primary h-full">
-        <FlatList 
+        <FlatList
+            // still need to add refresh control. when user pulls down the screen, it should refresh the posts.
+            //need refresh component and on refresh function here
             data={posts}
             keyExtractor={(item) => item._id}
             key={'_'}
             numColumns={3}
-            columnWrapperStyle={{justifyContent: 'space-between'}}
+            columnWrapperStyle={{justifyContent: 'flex-start', paddingHorizontal: 5}}
             renderItem={({item}) => (
-                <View className="flex-1 p-1">
-                    <Image source={{uri: item.mediaUrls[0]}} style={{width: 100, height: 100}} />
-                    <Text className="text-white">{item.caption}</Text>
-                    <Text className="text-white">{item.commentCount} comments</Text> 
-                    {/* <Text>{item.likeCount} likes</Text> */}
-                </View>
+                <TouchableOpacity className="p-1" onPress={()=> router.push(`/post/${item._id}`)}>
+                    <View className="relative">
+
+                        { item.mediaUrls.length > 1 && <Foundation name="page-multiple" size={24} color="white" style={{position: 'absolute', top:8, right:8, zIndex:1, opacity: 0.9}}/> }
+                        <Image source={{uri: item.mediaUrls[0]}} className="w-[120px] h-[120px] rounded-md " resizeMode='cover'/>
+                    
+                    </View>
+                </TouchableOpacity>
             )}
             ListEmptyComponent={() => ( 
                 <View className="flex justify-center items-center px-4">
                     <MaterialIcons name='hourglass-empty' size={24} color='white' className="w-[270px] h-[216px]"/>
                     <Text className="text-sm font-medium text-gray-100">Empty</Text>
                     <Text className="text-xl text-center font-semibold text-white mt-2">
-                        This user has not posted anything yet.
+                        {loading ? "Loading..." : error ? "Something went wrong. Please try again later." : "No posts yet."}
                     </Text>
                 </View>
              )}
@@ -142,16 +149,17 @@ const UserProfileScreen = () => {
                     </TouchableOpacity>
 
                     {/* place button to update profile picture later which will open media and update picture*/}
-                    <View className="w-16 h-16 border border-secondary rounded-lg flex justify-center items-center">
-                        <Image source={{uri: user.profilePicture}} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover' />
+                    <View className="w-16 h-16 border border-secondary rounded-full flex justify-center items-center">
+                        <Image source={{uri: user.profilePicture}} className="w-[90%] h-[90%] rounded-full" resizeMode='cover' />
                     </View>
 
                     <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
                     <Text style={{ fontSize: 15, color: "grey" }}>{user?.username}</Text>
 
                     <View className="mt-5 flex flex-row space-x-5">
-                        <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/>
-                        <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/>
+                        {/* temporarily commented out */}
+                        {/* <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/> */}
+                        {/* <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/> */}
                         <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4"/>
                     </View>
 
@@ -161,7 +169,6 @@ const UserProfileScreen = () => {
                             <InfoBox title={user?.bio || '...'} subtitle="Click to update bio" containerStyles="p-2" titleStyles="text-base" />
                         </TouchableOpacity>
 
-
                     </View>
                 </View>
             )}
@@ -170,7 +177,7 @@ const UserProfileScreen = () => {
         {/*  Open a modal to update bio */}
         <Modal visible={updateBio} animationType='slide' transparent={true}>
 
-            <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+            <View className="flex-1 justify-center items-center bg-black bg-opacity-50 rounded-md">
                 <View className="bg-white p-6 rounded-lg w-80">
                     <Text className="text-xl font-semibold mb-4">Update Bio</Text>
                     <TextInput

@@ -13,9 +13,9 @@ import { verifyToken } from "../middleware/tokenVerification.js";
 
 
 // Bookmark CRUD
-import { addBookmark } from "../controllers/BookmarkController/addBookmark.js";
-import { deleteBookmark } from "../controllers/BookmarkController/deleteBookmark.js";
-import { readBookmark } from "../controllers/BookmarkController/readBookmark.js";
+import { bookmarkLocation } from "../controllers/BookmarkController/addBookmark.js";
+// import { deleteBookmark } from "../controllers/BookmarkController/deleteBookmark.js";
+// import { readBookmark } from "../controllers/BookmarkController/readBookmark.js";
 
 const userRouter = express.Router();
 
@@ -31,7 +31,7 @@ userRouter.get("/search", getUserBySearchParams);
 userRouter.post("/updateUserBio", updateUserBio);
 
 // Bookmarking routes
-userRouter.post("/addBookmark", addBookmark);
+userRouter.post("/bookmark", bookmarkLocation);
 
 // user_router.post("/update", updateUser);
 // Routes with middleware (login and register do not require jwt middleware)

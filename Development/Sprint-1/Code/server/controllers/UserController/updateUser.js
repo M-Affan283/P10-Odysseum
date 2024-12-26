@@ -38,3 +38,7 @@ export const updateUserBio = async (req, res) => {
         return res.status(500).json({ message: ERROR_MESSAGES.SERVER_ERROR });
     }
 }
+
+export const updateUserProfilePicture = async (req, res) => {
+    
+}
