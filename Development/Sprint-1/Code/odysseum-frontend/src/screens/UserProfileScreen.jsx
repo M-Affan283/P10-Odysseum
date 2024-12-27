@@ -8,6 +8,7 @@ import axiosInstance from '../utils/axios'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Foundation from '@expo/vector-icons/Foundation';
 import InfoBox from '../components/InfoBox';
+import LottieView from 'lottie-react-native'
 
 const UserProfileScreen = () => {
 
@@ -16,7 +17,7 @@ const UserProfileScreen = () => {
     const setUser = useUserStore((state) => state.setUser);
     const logout = useUserStore((state) => state.logout);
 
-    const [posts, setPosts] = useState(user?.posts || []);
+    const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [updateBio, setUpdateBio] = useState(false);
@@ -44,6 +45,11 @@ const UserProfileScreen = () => {
     //     }, [])
     // );
 
+    useEffect(()=>
+    {
+        getPosts();
+    },[])
+
     ////////////////////////////////////
 
     const getPosts = async () =>
@@ -60,24 +66,15 @@ const UserProfileScreen = () => {
             })
             .then((res)=>
             {
-                if(res.data.posts.length > 0)
-                {
-                    // console.log("Posts received: ", res.data.posts)
-                    setPosts(res.data.posts);
-                }
-                else
-                {
-                    console.log("User has no posts");
-                }
+                // console.log("Posts received: ", res.data.posts)
+                if(res.data.posts.length > 0) setPosts(res.data.posts);
+                else console.log("User has no posts");
+                setLoading(false);
             })
             .catch((error) =>
             {
                 console.log(error);
                 setError(error.message);
-            })
-            .finally(()=>
-            {
-                setLoading(false);
             })
         }
         catch(error)
@@ -133,11 +130,29 @@ const UserProfileScreen = () => {
             )}
             ListEmptyComponent={() => ( 
                 <View className="flex justify-center items-center px-4">
-                    <MaterialIcons name='hourglass-empty' size={24} color='white' className="w-[270px] h-[216px]"/>
-                    <Text className="text-sm font-medium text-gray-100">Empty</Text>
-                    <Text className="text-xl text-center font-semibold text-white mt-2">
-                        {loading ? "Loading..." : error ? "Something went wrong. Please try again later." : "No posts yet."}
-                    </Text>
+                    {/* <MaterialIcons name='hourglass-empty' size={24} color='white' className="w-[270px] h-[216px]"/> */}
+                    {/* <Text className="text-sm font-medium text-gray-100">Empty</Text> */}
+                    {
+                        loading ? (
+                            <LottieView
+                                source={require('../../assets/LoadingAnimation.json')}
+                                style={{
+                                width: 100,
+                                height: 100,
+                                }}
+                                autoPlay
+                                loop
+                            />
+                        ) : error ? (
+                            <Text className="text-xl text-center font-semibold text-white mt-2">
+                                "Something went wrong. Please try again later."
+                            </Text>
+                        ) : (
+                            <Text className="text-xl text-center font-semibold text-white mt-2">
+                                "No posts yet."
+                            </Text>
+                        )
+                    }
                 </View>
              )}
 
@@ -158,8 +173,8 @@ const UserProfileScreen = () => {
 
                     <View className="mt-5 flex flex-row space-x-5">
                         {/* temporarily commented out */}
-                        {/* <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/> */}
-                        {/* <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/> */}
+                        <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/>
+                        <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/>
                         <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4"/>
                     </View>
 
@@ -170,6 +185,7 @@ const UserProfileScreen = () => {
                         </TouchableOpacity>
 
                     </View>
+                    
                 </View>
             )}
         />

@@ -6,7 +6,7 @@ import BookmarkPNG from '../../assets/Bookmark.png'
 import DefaultBookmarkPNG from '../../assets/DefaultBookmark.png'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { router } from 'expo-router'
 
 const BookmarkScreen = () => {
     
@@ -85,7 +85,7 @@ const BookmarkScreen = () => {
 
 const BookMarkCard = ({bookmark}) => {
     return (
-        <TouchableOpacity className="flex justify-end relative p-0 py-6 space-y-2 mb-4" style={{ width: '44%', height: 150 }} /*onPress={()=> router.push(`/location/${bookmark._id}`)}*/>
+        <TouchableOpacity className="flex justify-end relative p-0 py-6 space-y-2 mb-4" style={{ width: '44%', height: 150 }} onPress={()=> router.push(`/location/${bookmark._id}`)}>
             <Image source={bookmark?.imageUrl? {uri: bookmark?.imageUrl} : DefaultBookmarkPNG}  className="absolute rounded-lg h-full w-full" />
         
             <LinearGradient

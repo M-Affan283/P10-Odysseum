@@ -3,7 +3,7 @@
 //author: Luqman, Shahrez, Affan
 
 import { Location } from "../../models/Location.js";
-import { ERROR_MESSAGES } from "../../utils/constants.js";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../utils/constants.js";
 
 
 /**

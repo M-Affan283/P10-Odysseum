@@ -5,7 +5,7 @@
 
 import express from "express";
 import { createPost } from "../controllers/PostContoller/createPost.js";
-import { getUserPosts, getFollowingPosts, getPostById } from "../controllers/PostContoller/getPost.js";
+import { getUserPosts, getFollowingPosts, getPostById, getAllPosts } from "../controllers/PostContoller/getPost.js";
 import { updatePost } from "../controllers/PostContoller/updatePost.js";
 import { deletePost } from "../controllers/PostContoller/deletePost.js";
 import upload from "../middleware/multerMiddleware.js";
@@ -18,6 +18,7 @@ postRouter.post("/create", upload.array("media", 5), createPost);
 postRouter.get("/getById", getPostById);
 postRouter.get("/getUserPosts", getUserPosts);
 postRouter.get("/getFollowingPosts", getFollowingPosts);
+postRouter.get("/getAllPosts", getAllPosts);
 postRouter.post("/update", updatePost);
 postRouter.delete("/delete", deletePost);
 

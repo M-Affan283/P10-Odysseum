@@ -1,9 +1,11 @@
 import React from 'react'
-import { Text, View, TouchableOpacity, ScrollView, Image, Dimensions } from "react-native";
+import { Text, View, TouchableOpacity, Image, Dimensions } from "react-native";
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
 import { calculateDuration } from "../utils/dateTimCalc";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { BookOpenIcon } from "react-native-heroicons/outline";
+import { router } from 'expo-router';
 
 const width = Dimensions.get("window").width;
 
@@ -29,7 +31,7 @@ const PostCard = (({post}) => {
                 <Image source={{uri:post?.creatorId?.profilePicture}} className="w-16 h-16 rounded-full" />
 
                 <View className="flex-col justify-center ml-3">
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => router.push(`/user/${post?.creatorId?._id}`)}>
                         <Text className="font-bold text-white">
                             {post?.creatorId?.username || "Username"}
                         </Text>
@@ -95,8 +97,8 @@ const PostCard = (({post}) => {
                 <FontAwesome name="heart-o" size={24} color="white" />
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row justify-center p-5 rounded-md">
-                <FontAwesome name="comment-o" size={24} color="white" />
+            <TouchableOpacity className="flex-row justify-center p-5 rounded-md" onPress={() => router.push(`/post/${post._id}`)}>
+                <BookOpenIcon size={24} color="white" />
             </TouchableOpacity>
 
             </View>

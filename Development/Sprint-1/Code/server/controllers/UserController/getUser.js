@@ -56,10 +56,10 @@ const getUserById = async (req,res) =>
 
     try
     {
-        const requestor = await User.findById(requestorId);
-        const userToView = await User.findById(userToViewId);
+        let requestor = await User.findById(requestorId);
+        let userToView = await User.findById(userToViewId);
 
-        console.log(requestor, " ", userToView);
+        // console.log(requestor, " ", userToView);
 
         if(!requestor || !userToView) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
