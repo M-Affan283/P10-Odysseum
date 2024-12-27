@@ -41,7 +41,7 @@ export const loginUser = async (req, res) =>
         await user.populate({
             path: 'bookmarks',  // Directly populate the bookmarks field (it's now an array of ObjectIds)
             model: 'Location',  // Specify the model to populate from
-            select: 'name imageUrl'
+            select: '_id name imageUrl'
         });
 
 
