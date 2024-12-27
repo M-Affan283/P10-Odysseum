@@ -126,7 +126,7 @@ const getFollowingPosts = async (req,res) => //find the posts of the users the c
     catch(error)
     {
         console.log(error);
-        return res.status(500).json({error: error.message});
+        return res.status(500).json({message: error});
     }
 }
 
@@ -171,9 +171,26 @@ const getPostById = async (req,res) =>
     catch(error)
     {
         console.log(error);
-        return res.status(500).json({error: error});
+        return res.status(500).json({message: error});
+    }
+}
+
+const getAllPosts = async (req,res) =>
+{
+    try
+    {
+        const posts = await Post.find({}).populate('creatorId', 'username profilePicture').sort({createdAt: -1});
+
+        if(!posts) return res.status(404).json({error: ERROR_MESSAGES.NO_POSTS});
+
+        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: posts});
+    }
+    catch(error)
+    {
+        console.log(error);
+        return res.status(500).json({message: error});
     }
 }
 
 
-export { getUserPosts, getFollowingPosts, getPostById };
+export { getUserPosts, getFollowingPosts, getPostById, getAllPosts };
