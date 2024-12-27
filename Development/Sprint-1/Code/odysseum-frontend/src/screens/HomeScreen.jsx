@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Button, TextInput, FlatList, Image, Dimensions, SectionList } from 'react-native';
+import { View, Text, Image, SectionList } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity } from "react-native";
-import useUserStore from '../context/userStore'
 import axiosInstance from "../utils/axios";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import FindUserImg from '../../assets/FindUserJPG.jpg';
 import DiscoverLocationImg from '../../assets/DiscoverLocationJPG.jpg';
 import PostCard from "../components/PostCard";
-
-import Carousel from "react-native-reanimated-carousel";
+import Toast from "react-native-toast-message";
+import LottieView from "lottie-react-native";
 
 const tempPosts = [
     {
@@ -71,6 +70,40 @@ const tempPosts = [
   ]
 
 const HomeScreen = () => {
+
+    const [posts, setPosts] = useState(tempPosts || []);
+    const [loading, setLoading] = useState(true);
+
+    // temp method to get all posts right now. we will switch to pagination later using react-query (tanstack)
+    const getPosts = async () =>
+    {
+      console.log('Getting posts....');
+      setLoading(true);
+
+      axiosInstance.get('/post/getAllPosts')
+      .then((res)=>
+      {
+        // console.log(res.data);
+        setPosts(res.data.posts);
+        setLoading(false);
+      })
+      .catch((err)=>
+      {
+        console.log(err);
+        Toast.show({
+          type: "error",
+          position: "bottom",
+          text1: "Failed to fetch posts",
+          text2: "Error occurred server side",
+          visibilityTime: 3000,
+        })
+        
+      })
+    }
+
+    useEffect(() => {
+      getPosts();
+    }, []) 
     
     const sections = [
       {
@@ -84,21 +117,50 @@ const HomeScreen = () => {
       },
       {
         title: 'Posts',
-        data: tempPosts,
+        data: posts,
       }
     ]
 
+    // if(loading)
+    // {
+    //   return (
+    //     <SafeAreaView className="flex items-center justify-center h-full">
+    //       <LottieView
+    //         source={require('../../assets/LoadingAnimation.json')}
+    //         style={{
+    //           width: 100,
+    //           height: 100,
+    //         }}
+    //         autoPlay
+    //         loop
+    //       />
+    //     </SafeAreaView>
+    //   )
+    // }
+
     return (
 
-        <SafeAreaView className="flex-1 bg-primary h-full">
+        <SafeAreaView className="flex-1 bg-primary h-full">   
+
             <SectionList 
               sections={sections}
-              keyExtractor={(item, index) => item._id || index.toString()}
+              extraData={loading}
+              keyExtractor={(item, index) => item?._id || index.toString()}
               ListHeaderComponent={() => (
-                <View className="flex-1 bg-primary">
-                    <View className="flex-1 mx-5 py-3 flex-row justify-between items-center mb-5 space-y-6 mt-3">
-                        <Text className="font-dsbold text-white" style={{fontSize: 50}}>Home</Text>
-                    </View>
+                <View className="mx-5 py-3 flex-row justify-between items-center mb-5 space-y-6 mt-3">
+                  <Text className="font-dsbold text-white" style={{fontSize: 50}}>Home</Text>
+
+                  { loading && (
+                      <LottieView
+                      source={require('../../assets/LoadingAnimation.json')}
+                      style={{
+                        width: 100,
+                        height: 100,
+                      }}
+                      autoPlay
+                      loop
+                    />
+                  )}
                 </View>
               )}
               stickySectionHeadersEnabled={true}
@@ -108,16 +170,16 @@ const HomeScreen = () => {
                 {
                   return <StickyHeaderComponent />
                 }
-                  
                   return null;
                 }}
                 
-                renderItem={({item}) => (
+              renderItem={({item}) => (
                   <SafeAreaView className="flex-1 items-center justify-center">
                     <PostCard post={item} />
                   </SafeAreaView>
               )}
 
+              
             />
         </SafeAreaView>
     )

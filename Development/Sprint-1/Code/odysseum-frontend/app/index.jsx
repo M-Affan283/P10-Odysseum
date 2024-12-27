@@ -10,11 +10,16 @@ import BookmarkScreen from "../src/screens/BookmarkScreen";
 import PostDetailsScreen from "../src/screens/PostDetailsScreen";
 import DiscoverLocationsScreen from "../src/screens/DiscoverLocationsScreen";
 import PostCard from "../src/components/PostCard";
+import useUserStore from "../src/context/userStore";
 
 
 // Component testing
 
 export default function App() {
+
+  const user = useUserStore((state) => state.user); //check if user is logged in. if not, show welcome screen, else show home screen
+
+
   return (
     <>
       {/* <WelcomeScreen /> */}
