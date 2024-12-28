@@ -12,7 +12,7 @@ Author: Affan
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-// import { deleteAccessToken } from "../utils/tokenUtils"; // Assuming you have this utility to delete the token from SecureStorage
+import { setAccessToken,getAccessToken,deleteAccessToken } from "../utils/tokenUtils"; // Assuming you have this utility to delete the token from SecureStorage
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 //test async sotrage
@@ -75,10 +75,6 @@ let tempUser = {
       _id: "67310369aa977e99fcc2c31e",
       name: "Chitral, KPK",
     },
-    {
-      _id: "67310369aa977e99fcc2c31e",
-      name: "Giglit, Baltistan",
-    },
   ],
 };
 
@@ -97,6 +93,8 @@ const useUserStore = create(
         await AsyncStorage.removeItem("user-storage"); // Remove user from storage
         // deleteAccessToken(); // Remove token from secure storage
       },
+
+      
     }),
     {
       name: "user-storage", // Key for persistence

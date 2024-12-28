@@ -38,7 +38,7 @@ const WelcomeScreen = () => {
   return (
     <SafeAreaView style={{ backgroundColor: "#161622" }}>
       <ScrollView contentContainerStyle={{ height: '100%' }}>
-        <View className="flex-1 flex justify-around my-4">
+        <View className="flex-1 flex justify-around my-4 p-4">
           <Text className="text-4xl font-bold text-center text-white">
             Welcome to Odysseum!
           </Text>

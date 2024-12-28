@@ -4,14 +4,20 @@ import Toast from "react-native-toast-message"
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFonts, DancingScript_400Regular, DancingScript_500Medium, DancingScript_600SemiBold, DancingScript_700Bold } from '@expo-google-fonts/dev';
 import { StatusBar } from "expo-status-bar";
+import useUserStore from "../src/context/userStore";
+import { router } from "expo-router";
 
 SplashScreen.preventAutoHideAsync(); //prevent the splash screen from hiding automatically
 
+//TODO: IMPROVE TAB BAR, HOMESCREEN AND USER PROFILE SCREEN UI
+
 const RootLayout = () => {
 
-  // const [initializing, setInitializing] = useState(true); //when user opens app check for any initializations. Refresh and access tokens, already logged in, fetch preliminary data, etc.
+  const user = useUserStore((state) => state.user); //check if user is logged in. if not, show welcome screen, else show home screen
+  const isLoggedIn = useUserStore((state) => state.isLoggedIn); //for now only basic login check. will be updated later to include token check and refreshing if needed
+  const [loading, setLoading] = useState(true);
 
-  const [loaded, error] = useFonts({
+  const [loadedFonts, error] = useFonts({
     DancingScript_400Regular,
     DancingScript_500Medium,
     DancingScript_600SemiBold,
@@ -20,22 +26,28 @@ const RootLayout = () => {
 
   useEffect(()=>
   {
-    if(loaded) SplashScreen.hideAsync();
-    else if(error) console.log(error);
-  }, [loaded, error]);
+    if(!loadedFonts || loading) return;
+    if(!user) return;
 
-  if(!loaded) return null;
-  if (!loaded && !error) return null;
+    isLoggedIn ? router.replace("/home") : router.replace("/"); //index.jsx will contain welcome screen
 
-  // useEffect(() => {
-  //     if(!initializing)
-  //     {
-  //       SplashScreen.hideAsync(); //hide the splash screen when the app is initialized
-  //     }
+  }, [loadedFonts, error, loading]);
 
-  // }, [initializing])
 
-  // if(initializing) return null;
+  useEffect(() => {
+    if(loadedFonts)
+    {
+      SplashScreen.hideAsync();
+      setLoading(false);
+    }
+    else if(error)
+    {
+      console.log(error);
+    }
+  }, [loadedFonts, error]);
+
+  if(!loadedFonts || loading) return null;
+  if (!loadedFonts && !error) return null;
   
   return (
     <>
@@ -51,7 +63,7 @@ const RootLayout = () => {
         </Stack>
         {/* for further configuration check docs */}
         <Toast/> 
-        </GestureHandlerRootView>
+      </GestureHandlerRootView>
         <StatusBar translucent backgroundColor="transparent" />
     </>
   );
