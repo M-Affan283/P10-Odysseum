@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axiosInstance from '../utils/axios';
 import Toast from 'react-native-toast-message';
 import LottieView from 'lottie-react-native';
+import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 
 // Temporary Locations since database currently lacks many locations
 const tempLocations = [
@@ -128,7 +129,15 @@ const DiscoverLocationsScreen = () => {
         {/* add create iteinirary and show itinerary buttons here simimal fashion of homme screen */}
         <ScrollView showsVerticalScrollIndicator={false} className="space-y-4 py-5">
 
-            <View className="mx-7 flex-row justify-between items-center mb-10">
+            <View className="mx-3 flex-row justify-between items-center mb-10">
+
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    className="py-4"
+                    >
+                    <ChevronLeftIcon size={30} strokeWidth={4} color="black" />
+                </TouchableOpacity>
+
                 <Text className="font-dsbold text-neutral-700 text-3xl">Discover Locations</Text>
 
                 <TouchableOpacity>

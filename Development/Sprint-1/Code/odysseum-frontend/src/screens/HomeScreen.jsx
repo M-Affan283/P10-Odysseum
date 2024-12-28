@@ -192,7 +192,7 @@ const StickyHeaderComponent = React.forwardRef((props, ref) => {
             <View className=" mb-3 justify-between">
                 {/* user and location search buttons */}
                 <View className="flex-row gap-5 p-2 bg-primary">
-                     <TouchableOpacity className="flex justify-end relative p-0 space-y-2 mb-4" style={{ width: '44%', height: 100 }} /*onPress={()=> router.push(`/location/${bookmark._id}`)}*/>
+                     <TouchableOpacity className="flex justify-end relative p-0 space-y-2 mb-4" style={{ width: '44%', height: 100 }} onPress={()=> router.push(`/user`)}>
                         <Image source={FindUserImg}  className="absolute rounded-lg h-full w-full" />
                     
                         <LinearGradient
