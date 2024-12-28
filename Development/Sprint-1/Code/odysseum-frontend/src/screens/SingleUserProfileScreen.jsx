@@ -181,8 +181,8 @@ const SingleUserProfileScreen = ({ userId }) => {
                 <Image source={{uri: userToView?.profilePicture}} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover' />
             </View>
 
-            <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
-            <Text style={{ fontSize: 15, color: "grey" }}>{user?.username}</Text>
+            <InfoBox title={userToView?.firstName + ' ' + userToView?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
+            <Text style={{ fontSize: 15, color: "grey" }}>{userToView?.username}</Text>
 
             <View className="mt-5 flex flex-row space-x-5">
                 <InfoBox title={userToView?.followers?.length || 0} subtitle="Followers" containerStyles="mr-4"/>

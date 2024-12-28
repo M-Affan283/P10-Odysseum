@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import axiosInstance from "../../src/utils/axios";
+import useUserStore from "../../src/context/userStore";
 
-//We are creating another layout for auth so that the menu and other components are not displayed when the user is not logged in.
+const UserLayout = () => {
 
-const LocationLayout = () => {
   return (
-    //The stack component will hold the screens that are part of the auth layout which are the login and register screens.
+    
     <>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -19,4 +20,4 @@ const LocationLayout = () => {
   );
 };
 
-export default LocationLayout;
+export default UserLayout;

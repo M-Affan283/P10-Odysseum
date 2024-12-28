@@ -24,6 +24,8 @@ const RootLayout = () => {
     DancingScript_700Bold
   });
 
+  // comment this out if you want to test the index screen
+  // this will route to home screen if user is logged in
   useEffect(()=>
   {
     if(!loadedFonts || loading) return;
@@ -58,7 +60,7 @@ const RootLayout = () => {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="search/[query]" options={{ headerShown: false }} />
           <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="user/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="user" options={{ headerShown: false }} />
           <Stack.Screen name="location" options={{ headerShown: false }} />
         </Stack>
         {/* for further configuration check docs */}
