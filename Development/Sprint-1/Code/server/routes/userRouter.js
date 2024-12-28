@@ -29,6 +29,8 @@ userRouter.get("/getById", getUserById);
 userRouter.get("/getByUsername", getUserByUsername);
 userRouter.get("/search", getUserBySearchParams);
 userRouter.post("/updateUserBio", updateUserBio);
+userRouter.post("/updateUserUsername", updateUserUsername);
+userRouter.post("/updateUserPassword", updateUserPassword);
 
 // Bookmarking routes
 userRouter.post("/bookmark", bookmarkLocation);
