@@ -165,7 +165,7 @@ const UserProfileScreen = () => {
 
                     {/* place button to update profile picture later which will open media and update picture*/}
                     <View className="w-16 h-16 border border-secondary rounded-full flex justify-center items-center">
-                        <Image source={{uri: user.profilePicture}} className="w-[90%] h-[90%] rounded-full" resizeMode='cover' />
+                        <Image source={{uri: user?.profilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}} className="w-[90%] h-[90%] rounded-full" resizeMode='cover' />
                     </View>
 
                     <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
