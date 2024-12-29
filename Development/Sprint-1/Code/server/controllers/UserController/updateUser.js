@@ -56,6 +56,14 @@ export const updateUserUsername = async (req, res) => {
             return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
         }
 
+        const existingUser = await User.findOne({username: username});
+
+        if (existingUser)
+        {
+            console.log("Username already exists");
+            return res.status(400).json({ message: ERROR_MESSAGES.USER_EXISTS });
+        }
+
         user.username = username;
         await user.save();
 

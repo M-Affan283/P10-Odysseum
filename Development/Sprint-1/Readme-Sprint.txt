@@ -33,7 +33,7 @@ LIST OF REQUIREMENTS COMPLETED IN THE SPRINT
 5. Added the ability to write comments under a post.
 6. Separated logic for searching users and locations. Previously, in the prototype both locations and users were being searched simultaneously.
 7. Added a discover locations screen where users can look for popular tourist destinations and a screen to provide more details of a certain location.
-
+8. Added ability for users to update their usernames or passwords.
 
 
 

@@ -7,6 +7,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { BookOpenIcon } from "react-native-heroicons/outline";
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import useUserStore from '../context/userStore';
 
 const width = Dimensions.get("window").width;
 
@@ -15,6 +16,7 @@ const PostCard = (({post}) => {
 
     const progress = useSharedValue(0);
     const ref = React.useRef(null);
+    const user = useUserStore(state => state.user);
 
     const onPressPagination = (index) => {
         ref.current?.scrollTo({
@@ -33,7 +35,7 @@ const PostCard = (({post}) => {
                 <Image source={{uri:post?.creatorId?.profilePicture}} className="w-16 h-16 rounded-full" />
 
                 <View className="flex-col justify-center ml-3">
-                    <TouchableOpacity onPress={() => router.push(`/user/${post?.creatorId?._id}`)}>
+                    <TouchableOpacity onPress={() => post?.creatorId?._id !== user?._id ? router.push(`/user/${post?.creatorId?._id}`) : router.push(`/profile`)}>
                         <Text className="font-bold text-white">
                             {post?.creatorId?.username || "Username"}
                         </Text>

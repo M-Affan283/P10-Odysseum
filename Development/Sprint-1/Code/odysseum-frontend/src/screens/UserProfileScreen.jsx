@@ -214,8 +214,8 @@ const UserProfileScreen = () => {
             
                     {/* Followers, Following, and Posts */}
                     <View className="mt-5 flex flex-row space-x-5">
-                        <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4" />
-                        <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4" />
+                        <InfoBox title={user?.followers?.length || 0} subtitle="Followers" containerStyles="mr-4" />
+                        <InfoBox title={user?.following?.length || 0} subtitle="Following" containerStyles="mr-4" />
                         <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4" />
                     </View>
             

@@ -58,6 +58,7 @@ const ERROR_MESSAGES = { //add more error messages as needed
     REQUESTOR_NOT_FOUND: "Requestor not found",
     LOCATION_NOT_FOUND: "Location not found",
     LOCATION_ALREADY_EXISTS: "Location already exists",
+    USER_EXISTS: "User already exists",
     
 }
 
