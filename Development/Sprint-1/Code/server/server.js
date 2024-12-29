@@ -15,6 +15,8 @@ import dotenv from 'dotenv';
 import http from 'http'; // for messaging
 import { ERROR_MESSAGES } from './utils/constants.js';
 import { setupSocket } from './socket.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Initializing dotenv file
 dotenv.config({ path: './config.env' });

@@ -59,6 +59,9 @@ const ERROR_MESSAGES = { //add more error messages as needed
     LOCATION_NOT_FOUND: "Location not found",
     LOCATION_ALREADY_EXISTS: "Location already exists",
     USER_EXISTS: "User already exists",
+    // forget passwords 
+    TOKEN_EXPIRED: 'Reset password link has expired',
+    RESET_TOKEN_INVALID: 'Reset password token is invalid',
     
 }
 
@@ -100,6 +103,9 @@ const SUCCESS_MESSAGES = { //add more success messages as needed
     FILES_UPLOADED: "Files uploaded successfully",
     USER_UPDATED: "User updated successfully",
     LOCATION_ADDED: "Location added successfully",
+    // Forget Password Messages
+    RESET_EMAIL_SENT: 'Password reset email has been sent',
+    PASSWORD_RESET_SUCCESS: 'Password has been reset successfully'
 }
 
 

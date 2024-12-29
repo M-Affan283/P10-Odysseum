@@ -12,7 +12,7 @@ import { updateUserBio } from "../controllers/UserController/updateUser.js";
 import { updateUserUsername } from "../controllers/UserController/updateUser.js";
 import { updateUserPassword } from "../controllers/UserController/updateUser.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
-
+import { forgotPassword, resetPassword } from "../controllers/UserController/forgotPassword.js";
 
 // Bookmark CRUD
 import { bookmarkLocation } from "../controllers/BookmarkController/addBookmark.js";
@@ -33,6 +33,8 @@ userRouter.get("/search", getUserBySearchParams);
 userRouter.post("/updateUserBio", updateUserBio);
 userRouter.post("/updateUserUsername", updateUserUsername);
 userRouter.post("/updateUserPassword", updateUserPassword);
+userRouter.post("/forgot-password", forgotPassword);
+userRouter.post("/reset-password", resetPassword);
 
 // Bookmarking routes
 userRouter.post("/bookmark", bookmarkLocation);
