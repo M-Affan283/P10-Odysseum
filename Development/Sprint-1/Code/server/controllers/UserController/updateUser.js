@@ -93,6 +93,9 @@ export const updateUserPassword = async (req, res) => {
             console.log("New password cannot be the same as the old password");
             return res.status(400).json({ message: "New password cannot be the same as the old password." });
         }
+        if (REGEX_PATTERNS.PASSWORD.test(newPassword) === false) {
+            return res.status(400).json({ success: false, message: ERROR_MESSAGES.INVALID_PASSWORD });
+        }
 
         user.password = bcrypt.hashSync(newPassword, 10);
         await user.save();
