@@ -9,9 +9,9 @@ const TabIcon = ({ icon, name, color, focused }) => {
   return (
     <View className="items-center justify-center gap-2">
       <MaterialIcons name={icon} size={24} color={color} className="w-6 h-6" />
-      <Text className={`${focused ? "font-semibold" : "font-normal"} text-xs items-center justify-center`} style={{color: color}}>
+      {/* <Text className={`${focused ? "font-semibold" : "font-normal"} text-xs items-center justify-center`} style={{color: color}}>
         {name}
-      </Text>
+      </Text> */}
     </View>
   );
 };
@@ -51,8 +51,12 @@ const TabsLayout = () => {
             backgroundColor: "#161622",
             borderTopWidth: 1,
             borderTopColor: "#232533",
-            height: 50,
-          }
+            height: 45, // Ensure consistent height
+            position: "absolute", // Fix position
+            bottom: 0,
+            left: 0,
+            right: 0,
+        },
         }}
       >
         {tabs.map((tab, index) => (

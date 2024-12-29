@@ -93,7 +93,7 @@ const getUserPosts = async (req,res) =>
  */
 const getFollowingPosts = async (req,res) => //find the posts of the users the current user is following sorted by most recent
 {
-    const { requestorId } = req.body;
+    const { requestorId } = req.query;
 
     if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_REQUESTOR_ID});
 
@@ -109,19 +109,19 @@ const getFollowingPosts = async (req,res) => //find the posts of the users the c
         if(!posts) return res.status(404).json({error: ERROR_MESSAGES.NO_POSTS});
 
         //no need to get comments for each post. only get the number of comments for each post
-        const postIds = posts.map(post => post._id);
-        const commentCounts = await Comment.aggregate([
-            { $match: { postId: { $in: postIds } } },
-            { $group: { _id: '$postId', count: { $sum: 1 } } }
-        ]);
+        // const postIds = posts.map(post => post._id);
+        // const commentCounts = await Comment.aggregate([
+        //     { $match: { postId: { $in: postIds } } },
+        //     { $group: { _id: '$postId', count: { $sum: 1 } } }
+        // ]);
 
-        const postsWithCommentCount = posts.map(post => {
-            const commentCount = commentCounts.find(count => count._id.toString() === post._id.toString());
-            post.commentCount = commentCount ? commentCount.count : 0;
-            return post;
-        });
+        // const postsWithCommentCount = posts.map(post => {
+        //     const commentCount = commentCounts.find(count => count._id.toString() === post._id.toString());
+        //     post.commentCount = commentCount ? commentCount.count : 0;
+        //     return post;
+        // });
 
-        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: postsWithCommentCount});
+        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: posts});
     }
     catch(error)
     {
@@ -163,7 +163,7 @@ const getPostById = async (req,res) =>
         //no need to get comments for each post. only get the number of comments for each post
         const numberOfComments = await Comment.countDocuments({postId: postId});
 
-        post = {...post._doc, commentCount: numberOfComments, likes: post.likes.length};
+        post = {...post._doc, commentCount: numberOfComments, likeCount: post.likes.length};
 
         return res.status(200).json({message: SUCCESS_MESSAGES.POST_FOUND, post: post});
 
@@ -175,6 +175,8 @@ const getPostById = async (req,res) =>
     }
 }
 
+
+//pagination will be implemented later
 const getAllPosts = async (req,res) =>
 {
     try

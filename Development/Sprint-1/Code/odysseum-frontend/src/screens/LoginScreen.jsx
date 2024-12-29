@@ -36,7 +36,7 @@ const LoginScreen = () => {
         await setUser(res.data.user);
         
         // await logout();
-        router.dismissAll(); //dismiss all screens
+        // router.dismissAll(); //dismiss all screens
         router.replace("/home");
         console.log("LOGGED IN USER")
 

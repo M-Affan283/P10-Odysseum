@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, Image, SectionList } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity } from "react-native";
@@ -84,6 +84,8 @@ const HomeScreen = () => {
       .then((res)=>
       {
         // console.log(res.data);
+        //get 5 posts
+        // setPosts(res.data.posts.slice(0, 5));
         setPosts(res.data.posts);
         setLoading(false);
       })
@@ -121,64 +123,81 @@ const HomeScreen = () => {
       }
     ]
 
-    // if(loading)
-    // {
-    //   return (
-    //     <SafeAreaView className="flex items-center justify-center h-full">
-    //       <LottieView
-    //         source={require('../../assets/LoadingAnimation.json')}
-    //         style={{
-    //           width: 100,
-    //           height: 100,
-    //         }}
-    //         autoPlay
-    //         loop
-    //       />
-    //     </SafeAreaView>
-    //   )
-    // }
+    const renderItem = useCallback(({item}) => {
+        return (
+            <PostCard post={item} />
+        )
+    }, [posts]);
+    
+    const renderSectionHeader = useCallback(({section}) => {
+        if(section.title === 'StickyHeader')
+        {
+            return <StickyHeaderComponent />
+        }
+        return null;
+    }, []);
+    
+    const ListHeaderComponent = useMemo(() => {
+    
+        return (
+          <View className="mx-5 py-3 flex-row justify-between items-center mb-5 space-y-6 mt-3">
+          <Text className="font-dsbold text-white" style={{fontSize: 50}}>Home</Text>
+    
+          { loading && (
+              <LottieView
+              source={require('../../assets/LoadingAnimation.json')}
+              style={{
+                width: 100,
+                height: 100,
+              }}
+              autoPlay
+              loop
+            />
+          )}
+        </View>
+        )
+    }, [loading]);
 
     return (
-
+        
         <SafeAreaView className="flex-1 bg-primary h-full">   
 
             <SectionList 
+              // removeClippedSubviews={true}
+              contentContainerStyle={{marginBottom: 100}}
               sections={sections}
               extraData={loading}
               keyExtractor={(item, index) => item?._id || index.toString()}
-              ListHeaderComponent={() => (
-                <View className="mx-5 py-3 flex-row justify-between items-center mb-5 space-y-6 mt-3">
-                  <Text className="font-dsbold text-white" style={{fontSize: 50}}>Home</Text>
+              // ListHeaderComponent={() => (
+              //   <View className="mx-5 py-3 flex-row justify-between items-center mb-5 space-y-6 mt-3">
+              //     <Text className="font-dsbold text-white" style={{fontSize: 50}}>Home</Text>
 
-                  { loading && (
-                      <LottieView
-                      source={require('../../assets/LoadingAnimation.json')}
-                      style={{
-                        width: 100,
-                        height: 100,
-                      }}
-                      autoPlay
-                      loop
-                    />
-                  )}
-                </View>
-              )}
-              stickySectionHeadersEnabled={true}
-              stickyHeaderHiddenOnScroll={true}
+              //     { loading && (
+              //         <LottieView
+              //         source={require('../../assets/LoadingAnimation.json')}
+              //         style={{
+              //           width: 100,
+              //           height: 100,
+              //         }}
+              //         autoPlay
+              //         loop
+              //       />
+              //     )}
+              //   </View>
+              // )}
+              ListHeaderComponent={ListHeaderComponent}
+              // stickySectionHeadersEnabled={true}
+              // stickyHeaderHiddenOnScroll={true}
               renderSectionHeader={({section}) => {
                 if(section.title === 'StickyHeader')
                 {
                   return <StickyHeaderComponent />
                 }
                   return null;
-                }}
+              }}
                 
-              renderItem={({item}) => (
-                  <SafeAreaView className="flex-1 items-center justify-center">
-                    <PostCard post={item} />
-                  </SafeAreaView>
-              )}
-
+              // renderItem={({item}) => (<PostCard post={item} />)}
+              renderItem={renderItem}
               
             />
         </SafeAreaView>

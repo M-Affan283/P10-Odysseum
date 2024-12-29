@@ -6,6 +6,7 @@ import { calculateDuration } from "../utils/dateTimCalc";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { BookOpenIcon } from "react-native-heroicons/outline";
 import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const width = Dimensions.get("window").width;
 
@@ -24,6 +25,7 @@ const PostCard = (({post}) => {
 
     return (
         // parent view is card
+        <SafeAreaView className="flex-1 items-center justify-center">
         <View className="flex-1 bg-[#0e1c30] w-[95%] h-full mb-5 rounded-2xl">
             {/* user info */}
             <View className="flex-row justify-start p-4">
@@ -104,7 +106,8 @@ const PostCard = (({post}) => {
             </View>
 
         </View>
+        </SafeAreaView>
     )
 })
 
-export default PostCard
+export default React.memo(PostCard)
