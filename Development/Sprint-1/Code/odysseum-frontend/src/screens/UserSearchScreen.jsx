@@ -26,7 +26,7 @@ const UserSearchScreen = () => {
       
       axiosInstance.get(`/user/getAll`, {params: {requestorId: user._id}})
       .then((res) => {
-          // console.log(res.data);
+          console.log(res.data);
           setUsers(res.data.users);
           setLoading(false);
       })
@@ -103,7 +103,7 @@ const UserSearchScreen = () => {
         removeClippedSubviews={true}
         renderItem={({item}) => (
           <View>
-            <TouchableOpacity className="flex-row items-center ml-2 mt-2" onPress={() => router.push(`/user/${item._id}`)}>
+            <TouchableOpacity className="flex-row items-center ml-2 mt-2" onPress={() => item._id !== user._id ? router.push(`/user/${item._id}`) : router.push(`/profile`)}>
               <Image source={{uri: item.profilePicture}} style={{width: 50, height: 50, borderRadius: 25}} />
 
               <View>

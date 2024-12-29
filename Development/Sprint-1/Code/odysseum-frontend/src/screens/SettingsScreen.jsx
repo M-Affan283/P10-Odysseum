@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import useUserStore from '../context/userStore';
 import axiosInstance from '../utils/axios';
 import Toast from 'react-native-toast-message';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const SettingsScreen = () => {
     const user = useUserStore(state => state.user);
@@ -31,7 +30,7 @@ const SettingsScreen = () => {
         try {
             const response = await axiosInstance.post('/user/updateUserUsername', {
                 userId: user._id,
-                username,
+                username: username,
             });
             if (response.status === 200) {
                 setUser({ ...user, username });
@@ -57,8 +56,8 @@ const SettingsScreen = () => {
         try {
             const response = await axiosInstance.post('/user/updateUserPassword', {
                 userId: user._id,
-                oldPassword,
-                newPassword,
+                oldPassword: oldPassword,
+                oldPassword: newPassword,
             });
             if (response.status === 200) {
                 Toast.show({
