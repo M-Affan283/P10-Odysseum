@@ -107,8 +107,8 @@ const UserProfileScreen = () => {
         }
     }
 
+    // Redirecting to settings screen page
     const updateSettings = async () => {
-        // Redirecting to settings screen page
         router.push('/user/settings')
     }
 
