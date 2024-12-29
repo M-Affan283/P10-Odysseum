@@ -9,6 +9,8 @@ import { loginUser, oAuthLoginUser } from "../controllers/UserController/loginUs
 import { followUser } from "../controllers/UserController/followUser.js";
 import { getAllUsers, getUserById, getUserByUsername, getUserBySearchParams } from "../controllers/UserController/getUser.js";
 import { updateUserBio } from "../controllers/UserController/updateUser.js";
+import { updateUserUsername } from "../controllers/UserController/updateUser.js";
+import { updateUserPassword } from "../controllers/UserController/updateUser.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
 
 
@@ -29,6 +31,8 @@ userRouter.get("/getById", getUserById);
 userRouter.get("/getByUsername", getUserByUsername);
 userRouter.get("/search", getUserBySearchParams);
 userRouter.post("/updateUserBio", updateUserBio);
+userRouter.post("/updateUserUsername", updateUserUsername);
+userRouter.post("/updateUserPassword", updateUserPassword);
 
 // Bookmarking routes
 userRouter.post("/bookmark", bookmarkLocation);

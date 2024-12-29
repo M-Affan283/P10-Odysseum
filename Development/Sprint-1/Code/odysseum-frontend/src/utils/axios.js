@@ -13,7 +13,7 @@ import axios from "axios";
 import { getAccessToken, setAccessToken } from "./tokenUtils.js";
 // Base URL of the backend server
 
-const API_BASE_URL = `http://192.168.86.35:8000/api`;
+const API_BASE_URL = `http://192.168.86.29:8000/api`;
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
