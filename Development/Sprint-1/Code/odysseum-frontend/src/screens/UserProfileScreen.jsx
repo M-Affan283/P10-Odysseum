@@ -107,6 +107,12 @@ const UserProfileScreen = () => {
         }
     }
 
+    const updateSettings = async () => {
+        // Redirecting to settings screen page
+        router.push('/user/settings')
+    }
+
+
     //show username, profile picture, bio, number of followers, number of following, number of posts, then in a scrollview and gridview (like instagram) show the posts. also show logout button
   return (
     <SafeAreaView className="bg-primary h-full">
@@ -157,37 +163,76 @@ const UserProfileScreen = () => {
              )}
 
             //show user data and logout button in header
+            // ListHeaderComponent={() => (
+            //     <View className='w-full flex justify-center items-center mt-6 mb-12 px-4'>
+            //         <TouchableOpacity onPress={userLogout} className="flex w-full items-end mb-10">
+            //             <MaterialIcons name="logout" size={24} color="white" className='w-6 h-6'/>
+            //         </TouchableOpacity>
+            //         {/* place button to update profile picture later which will open media and update picture*/}
+            //         <View className="w-16 h-16 border border-secondary rounded-full flex justify-center items-center">
+            //             <Image source={{uri: user?.profilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}} className="w-[90%] h-[90%] rounded-full" resizeMode='cover' />
+            //         </View>
+            //         <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
+            //         <Text style={{ fontSize: 15, color: "grey" }}>{user?.username}</Text>
+            //         <View className="mt-5 flex flex-row space-x-5">
+            //             {/* temporarily commented out */}
+            //             <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/>
+            //             <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/>
+            //             <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4"/>
+            //         </View>
+            //         {/* for bio */}
+            //         <View className="w-full mt-5">
+            //             <TouchableOpacity onPress={() => setUpdateBio(true)} className="w-full flex justify-center items-center">
+            //                 <InfoBox title={user?.bio || '...'} subtitle="Click to update bio" containerStyles="p-2" titleStyles="text-base" />
+            //             </TouchableOpacity>
+            //         </View>   
+            //     </View>
+            // )}
             ListHeaderComponent={() => (
-                <View className='w-full flex justify-center items-center mt-6 mb-12 px-4'>
-                    <TouchableOpacity onPress={userLogout} className="flex w-full items-end mb-10">
-                        <MaterialIcons name="logout" size={24} color="white" className='w-6 h-6'/>
-                    </TouchableOpacity>
-
-                    {/* place button to update profile picture later which will open media and update picture*/}
+                <View className="w-full flex justify-center items-center mt-6 mb-12 px-4">
+                    {/* Header with logout and settings buttons */}
+                    <View className="flex flex-row w-full justify-between mb-10">
+                        <TouchableOpacity onPress={updateSettings} className="flex items-start">
+                            <MaterialIcons name="settings" size={24} color="white" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={userLogout} className="flex items-end">
+                            <MaterialIcons name="logout" size={24} color="white" />
+                        </TouchableOpacity>
+                    </View>
+            
+                    {/* Profile Picture and Info */}
                     <View className="w-16 h-16 border border-secondary rounded-full flex justify-center items-center">
-                        <Image source={{uri: user?.profilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}} className="w-[90%] h-[90%] rounded-full" resizeMode='cover' />
+                        <Image
+                            source={{ uri: user?.profilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" }}
+                            className="w-[90%] h-[90%] rounded-full"
+                            resizeMode="cover"
+                        />
                     </View>
-
-                    <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
+            
+                    <InfoBox title={user?.firstName + " " + user?.lastName} containerStyles="mt-7" titleStyles="text-lg" />
                     <Text style={{ fontSize: 15, color: "grey" }}>{user?.username}</Text>
-
+            
+                    {/* Followers, Following, and Posts */}
                     <View className="mt-5 flex flex-row space-x-5">
-                        {/* temporarily commented out */}
-                        <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/>
-                        <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/>
-                        <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4"/>
+                        <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4" />
+                        <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4" />
+                        <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4" />
                     </View>
-
-                    {/* for bio */}
+            
+                    {/* Bio Section */}
                     <View className="w-full mt-5">
                         <TouchableOpacity onPress={() => setUpdateBio(true)} className="w-full flex justify-center items-center">
-                            <InfoBox title={user?.bio || '...'} subtitle="Click to update bio" containerStyles="p-2" titleStyles="text-base" />
+                            <InfoBox
+                                title={user?.bio || "..."}
+                                subtitle="Click to update bio"
+                                containerStyles="p-2"
+                                titleStyles="text-base"
+                            />
                         </TouchableOpacity>
-
                     </View>
-                    
                 </View>
             )}
+            
         />
 
         {/*  Open a modal to update bio */}

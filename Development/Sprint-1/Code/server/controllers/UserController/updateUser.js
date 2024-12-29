@@ -42,7 +42,7 @@ export const updateUserBio = async (req, res) => {
 }
 
 export const updateUserProfilePicture = async (req, res) => {
-    
+
 }
 
 export const updateUserUsername = async (req, res) => {
@@ -67,30 +67,40 @@ export const updateUserUsername = async (req, res) => {
 }
 
 export const updateUserPassword = async (req, res) => {
-    const {userId, oldPassword, newPassword} = req.body;
+    const { userId, oldPassword, newPassword } = req.body;
 
     try {
+        // Fetch user from the database
         const user = await User.findById(userId);
-
+        console.log(user);
         if (!user) {
             console.log("User not found");
-            return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
+            return res.status(404).json({ message: "User not found." });
         }
 
-        oldPassword = bcrypt.hash(oldPassword, 10);
+        // Compare old password
+        const correctPassword = await bcrypt.compare(oldPassword, user.password);
 
-        if (!(user.password == oldPassword)) {
+        if (!correctPassword) {
             console.log("Incorrect password");
-            return res.status(400).json({ message: ERROR_MESSAGES.INCORRECT_PASSWORD });
+            return res.status(400).json({ message: "Incorrect password." });
         }
 
-        user.password = bcrypt.hash(newPassword, 10);
+        // Check if the new password is the same as the old password
+        const samePassword = await bcrypt.compare(newPassword, user.password);
+
+        if (samePassword) {
+            console.log("New password cannot be the same as the old password");
+            return res.status(400).json({ message: "New password cannot be the same as the old password." });
+        }
+
+        user.password = bcrypt.hashSync(newPassword, 10);
         await user.save();
 
-        return res.status(200).json({ message: SUCCESS_MESSAGES.USER_UPDATED });
+        console.log("Password updated successfully");
+        return res.status(200).json({ message: "Password updated successfully." });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: ERROR_MESSAGES.SERVER_ERROR });
+        console.error("Error updating password:", error);
+        return res.status(500).json({ message: "An error occurred while updating the password." });
     }
-}
-
+};
