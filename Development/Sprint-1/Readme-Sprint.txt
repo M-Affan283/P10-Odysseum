@@ -75,6 +75,14 @@ Now on your machine:
 
 5. Open Expo App on you phone, select scan QR code and scan the code. This will open up the app and you will now be able to navigate and use it.
 
+For server:
+1. In case the deployed backend server does not respond you can try to run the server on your local machine.
+2. To do so open another terminal and navigate to server directory.
+3. Install nodemon using "npm i nodemon -g".
+4. Then run "npm install"
+5. Finally run "nodemon server.js" to start up the server.
+6. In the front end, navigate to /src/util/axios.js. There in API_BASE_URL, replace the value there to <your-ip-address>:8000/api
+7. Your frontend should now be able to communicate with the server. (Restart the frontend too)
 
 
 
@@ -85,6 +93,9 @@ Now on your machine:
 ADDITIONAL INFORMATION
 
 <Any additional information that you would like me to know>
+We forgot to add the deployed backend URL in frontend in /src/utils/axios.js so here it is: https://p10-odysseum.onrender.com.
 
+Date Submitted: 29-December-2024
+Date Updated: 1-January-2025
 
 
