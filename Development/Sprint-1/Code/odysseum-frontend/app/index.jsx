@@ -9,7 +9,7 @@ import PostDetailsScreen from "../src/screens/PostDetailsScreen";
 import DiscoverLocationsScreen from "../src/screens/DiscoverLocationsScreen";
 import PostCard from "../src/components/PostCard";
 import UserSearchScreen from "../src/screens/UserSearchScreen";
-
+import MainSearchScreen from "../src/screens/MainSearchScreen";
 
 // Component testing
 
@@ -24,8 +24,9 @@ export default function App() {
       {/* <UserProfileScreen /> */}
       {/* <PostDetailsScreen postId="6730787a070ca3617028ad30" /> */}
       {/* <DiscoverLocationsScreen /> */}
-
       {/* <UserSearchScreen /> */}
+      {/* <MainSearchScreen /> */}
+
     </>
   );
 }
