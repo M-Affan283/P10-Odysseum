@@ -36,7 +36,8 @@ const UserSearchScreen = () => {
               type: 'error',
               position: 'bottom',
               text1: 'Error',
-              text2: error.response.data.error
+              text2: error.response.data.error,
+              visibilityTime: 3000,
           });
           setLoading(false);
       });
