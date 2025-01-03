@@ -16,7 +16,8 @@ import { SUCCESS_MESSAGES,ERROR_MESSAGES } from "../../utils/constants.js";
  */
 const getAllUsers = async (req,res) =>
 {
-    const { requestorId } = req.query;
+    const { requestorId, page=1 } = req.query;
+    let limit = 10;
 
     if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
 
@@ -26,9 +27,16 @@ const getAllUsers = async (req,res) =>
 
         if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
         // if(requestor.role !== 'admin') return res.status(403).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        const totalUsers = await User.countDocuments({});
 
-        const users = await User.find({});
-        return res.status(200).json({message: SUCCESS_MESSAGES.USERS_FOUND, users: users});
+        const skip = (page - 1) * limit;
+        const users = await User.find({}).skip(skip).limit(limit);
+        return res.status(200).json({
+            message: SUCCESS_MESSAGES.USERS_FOUND,
+            users: users,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalUsers / limit)
+        });
 
     }
     catch(error)
@@ -141,8 +149,9 @@ const getUserByUsername = async (req,res) =>
  */
 const getUserBySearchParams = async (req,res) =>
 {
-    const {requestorId, limit=5 ,searchParam="", lastId} = req.query;
-    console.log(req.query)
+    const {requestorId ,searchParam="", page = 1} = req.query;
+    // console.log(req.query)
+    let limit = 10;
     if(!requestorId || !searchParam) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
     // if(!lastId) return res.status(400).json({error: ERROR_MESSAGES.NO_CURSOR});
 
@@ -161,11 +170,11 @@ const getUserBySearchParams = async (req,res) =>
         }
 
         if(lastId) searchQuery._id = { $gt: lastId };
-
-        let users = await User.find(searchQuery).limit(Number(limit)).sort({_id: 1}).exec();
-
-        const hasMore = users.length === Number(limit) ? true : false; // if the number of users returned is equal to the limit, then there are potentially more users to fetch
         
+        let skip = (page - 1) * limit;
+        let users = await User.find(searchQuery).skip(skip).limit(limit);
+
+        const numberOfUsers = await User.countDocuments(searchQuery);
 
         // console.log(users);
         // change users to send only username. once user clicks on the username, then we can fetch the user details
@@ -177,11 +186,10 @@ const getUserBySearchParams = async (req,res) =>
         });
 
         return res.status(200).json({
+            message: "Users found",
             users: users,
-            pagination: {
-                hasMore: hasMore,
-                lastId: users.length > 0 ? users[users.length - 1]._id : null
-            }
+            currentPage: Number(page),
+            totalPages: Math.ceil(numberOfUsers / limit)
         });
 
 

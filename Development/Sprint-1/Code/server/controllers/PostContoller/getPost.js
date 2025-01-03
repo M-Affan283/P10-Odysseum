@@ -2,8 +2,6 @@
     Filename: getPosts.js
     Author: Affan
 */
-
-
 import { Post, Comment } from "../../models/Post.js";
 import { User } from "../../models/User.js";
 import { ERROR_MESSAGES,SUCCESS_MESSAGES } from "../../utils/constants.js";
@@ -17,21 +15,24 @@ import { ERROR_MESSAGES,SUCCESS_MESSAGES } from "../../utils/constants.js";
  */
 const getUserPosts = async (req,res) =>
 {
-    const { requestorId, userId } = req.query;
+    const { requestorId, userId, page=1 } = req.query;
     // console.log(req.query)
     if(!userId) return res.status(400).json({message: ERROR_MESSAGES.NO_USER_ID});
     if(!requestorId) return res.status(400).json({message: ERROR_MESSAGES.NO_REQUESTOR_ID});
+    let limit = 6;
 
     try
     {
         const user = await User.findById(userId);
-        const requestor = await User.findById(requestorId);
-
+        
         if(!user)
         {
             console.log("User not found");
             return res.status(404).json({message: ERROR_MESSAGES.USER_NOT_FOUND});
         }
+        
+        const requestor = await User.findById(requestorId);
+
         if(!requestor)
         {
             console.log("Requestor not found");
@@ -53,28 +54,20 @@ const getUserPosts = async (req,res) =>
         }
 
         //sort by most recent
-        let posts = await Post.find({creatorId: userId}).sort({createdAt: -1});
+        const skip = (page - 1) * limit;
+        //select only _id and mediaUrls
+        let posts = await Post.find({creatorId: userId}).select('_id mediaUrls').sort({createdAt: -1}).skip(skip).limit(Number(limit));
 
         if(!posts) return res.status(200).json({message: ERROR_MESSAGES.NO_POSTS, posts: []});
 
-        //no need to get comments for each post. only get the number of comments for each post
-        let postIds = posts.map(post => post._id);
-        let commentCounts = await Comment.aggregate([
-            { $match: { postId: { $in: postIds } } },
-            { $group: { _id: '$postId', count: { $sum: 1 } } }
-        ]);
+        
 
-        // console.log(commentCounts)
-
-        let postsWithCommentCount = posts.map(post => {
-            let commentCount = commentCounts.find(count => count._id.equals(post._id));
-            post = {...post._doc, commentCount: commentCount ? commentCount.count : 0};
-            return post;
+        return res.status(200).json({
+            message: "Posts retrieved",
+            posts: posts,
+            currentPage: Number(page),
+            totalPages: Math.ceil(posts.length / limit)
         });
-
-        // console.log(postsWithCommentCount)
-
-        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: postsWithCommentCount});
     }
     catch(error)
     {
@@ -93,9 +86,10 @@ const getUserPosts = async (req,res) =>
  */
 const getFollowingPosts = async (req,res) => //find the posts of the users the current user is following sorted by most recent
 {
-    const { requestorId } = req.query;
+    const { requestorId, page = 1 } = req.query;
 
     if(!requestorId) return res.status(400).json({error: ERROR_MESSAGES.NO_REQUESTOR_ID});
+    let limit = 5;
 
     try
     {
@@ -104,24 +98,24 @@ const getFollowingPosts = async (req,res) => //find the posts of the users the c
         if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
         //sort by most recent
-        const posts = await Post.find({creatorId: {$in: requestor.following}, isDeactivated: false}).sort({createdAt: -1});
+        // const posts = await Post.find({creatorId: {$in: requestor.following}, isDeactivated: false}).sort({createdAt: -1});
+        let skip = (page - 1) * limit;
+        const posts = await Post.find({creatorId: {$in: requestor.following}, isDeactivated: false})
+                                .populate('creatorId', 'username profilePicture')
+                                .sort({createdAt: -1})
+                                .skip(skip)
+                                .limit(Number(limit));
 
-        if(!posts) return res.status(404).json({error: ERROR_MESSAGES.NO_POSTS});
+        if(!posts) return res.status(404).json({message: ERROR_MESSAGES.NO_POSTS});
 
-        //no need to get comments for each post. only get the number of comments for each post
-        // const postIds = posts.map(post => post._id);
-        // const commentCounts = await Comment.aggregate([
-        //     { $match: { postId: { $in: postIds } } },
-        //     { $group: { _id: '$postId', count: { $sum: 1 } } }
-        // ]);
+        const totalPosts = await Post.countDocuments({creatorId: {$in: requestor.following}, isDeactivated: false});
 
-        // const postsWithCommentCount = posts.map(post => {
-        //     const commentCount = commentCounts.find(count => count._id.toString() === post._id.toString());
-        //     post.commentCount = commentCount ? commentCount.count : 0;
-        //     return post;
-        // });
-
-        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: posts});
+        return res.status(200).json({
+            message: SUCCESS_MESSAGES.POSTS_FOUND,
+            posts: posts,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalPosts / limit)
+        });
     }
     catch(error)
     {
@@ -176,21 +170,35 @@ const getPostById = async (req,res) =>
 }
 
 
-//pagination will be implemented later
+
 const getAllPosts = async (req,res) =>
 {
+
+    const { page = 1 } = req.query; //keep limit 5 for testing change it to 10 later
+    let limit = 5;
+
     try
     {
-        const posts = await Post.find({}).populate('creatorId', 'username profilePicture').sort({createdAt: -1});
+        let skip = (page - 1) * limit;
+        const posts = await Post.find({}).populate('creatorId', 'username profilePicture').sort({createdAt: -1}).skip(skip).limit(Number(limit));
 
         if(!posts) return res.status(404).json({error: ERROR_MESSAGES.NO_POSTS});
 
-        return res.status(200).json({message: SUCCESS_MESSAGES.POSTS_FOUND, posts: posts});
+        const totalPosts = await Post.countDocuments();
+
+        // console.log(totalPosts);
+
+        return res.status(200).json({
+            // message: "Posts found",
+            posts: posts,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalPosts / limit)
+        });
     }
     catch(error)
     {
         console.log(error);
-        return res.status(500).json({message: error});
+        return res.status(500).json({error: error});
     }
 }
 
