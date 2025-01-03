@@ -29,8 +29,6 @@ export const followUser = async (req, res) =>
 
         if(!user || !userToFollow) return res.status(404).json({success:false, message: ERROR_MESSAGES.USER_NOT_FOUND});
 
-        console.log("User: ", user);
-        // console.log("User to follow: ", userToFollow);
 
         // If the user is already following the user to follow, then unfollow the user
         if(user.following.includes(userToFollowId))
@@ -39,7 +37,7 @@ export const followUser = async (req, res) =>
             userToFollow.followers = userToFollow.followers.filter(follower => follower.toString() !== userId);
             await user.save();
             await userToFollow.save();
-            return res.status(200).json({success:true, message: SUCCESS_MESSAGES.USER_UNFOLLOWED});
+            return res.status(200).json({success:true, message: SUCCESS_MESSAGES.USER_UNFOLLOWED, status: "unfollowed"});
         }
         else // If the user is not following the user to follow, then follow the user
         {
@@ -47,7 +45,7 @@ export const followUser = async (req, res) =>
             userToFollow.followers.push(userId);
             await user.save();
             await userToFollow.save();
-            return res.status(200).json({success:true, message: SUCCESS_MESSAGES.USER_FOLLOWED});
+            return res.status(200).json({success:true, message: SUCCESS_MESSAGES.USER_FOLLOWED, status: "followed"});
         }
 
     }
