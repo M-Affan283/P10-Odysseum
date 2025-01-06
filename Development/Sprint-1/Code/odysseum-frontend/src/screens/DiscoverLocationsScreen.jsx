@@ -13,60 +13,7 @@ import LottieView from 'lottie-react-native';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 
 // Temporary Locations since database currently lacks many locations
-const tempLocations = [
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Chitral, KPK",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Giglit, Baltistan",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Hunza, Baltistan",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Kalam, KPK",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Murree, Punjab",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Skardu, Baltistan",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Swat, KPK",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Naran, KPK",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Kaghan, KPK",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Hunza, Baltistan",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Kalam, KPK",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Murree, Punjab",
-    },
-    {
-        _id: "67310369aa977e99fcc2c31e",
-        name: "Skardu, Baltistan",
-    }
-]
+import tempLocations from './tempfiles/templocations';
 
 const DiscoverLocationsScreen = () => {
 
