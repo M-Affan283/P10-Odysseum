@@ -1,13 +1,14 @@
 import React from 'react'
-import { Text, View, TouchableOpacity, Image, Dimensions } from "react-native";
+import { Text, View, TouchableOpacity, Image, Dimensions, ImageBackground } from "react-native";
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
 import { calculateDuration } from "../utils/dateTimCalc";
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { BookOpenIcon } from "react-native-heroicons/outline";
+import { BookOpenIcon, HeartIcon } from "react-native-heroicons/outline";
+import { HeartIcon as HeartIconSolid, MapPinIcon } from 'react-native-heroicons/solid';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useUserStore from '../context/userStore';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const width = Dimensions.get("window").width;
 
@@ -25,90 +26,101 @@ const PostCard = (({post}) => {
         })
     }
 
-    return (
-        // parent view is card
-        <SafeAreaView className="flex-1 items-center justify-center">
-        <View className="flex-1 bg-[#0e1c30] w-[95%] h-full mb-5 rounded-2xl">
-            {/* user info */}
-            <View className="flex-row justify-start p-4">
-                {/* profile pic */}
-                <Image source={{uri:post?.creatorId?.profilePicture}} className="w-16 h-16 rounded-full" />
+    const PostCardFooter = () =>
+    {
+        return (
+            <View style={{marginHorizontal: 20, paddingVertical: 15}}>
+                <View className="flex-row justify-between items-center mt-2">
 
-                <View className="flex-col justify-center ml-3">
-                    <TouchableOpacity onPress={() => post?.creatorId?._id !== user?._id ? router.push(`/user/${post?.creatorId?._id}`) : router.push(`/profile`)}>
-                        <Text className="font-bold text-white">
-                            {post?.creatorId?.username || "Username"}
-                        </Text>
-                    </TouchableOpacity>
-                    <Text className="text-white">
-                        {calculateDuration(post?.createdAt)}
-                    </Text>
+                    <View className="flex-row items-center py-1">
+                        <MapPinIcon size={15} color="gray" />
+                        <Text style={{color: "gray", paddingHorizontal: 5}}>{post?.location || "Lahore, Pakistan"}</Text>
+                    </View>
+
+                    <Text style={{color: "gray", paddingHorizontal: 5}}>{calculateDuration(post?.createdAt)}</Text>
                 </View>
 
+                <Text className="font-bold text-white text-lg">{post?.caption}</Text>
             </View>
-            {/* caption */}
-            <Text className="text-white p-4 mb-4">
-                {post.caption}
-            </Text>
+        )
+    }
 
-            {/* carousel of images*/}
-            {/* keep this commented out until fix is given */}
-            <View className="flex-1 items-center justify-center mt-3">
-                <Carousel 
-                    // loop={false}
-                    ref={ref}
-                    width={350}
-                    height={400}
-                    data={post.mediaUrls}
-                    style={{alignItems: 'center',justifyContent: 'center'}}
-                    onProgressChange={progress}
-                    onConfigurePanGesture={(panGesture) => {
-                        // for iOS and Android
-                        panGesture.activeOffsetX([-5, 5]);
-                        panGesture.failOffsetY([-5, 5]);
+    const PostCardImage = ({ children }) =>
+    {
+        return (
+            <View style={{borderRadius: 30, overflow: "hidden", borderWidth: 1}}>
+                <ImageBackground source={{uri: post?.mediaUrls[0]}} style={{width: '100%', aspectRatio: 1}} imageStyle={{borderRadius: 30, resizeMode: "cover"}}>
+                <LinearGradient
+                    colors={["rgba(0,0,0,.6)", "transparent"]}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 0, y: 0 }}
+                    style={{
+                        bottom: 0,
+                        height: 120,
+                        width: "100%",
+                        position: "absolute",
                     }}
-                    scrollAnimationDuration={200}
-                    renderItem={({item}) => (
-                        <View className="flex-1 items-center">
-                            <Image
-                                source={{uri: item}}
-                                style={{width: 350,height: 400, borderRadius: 15}}
-                                resizeMode="cover"
-                            />
+                />
+                {children}
+                </ImageBackground>
+            </View>
+        )
+    }
+
+    const Avatar = () =>
+    {
+        return (
+            <View className="flex-row">
+                <TouchableOpacity onPress={() => post?.creatorId?._id !== user?._id ? router.push(`/user/${post?.creatorId?._id}`) : router.push(`/profile`)} className="flex-row">
+                    <Image source={{uri: post?.creatorId?.profilePicture}} style={{width: 35, height: 35, borderRadius: 50}} />
+                    <View style={{marginLeft: 10}}>
+                        <Text className="font-bold text-white" style={{fontSize: 15}}>{post?.creatorId?.username}</Text>
+                    </View>
+                </TouchableOpacity>
+            </View>
+        )
+    }
+
+    const PostCardStats = () => //contains like and ppost details route button
+    {
+        const handleLike = async () => {};
+
+        return (
+            <>
+                <View className="flex-row justify-between items-center" style={{margin: 10}}>
+                    <Avatar />
+
+                    <View className="flex-row items-center gap-1">
+                        <View style={{zIndex: 10}}>
+                            <TouchableOpacity>
+                                <View className="bg-gray-700 p-3 rounded-full flex-row items-center">
+                                    <HeartIcon size={20} color="white" style={{paddingHorizontal: 5}} />
+                                </View>
+                            </TouchableOpacity>
                         </View>
-                    )}
-                />
+                        <View style={{zIndex: 10}}>
+                            <TouchableOpacity onPress={() => router.push(`/post/${post?._id}`)}>
+                                <View className="bg-gray-700 p-3 rounded-full flex-row items-center">
+                                    <BookOpenIcon size={20} color="white" style={{paddingHorizontal: 5}} />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
 
-                <Pagination.Basic 
-                    progress={progress}
-                    data={post.mediaUrls}
-                    onPress={onPressPagination}
-                    size={15}
-                    dotStyle={{backgroundColor: 'gray', borderRadius: 100}}
-                    activeDotStyle={{backgroundColor: 'white', overflow: 'hidden', aspectRatio: 1, borderRadius: 15}}
-                    containerStyle={{gap: 5, marginTop: 10}}
-                    horizontal
-                
-                />
-            </View>
+                    </View>
+                </View>
+            </>
+        )
+    }
 
-            {/* divider */}
-            <View className="border-b-2 border-gray-300 w-11/12 self-center mt-4"></View>
-
-            {/* like, comment, share buttons */}
-            <View className="flex-row justify-around p-1">
-            <TouchableOpacity className="flex-row justify-center p-5 rounded-md">
-                <FontAwesome name="heart-o" size={24} color="white" />
-            </TouchableOpacity>
-
-            <TouchableOpacity className="flex-row justify-center p-5 rounded-md" onPress={() => router.push(`/post/${post._id}`)}>
-                <BookOpenIcon size={24} color="white" />
-            </TouchableOpacity>
-
-            </View>
-
+    return (
+        <View className=" bg-[#2E2F40]" style={{borderRadius: 30, marginHorizontal: 10}}>
+            <PostCardImage>
+                <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
+                    <PostCardStats />
+                </View>
+            </PostCardImage>
+            <PostCardFooter />
         </View>
-        </SafeAreaView>
     )
 })
 

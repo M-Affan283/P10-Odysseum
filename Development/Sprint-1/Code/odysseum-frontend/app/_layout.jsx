@@ -7,8 +7,11 @@ import { StatusBar } from "expo-status-bar";
 import useUserStore from "../src/context/userStore";
 import { router } from "expo-router";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 SplashScreen.preventAutoHideAsync(); //prevent the splash screen from hiding automatically
 
+const client = new QueryClient();
 //TODO: IMPROVE TAB BAR, HOMESCREEN AND USER PROFILE SCREEN UI
 
 const RootLayout = () => {
@@ -53,20 +56,21 @@ const RootLayout = () => {
   
   return (
     <>
-      <GestureHandlerRootView style={{flex: 1}}>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="search/[query]" options={{ headerShown: false }} />
-          <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="user" options={{ headerShown: false }} />
-          <Stack.Screen name="location" options={{ headerShown: false }} />
-        </Stack>
-        {/* for further configuration check docs */}
-        <Toast/> 
-      </GestureHandlerRootView>
+      <QueryClientProvider client={client}>
+        <GestureHandlerRootView style={{flex: 1}}>
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="user" options={{ headerShown: false }} />
+            <Stack.Screen name="location" options={{ headerShown: false }} />
+          </Stack>
+          {/* for further configuration check docs */}
+          <Toast/> 
+        </GestureHandlerRootView>
         <StatusBar translucent backgroundColor="transparent" />
+      </QueryClientProvider>
     </>
   );
 };
