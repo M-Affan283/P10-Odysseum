@@ -1,4 +1,4 @@
-/*
+    /*
 
 File: getComment.js
 
@@ -23,18 +23,27 @@ import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../utils/constants.js";
  */
 export const getCommentsByPostId = async (req, res) => 
 {
-    const { postId } = req.query;
+    const { postId, page = 1 } = req.query;
 
     if(!postId) return res.status(400).json({error: ERROR_MESSAGES.NO_POST_ID});
+    let limit = 10;
 
     try
     {
         //find comment populated creatorId with username and profile picture
-        const comments = await Comment.find({postId: postId}).populate('creatorId', 'username profilePicture');
+        let skip = (page - 1) * limit;
+        const comments = await Comment.find({postId: postId}).sort({createdAt: -1}).skip(skip).limit(Number(limit)).populate('creatorId', 'username profilePicture');
 
         if(!comments) return res.status(200).json({comments: []});
 
-        return res.status(200).json({message: SUCCESS_MESSAGES.COMMENTS_FOUND, comments: comments});
+        const totalComments = await Comment.countDocuments({postId: postId});
+
+        return res.status(200).json({
+            message: SUCCESS_MESSAGES.COMMENTS_FOUND,
+            comments: comments,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalComments / limit)
+        });
 
     }
     catch(error)
