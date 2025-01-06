@@ -99,7 +99,7 @@ const PostCard = (({post}) => {
                             </TouchableOpacity>
                         </View>
                         <View style={{zIndex: 10}}>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => router.push(`/post/${post?._id}`)}>
                                 <View className="bg-gray-700 p-3 rounded-full flex-row items-center">
                                     <BookOpenIcon size={20} color="white" style={{paddingHorizontal: 5}} />
                                 </View>
