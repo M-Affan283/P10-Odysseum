@@ -60,13 +60,14 @@ const getUserPosts = async (req,res) =>
 
         if(!posts) return res.status(200).json({message: ERROR_MESSAGES.NO_POSTS, posts: []});
 
+        const totalPosts = await Post.countDocuments({creatorId: userId});
         
 
         return res.status(200).json({
             message: "Posts retrieved",
             posts: posts,
             currentPage: Number(page),
-            totalPages: Math.ceil(posts.length / limit)
+            totalPages: Math.ceil(totalPosts / limit)
         });
     }
     catch(error)

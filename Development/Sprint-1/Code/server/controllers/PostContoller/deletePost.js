@@ -40,7 +40,7 @@ export const deletePost = async (req,res) =>
         if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
         //Aiuthorization check. If not creator or admin, return unauthorized
-        if(post.creatorId.toString() !== userId && user.role !== 'admin') return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        if(post.creatorId.toString() !== userId || user.role !== 'admin') return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
 
         //delete all media files for the post if any
         const deletefiles = await deleteFiles(post.mediaUrls);
