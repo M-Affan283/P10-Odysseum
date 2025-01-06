@@ -70,7 +70,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide a password'],
         minlength: [6, 'Password cannot be less than 6 characters'],
-        select: true // exclude password from query results
     },
     
     profilePicture: {
