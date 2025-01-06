@@ -1,99 +1,215 @@
-import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native'
-import {useCallback, useState} from 'react'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetModalProvider, BottomSheetView } from '@gorhom/bottom-sheet';
-import Feather from '@expo/vector-icons/Feather';
-import LottieView from 'lottie-react-native';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native';
+import React, {useEffect, useState} from 'react';
 import { FlatList } from 'react-native-gesture-handler';
+import { PaperAirplaneIcon } from 'react-native-heroicons/outline';
+import { ChatBubbleBottomCenterTextIcon } from 'react-native-heroicons/solid';
+import ActionSheet from 'react-native-actions-sheet';
+import axiosInstance from '../utils/axios';
+import useUserStore from '../context/userStore';
+import LottieView from 'lottie-react-native';
+import tempComments from '../screens/tempfiles/tempcomment';
+import { useInfiniteQuery } from '@tanstack/react-query';
+
+const getQueryComments = async ({pageParam = 1, postId }) => {
+
+    console.log("Page param:", pageParam);
+
+    try
+    {
+        const res = await axiosInstance.get(`/comment/getByPostId?page=${pageParam}&postId=${postId}`);
+        return res.data;
+    }
+    catch(error)
+    {
+        console.log(error);
+        throw error;
+    }
+}
 
 //will open when user clicks on comments count
-const CommentModal = ({bottomSheetRef, comments, loading, addComment}) =>
+const CommentModal = ({postId, visible, setVisible}) =>
 {
+    const [comments, setComments] = useState([]);
     const [commentInput, setCommentInput] = useState('');
-    
-    const renderBackDrop = useCallback((props) => (
-    <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />
-    ))
 
-    // try npm install react-native-actions-sheet
+    const user = useUserStore((state) => state.user);
+
+    const actionSheetRef = React.useRef();
+    const inputRef = React.useRef();
+
+    const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
+        queryKey: ['comments', postId],
+        queryFn: ({pageParam=1}) => getQueryComments({pageParam, postId: postId}),
+        getNextPageParam: (lastPage) => {
+            // console.log("Last page:" , JSON.stringify(lastPage,null,2));
+            const { currentPage, totalPages } = lastPage;
+            return currentPage < totalPages ? currentPage + 1 : undefined;
+        },
+        //disable query until visible
+        enabled: visible,
+    });
+
+
+    useEffect(()=>
+    {
+        if(visible)
+        {
+            console.log(postId)
+            actionSheetRef.current?.setModalVisible(true);
+            inputRef.current?.focus();
+            // getComments();
+        }
+        else actionSheetRef.current?.setModalVisible(false);
+
+    }, [visible])
+
+    useEffect(()=>
+    {
+        if(data)
+        {
+            console.log(data.pages);
+            const commentsList = data?.pages.flatMap((page) => page.comments) || [];
+            setComments(commentsList);
+        }
+    }, [data])
+
+    const addComment = async (text) =>
+    {
+        console.log(text)
+        // do axios call later. for now just add comment to comments array to check if flatlist renders them properly
+        const tempId = Math.random().toString();
+
+        //blur method
+        setComments((prevComments) => [...prevComments, { _id: tempId,
+                                                        postId: postId,
+                                                        creatorId: { _id: user?._id, username: user?.username, profilePicture: user?.profilePicture },
+                                                        text: text,
+                                                        blurred: true }]); 
+        
+        axiosInstance.post('/comment/addTopComment', {postId: postId, creatorId: user._id, text: text})
+        .then((res)=>
+        {
+            console.log(res.data);
+            // getComments(); might do this or use the blur method
+
+            //blur method: find the comment with tempId, update id to res.data.comment._id and set blurred to false
+            setComments((prevComments) => prevComments.map((comment) => {
+                if(comment._id === tempId) return {
+                    ...comment,
+                    _id: res.data.comment._id,
+                    blurred: false
+                }
+                
+                return comment;
+            }))
+
+        })
+        .catch((error)=>
+        {
+            console.log(error);
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error',
+                text2: error.response.data.error
+            });
+            //remove the comment with tempId from comments array
+            setComments((prevComments) => prevComments.filter((comment) => comment._id !== tempId));
+        });    
+    }
+
+    
     
     const handleCommentInput = (text) =>
     {
-    addComment(text);
-    setCommentInput('');
+        addComment(text);
+        setCommentInput('');
+    }
+
+    const loadMoreComments = () => {
+        if(hasNextPage) fetchNextPage();
+    }
+
+    const ListEmptyComponent = () => {
+
+        return (
+            <View className="flex-1 justify-center items-center">
+                {
+                    isFetching ? (
+                        <LottieView
+                            source={require('../../assets/LoadingAnimation.json')}
+                            style={{
+                            width: 100,
+                            height: 100,
+                            }}
+                            autoPlay
+                            loop
+                        />
+                    ) : error ? (
+                        <View className="flex justify-center items-center">
+                            <ExclamationCircleIcon size={24} color="white" />
+                            <Text className="text-xl text-center font-semibold text-white mt-2">
+                                "Something went wrong. Please try again later."
+                            </Text>
+                        </View>
+                    ) : (
+                        <View className="flex justify-center items-center pb-10 pt-4">
+                            <ChatBubbleBottomCenterTextIcon size={35} color="gray" />
+                            <Text className="text-xl text-center font-semibold text-gray-600 mt-2">
+                                "No comments"
+                            </Text>
+
+                        </View>
+                    )
+                }
+            </View>
+        )
     }
     
     return (
-    <BottomSheetModalProvider>
+    
+        <View className="flex-1">
+            <ActionSheet
+                ref={actionSheetRef}
+                containerStyle={{backgroundColor: '#161622', borderTopLeftRadius: 30, borderTopRightRadius: 30}}
+                indicatorStyle={{width: 50, marginVertical: 10, backgroundColor: '#fff'}}
+                gestureEnabled={true}
+                onClose={() => setVisible(false)}
+                statusBarTranslucent={true}
+                keyboardHandlerEnabled={true}
         
-        <BottomSheetModal
-        ref={bottomSheetRef}
-        snapPoints={['80%']}
-        index={1}
-        enablePanDownToClose={true}
-        handleIndicatorStyle={{ backgroundColor: '#fff' }}
-        backgroundStyle={{ backgroundColor: '#1d0f4e' }}
-        backdropComponent={renderBackDrop}
-        keyboardBehavior='extend' //check this out
-        keyboardBlurBehavior='restore'
-        android_keyboardInputMode='adjustResize'
-        maxDynamicContentSize={600}
-        >
+            >
 
-        <BottomSheetView style={{ flex: 1, backgroundColor: '#161622' }}>
-
-            { loading ? (
-            <View className="flex items-center justify-center h-full">
-                <LottieView
-                source={require('../../assets/LoadingAnimation.json')}
-                style={{
-                    width: 100,
-                    height: 100,
-                }}
-                autoPlay
-                loop
-                />
-            </View>
-            )
-            : 
-            (
-            <View className="flex-1">
-                <View className="flex-1 flex-grow">
                 <FlatList
                     data={comments}
-                    // extraData={comments} check this out
-                    renderItem={({ item }) => <CommentCard comment={item} />}
                     keyExtractor={(item) => item._id}
                     keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{ padding: 5 }}
-                    ListEmptyComponent={() => (
-                    <View className="flex justify-center items-center px-4">
-                        <MaterialIcons name='hourglass-empty' size={24} color='white' className="w-[270px] h-[216px]"/>
-                        <Text className="text-sm font-medium text-gray-100">Empty</Text>
-                        <Text className="text-xl text-center font-semibold text-white mt-2">
-                            No comments yet.
-                        </Text>
-                    </View>
-                    )}
-                    
+                    contentContainerStyle={{ padding: 0, paddingBottom: 60 }}
+                    ListEmptyComponent={ListEmptyComponent}
+                    onEndReached={loadMoreComments}
+                    onEndReachedThreshold={0.5}
+                    renderItem={({item}) => <CommentCard comment={item} />}
                 />
-                </View>
-                {/* footer containing input*/}
-                <View className="flex flex-row justify-center py-4">
-                    <TextInput placeholder='Add a comment...' placeholderTextColor="white" style={{color: 'white', width: '80%', padding: 10, borderRadius: 8, backgroundColor: '#333'}} onChangeText={(text)=>setCommentInput(text)} />
-                    <TouchableOpacity onPress={()=>handleCommentInput(commentInput)} className="flex justify-center items-center" style={{padding: 10, borderRadius: 8}}>
-                        <Feather name="send" size={24} color="orange" /*tyle={{padding: 10, backgroundColor: '#333', borderRadius: 8}}*/ />
+
+                <View className="flex-row absolute bottom-0 right-0 left-0 items-center w-full" style={{backgroundColor: '#161622', borderWidth: 1, borderTopColor: 'gray'}}>
+                    <View style={{ flex: 1, marginVertical: 5, marginHorizontal: 5 }}> 
+                        <TextInput
+                            ref={inputRef}
+                            placeholder="Add a comment..."
+                            placeholderTextColor={'gray'}
+                            value={commentInput}
+                            onChangeText={(text)=>setCommentInput(text)}
+                            keyboardType='default'
+                            style={{flex:1, width: '95%', padding: 10, backgroundColor: '#161622', color: 'white', borderRadius: 20}}
+                        />
+                    </View>
+                    <TouchableOpacity onPress={() => handleCommentInput(commentInput)} className="flex items-center justify-center" style={{marginRight: 10}}>
+                        <PaperAirplaneIcon size={30} color="white" />
                     </TouchableOpacity>
                 </View>
 
-            </View>
-            )}
-
-        </BottomSheetView>
-
-        </BottomSheetModal>
-    </BottomSheetModalProvider>
-
+            </ActionSheet>
+        </View>
     
 
     )
@@ -102,16 +218,18 @@ const CommentModal = ({bottomSheetRef, comments, loading, addComment}) =>
 const CommentCard = ({comment}) =>
 {
     return (
-    <View className="flex flex-row items-start gap-4 py-4" style={comment?.blurred ? {opacity: 0.5} : {opacity: 1}}>
-        {/* Profile Picture */}
-        <Image
-        source={{ uri: comment?.profilePicture }}
-        className="w-12 h-12 rounded-full"
-        />
-        {/* Comment */}
-        <View className="flex flex-col">
-        <Text className="text-white text-xs">{comment?.username}</Text>
-        <Text className="text-white">{comment?.text}</Text>
+    <View className="flex-row items-center justify-between" style={[comment?.blurred ? {opacity: 0.5} : {opacity: 1}, {marginHorizontal: 10, marginVertical: 10, padding: 15, borderRadius: 20}]}>
+        
+        <View className="flex-row">
+            <Image source={{ uri: comment?.creatorId?.profilePicture }} style={{ width: 50, height: 50, borderRadius: 50 }} resizeMode='cover'/>
+            <View className="flex-1 justify-center" style={{marginHorizontal: 10}}>
+               
+                <View className="flex-col">
+                    <Text className="text-white text-xs font-bold">{comment?.creatorId?.username}</Text>
+                    <Text className="text-white">{comment?.text}</Text>
+                </View>
+            
+            </View>
         </View>
         
     </View>

@@ -1,13 +1,18 @@
-import { View, Text, Image, ScrollView, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, Image, ScrollView } from 'react-native'
 import {useCallback, useEffect, useRef, useState} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axiosInstance from '../utils/axios';
 import Toast from 'react-native-toast-message';
 import useUserStore from '../context/userStore';
-import Carousel from '../components/Carousel';
-import Feather from '@expo/vector-icons/Feather';
+import Carousel, { Pagination } from "react-native-reanimated-carousel";
+import { useSharedValue } from "react-native-reanimated";
+import { HeartIcon, ChatBubbleLeftEllipsisIcon, ChevronLeftIcon } from "react-native-heroicons/outline";
+import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 import LottieView from 'lottie-react-native';
 import CommentModal from '../components/CommentsModal';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { router } from 'expo-router';
+import { calculateDuration } from '../utils/dateTimCalc';
 
 const tempPost = {
   "_id": "6730787a070ca3617028ad30",
@@ -27,110 +32,22 @@ const tempPost = {
   "commentCount": 2
 };
 
-const tempComments = [
-  {
-    "_id": "1",
-    "username": "affantest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is a comment",
-  },
-  {
-    "_id": "2",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "2543`",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "2880",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "2889",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "288",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "20",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "21",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "22",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "24",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "5",
-    "username": "haroontest",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment",
-  },
-  {
-    "_id": "75",
-    "username": "haroontest2122",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "This is another comment hhhhhh",
-  },
-  {
-    "_id": "72",
-    "username": "haroontest2222",
-    "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-    "text": "hhhhhh",
-  },
-  
-]
-
 const PostDetailsScreen = ({postId}) => {
 
-    const [post, setPost] = useState(null); //post details will be fetched from backend
-    const [comments, setComments] = useState([]); //if user slects show somments, a scrollable modal will appear with comments
-    const [loading, setLoading] = useState(true);
-    const [commentsLoading, setCommentsLoading] = useState(false);
+    const [post, setPost] = useState(tempPost || null); //post details will be fetched from backend
+    const [loading, setLoading] = useState(false);
+    const [commentModalVisibile, setCommentModalVisible] = useState(false);
 
     const user = useUserStore((state) => state.user);
 
-    
-    const bottomSheetRef = useRef(null);
-    
-    const handleClosePress = () =>
-    {
-        bottomSheetRef.current?.close();
-    }
+    const carouselRef = useRef(null); 
+    const progress = useSharedValue(0);
 
-    const handleOpenPress = () =>
-    {
-      // setCommentsLoading(true);
-      bottomSheetRef.current?.present();
-      getComments();
+    const onPressPagination = (index) => {
+      carouselRef.current?.scrollTo({
+        count: index - progress.value,
+        animated: true
+      })
     }
 
     const getPost = async () =>
@@ -141,7 +58,7 @@ const PostDetailsScreen = ({postId}) => {
 
       try
       {
-        axiosInstance.get('/post/getById', {params: {requestorId: user._id, postId: postId}})
+        axiosInstance.get(`/post/getById?postId=${postId}&requestorId=${user._id}`) //, {params: {requestorId: user._id, postId: postId}})
         .then((res)=>
         {
           // console.log(res.data.post);
@@ -178,93 +95,6 @@ const PostDetailsScreen = ({postId}) => {
       getPost();
     }, [])
 
-    const getComments = async () =>
-    {
-      console.log("Retrieving comments...");
-    
-      // setCommentModalVisible(true);
-      setCommentsLoading(true);
-      
-      axiosInstance.get('/comment/getByPostId', {params: {postId: postId}})
-      .then((res)=>
-      {
-        console.log(res.data.comments);
-        
-        //check if res.data.comments has comments that are already in comments array. if they are then dont add them
-        if(res.data.comments.length > 0)
-        {
-          res.data.comments.forEach((comment) => {
-            if(!comments.some((c) => c._id === comment._id))
-            {
-              //append new comments to existing comments
-              setComments((prevComments) => [...prevComments, { _id: comment._id, username: comment.creatorId.username, profilePicture: comment.creatorId.profilePicture, text: comment.text }]);
-            }
-          });
-        }
-
-        setCommentsLoading(false);
-
-        // setComments([...comments, ...res.data.comments]); //append new comments to existing comments
-      })
-      .catch((error)=>
-      {
-        console.log(error);
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: 'Error',
-          text2: error.response.data.error
-        });
-        setCommentsLoading(false);
-      });
-  
-      
-    }
-
-    const addComment = async (text) =>
-    {
-      console.log(text)
-      // do acios call later. for now just add comment to comments array to check if flatlist renders them properly
-      const tempId = Math.random().toString();
-
-      //blur method
-      setComments((prevComments) => [...prevComments, { _id: tempId, username: user.username, profilePicture: user.profilePicture, text: text, blurred: true }]); //append hopeful comment to existing comments. set blurred to true to show that comment is being added
-      
-      axiosInstance.post('/comment/addTopComment', {postId: postId, creatorId: user._id, text: text})
-      .then((res)=>
-      {
-        console.log(res.data);
-        // getComments(); might do this or use the blur method
-
-        //blur method: find the comment with tempId, update id to res.data.comment._id and set blurred to false
-        setComments((prevComments) => prevComments.map((comment) => {
-          if(comment._id === tempId)
-          {
-            return { _id: res.data.comment._id, username: user.username, profilePicture: user.profilePicture, text: text, blurred: false }
-          }
-          return comment;
-        }))
-
-      })
-      .catch((error)=>
-      {
-        console.log(error);
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: 'Error',
-          text2: error.response.data.error
-        });
-
-        //remove the comment with tempId from comments array
-        setComments((prevComments) => prevComments.filter((comment) => comment._id !== tempId));
-      });
-
-    
-    }
-      
-  
-
 
   return loading ? (
     <SafeAreaView className="bg-primary h-full">
@@ -286,23 +116,70 @@ const PostDetailsScreen = ({postId}) => {
   :
   (
     <SafeAreaView className="bg-primary h-full">
-        <ScrollView className="px-4 my-6">
+        <ScrollView className="px-4 my-6" showsVerticalScrollIndicator={false}>
+
+          <TouchableOpacity onPress={() => router.back()} className="items-start justify-start py-4 ml-3">
+            <ChevronLeftIcon size={30} strokeWidth={4} color="white" />
+          </TouchableOpacity>
 
           {/* user data first */}
           <View className="flex flex-row justify-start gap-4 py-5">
             <Image source={{uri: post?.creatorId?.profilePicture}} className="w-16 h-16 rounded-full" />
-            <Text className="text-lg text-white">{post?.creatorId?.username || "Username"}</Text>
+            <View className="gap-y-1">
+              <Text className="text-lg text-white">{post?.creatorId?.username || "Username"}</Text>
+              <Text className="text-gray-500">{calculateDuration(post?.createdAt)}</Text>
+            </View>
           </View>
 
           {/* post media in carousel*/}
+          <View className="flex-1 items-center justify-center mt-5">
 
-          <Carousel imagesUri={post?.mediaUrls} />
+            <Carousel 
+                data={post?.mediaUrls}
+                loop={false}
+                ref={carouselRef}
+                width={350}
+                height={400}
+                scrollAnimationDuration={100}
+                style={{alignItems: 'center',justifyContent: 'center'}}
+                onProgressChange={progress}
+                onConfigurePanGesture={(panGesture) => {
+                    panGesture.activeOffsetX([-5, 5]);
+                    panGesture.failOffsetY([-5, 5]);
+                }}
+                renderItem={({item}) => (
+                    <View className="items-center">
+                        <Image
+                            source={{uri: item}}
+                            style={{width: 350,height: 400, borderRadius: 5}}
+                            resizeMode="cover"
+                            />
+                    </View>
+                )}
+              />
+
+            <Pagination.Basic 
+                progress={progress}
+                data={post?.mediaUrls}
+                onPress={onPressPagination}
+                size={10}
+                dotStyle={{backgroundColor: 'gray', borderRadius: 100}}
+                activeDotStyle={{backgroundColor: 'white', overflow: 'hidden', aspectRatio: 1, borderRadius: 15}}
+                containerStyle={{gap: 5, marginTop: 20}}
+                horizontal
+              />
+            </View>
 
 
           {/* heart icon on left end and likes on right end */}
-          <View className="flex flex-row justify-between my-3">
-            <Feather name="heart" size={24} color="white" />
-            <Text className="text-white justify-end">{post?.likeCount || 0} likes</Text>
+          <View className="flex-row my-5 gap-x-5">
+            <TouchableOpacity>
+              <HeartIcon size={30} color="white" />
+            </TouchableOpacity>
+
+            <TouchableOpacity activeOpacity={0.6} onPress={()=> setCommentModalVisible(true)}>
+              <ChatBubbleLeftEllipsisIcon size={30} color="white" />
+            </TouchableOpacity>
           </View>
 
           {/* post username in bold then caption */}
@@ -313,21 +190,15 @@ const PostDetailsScreen = ({postId}) => {
           </View>
 
           {/* show comments count at right end make clickable to open comments modal etc. no touchableopacity*/}
-          <View className="flex flex-row justify-end py-6">
-            <TouchableWithoutFeedback onPress={()=>handleOpenPress()}>
+          <View className="flex py-6 gap-y-2">
               <Text className="text-gray-500">{post?.commentCount || 0} comments</Text>
-            </TouchableWithoutFeedback>
+              <Text className="text-gray-500">{post?.likeCount || 0} likes</Text>
           </View>
-
-          
-
-          {/* finally a created at field. Should be in the form of (months/days/hours/minutes) ago */}
-
 
         </ScrollView>
 
         {/* <View className="bg-gray-500"> */}
-        <CommentModal bottomSheetRef={bottomSheetRef} comments={comments} loading={commentsLoading} addComment={addComment} />
+        <CommentModal postId={postId} visible={commentModalVisibile} setVisible={setCommentModalVisible}/>
 
     </SafeAreaView>
   )
