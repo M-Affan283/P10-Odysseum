@@ -21,8 +21,7 @@ dotenv.config({ path: './config.env' });
 const app = (await import('./app.js')).default; //importing using this so that app.js can access the environment variables
 
 
-// const environment = process.argv[2] || 'remote';
-const environment = 'remote';
+const environment = process.argv[2] || 'remote';
 const MONGO_URI = environment === 'local' ? process.env.MONGODB_URI_LOCAL : process.env.MONGODB_URI_REMOTE;
 
 //Local if mongodb compass is being used
