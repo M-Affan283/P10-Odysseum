@@ -1,57 +1,63 @@
-/*
-
-Filename: Review.js
-
-This file contains the schema for the Review model. It defines the structure of the review document in the MongoDB database.
-
-Author: Affan
-
-*/
+/* Author: Affan */
 
 import mongoose from "mongoose";
 
 /**
  * Review Schema
- * @param {ObjectId} reviewerId - The ID of the user who created the review
- * @param {String} reviewOf - The name of the product being reviewed (location, service, etc.)
- * @param {ObjectId} reviewOfId - The ID of the product being reviewed
- * @param {Number} rating - The rating given by the reviewer
- * @param {String} reviewText - The text content of the review
- * @param {Timestamp} createdAt - The timestamp when the review was created
- * @param {Timestamp} updatedAt - The timestamp when the review was last updated
+ * @param {ObjectId} creatorId  - The ID of the user who created the review
+ * @param {String} entityType    - The type of entity being reviewed (Location or Business)
+ * @param {ObjectId} entityId    - The ID
+ * @param {Number} rating        - The rating given by the user (1-5)
+ * @param {String} reviewContent - The content of the review
+ * @param {Number} upvotes       - The number of upvotes for the review
+ * @param {Number} downvotes     - The number of downvotes for the review
 */
 
 const reviewSchema = new mongoose.Schema({
-    reviewerId: {
+    
+    creatorId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, 'Please provide a reviewer ID']
+        ref: 'User',
+        required: [true, 'Please provide a creator ID']
     },
 
-    reviewOf: {
+    entityType: {
         type: String,
-        required: [true, 'Please provide the name of the product being reviewed'],
-        enum: ['location', 'business'],
-        default: 'location'
+        required: [true, 'Please provide an entity type'],
+        enum: ['Location', 'Business']
     },
 
-    reviewOfId: {
+    entityId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, 'Please provide the ID of the product being reviewed']
+        required: [true, 'Please provide an entity ID'],
+        refPath: 'entityType'
     },
 
     rating: {
         type: Number,
         required: [true, 'Please provide a rating'],
-        min: [1, 'Rating must be at least 1'],
-        max: [5, 'Rating cannot be more than 5']
+        min: 1,
+        max: 5
     },
 
-    reviewText: {
+    reviewContent: {
         type: String,
+        required: [true, 'Please provide a review content'],
         trim: true,
-        maxlength: [1000, 'Review text cannot be more than 1000 characters']
-    }
+        maxlength: [500, 'Review content cannot be more than 500 characters']
+    },
+
+    upvotes: {
+        type: Number,
+        default: 0
+    },
+
+    downvotes: {
+        type: Number,
+        default: 0
+    },
+
 }, { timestamps: true });
 
-export const Review = mongoose.model('Review', reviewSchema, 'Review');
 
+export const Review = mongoose.model('Review', reviewSchema, 'Review');
