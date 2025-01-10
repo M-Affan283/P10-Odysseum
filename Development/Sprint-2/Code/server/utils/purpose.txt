@@ -1,0 +1,4 @@
+ Contains utility functions that can be reused across the application.
+│   └── Examples:
+│       ├── logger.js (Custom logging utility)
+│       └── validators.js (Input validation functions)

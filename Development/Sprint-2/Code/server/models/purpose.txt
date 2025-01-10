@@ -1,0 +1,4 @@
+Contains the schema definitions for your MongoDB collections. Each model represents a resource in the application.
+│   └── Examples:
+│       ├── User.js (Schema for user accounts)
+│       └── Post.js (Schema for posts created by users)
