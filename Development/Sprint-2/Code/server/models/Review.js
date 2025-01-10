@@ -47,6 +47,10 @@ const reviewSchema = new mongoose.Schema({
         maxlength: [500, 'Review content cannot be more than 500 characters']
     },
 
+    imageUrls: [{
+        type: String
+    }],
+
     upvotes: {
         type: Number,
         default: 0

@@ -1,0 +1,2 @@
+This folder is to store any small or useful helper functions that could be used to manipulate data.
+

@@ -18,10 +18,10 @@ const businessSchema = new mongoose.Schema({
         maxlength: [250, 'Description cannot be more than 500 characters']
     },
 
-    imageUrl: {
+    imageUrls: [{
         type: String,
         // required: [true, 'Please provide an image URL'], make true later
-    },
+    }],
 
     contactInfo: {
         phone: String,
@@ -70,6 +70,11 @@ const businessSchema = new mongoose.Schema({
     lastInteraction: { // To track dynamic popularity
         type: Date,
         default: null,
+    },
+
+    heatmapScore: { // To track heatmap intensity
+        type: Number,
+        default: 0,
     },
 
 
