@@ -17,8 +17,8 @@ const postRouter = express.Router();
 postRouter.post("/create", upload.array("media", 5), createPost);
 postRouter.get("/getById", getPostById);
 postRouter.get("/getUserPosts", getUserPosts);
-postRouter.get("/getFollowingPosts", getFollowingPosts);
-postRouter.get("/getAllPosts", getAllPosts);
+postRouter.get("/getFollowing", getFollowingPosts);
+postRouter.get("/getAll", getAllPosts);
 postRouter.post("/update", updatePost);
 postRouter.delete("/delete", deletePost);
 
@@ -26,7 +26,7 @@ postRouter.delete("/delete", deletePost);
 // post_router.post("/create", verifyToken, upload.array("media",5), PostController.createPost);
 // post_router.get("/getSingle", verifyToken, PostController.getSinglePost);
 // post_router.get("/getUserPosts", verifyToken, PostController.getUserPosts);
-// post_router.get("/getFollowingPosts", verifyToken, PostController.getFollowingPosts);
+// post_router.get("/getFollowing", verifyToken, PostController.getFollowingPosts);
 // post_router.put("/update", verifyToken, PostController.updatePost);
 // post_router.delete("/delete", verifyToken, PostController.deletePost);
 
