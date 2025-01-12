@@ -25,7 +25,7 @@ import { deleteFiles } from "../../services/firebaseService.js";
  */
 export const deletePost = async (req,res) =>
 {
-    const { postId, userId } = req.body;
+    const { postId, userId } = req.query;
 
     if(!postId) return res.status(400).json({error: ERROR_MESSAGES.NO_POST_ID});
     if(!userId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
@@ -33,14 +33,13 @@ export const deletePost = async (req,res) =>
     try
     {
         const post = await Post.findById(postId);
-        const user = await User.findById(userId);
-
-        // Not found checks
         if(!post) return res.status(404).json({error: ERROR_MESSAGES.INVALID_POST});
+        
+        const user = await User.findById(userId);
         if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
 
         //Aiuthorization check. If not creator or admin, return unauthorized
-        if(post.creatorId.toString() !== userId || user.role !== 'admin') return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        if(post.creatorId.toString() !== userId && user.role !== 'admin') return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
 
         //delete all media files for the post if any
         const deletefiles = await deleteFiles(post.mediaUrls);

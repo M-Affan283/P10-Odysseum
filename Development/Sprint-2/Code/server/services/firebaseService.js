@@ -22,18 +22,19 @@ import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../utils/constants.js";
  * @returns {Object} - Object containing status and urls of the uploaded files
  */
 
-export const uploadFile = async (files = [], userId = "") => {
-  if (!files || files.length === 0)
-    return { status: 200, message: SUCCESS_MESSAGES.NO_FILES, urls: [] };
-  if (!userId)
-    return { status: 400, message: ERROR_MESSAGES.NO_USER_ID, urls: [] };
+export const uploadFile = async (files = [], userId = "") => 
+{
+  if (!files || files.length === 0) return { status: 200, message: SUCCESS_MESSAGES.NO_FILES, urls: [] };
+  if (!userId) return { status: 400, message: ERROR_MESSAGES.NO_USER_ID, urls: [] };
 
   const fileURLS = []; // store the URLs of the uploaded files here to return to main router function to save in Post model
 
-  for (const file of files) {
+  for (const file of files) 
+  {
     const filepath = `${userId}/${uuidv4()}_${file.originalname}`; // generate a unique file path
 
-    try {
+    try 
+    {
       const fileUpload = storage.file(filepath); // create a file object in the storage
 
       const metadata = {
@@ -46,7 +47,9 @@ export const uploadFile = async (files = [], userId = "") => {
 
       // store the URL and filename in the array
       fileURLS.push(url);
-    } catch (error) {
+    } 
+    catch (error) 
+    {
       return { status: 500, message: error.message, urls: [] };
     }
   }
@@ -65,18 +68,26 @@ export const uploadFile = async (files = [], userId = "") => {
  * @param {Array} filePathList - Array of file paths to delete
  * @returns {Object} - Object containing status and message indicating success or error
  */
-export const deleteFiles = async (filePathList = []) => {
+export const deleteFiles = async (filePathList = []) => 
+{
     if (!filePathList) return { status: 200, message: SUCCESS_MESSAGES.NO_FILES };
   
-    try {
-      for (const url of filePathList) {
-        const file = storage.file(url);
+    try 
+    {
+      for (const url of filePathList)
+      {
+        // console.log(url.split('/o/')[1].split('?')[0])
+        // console.log(decodeURIComponent(url.split('/o/')[1].split('?')[0]))
+        let decodedUrl = decodeURIComponent(url.split('/o/')[1].split('?')[0])
+        let file = storage.file(decodedUrl);
         await file.delete();
       }
   
       return { status: 200, message: SUCCESS_MESSAGES.FILE_DELETED };
-    } catch (error) {
-      console.log(error);
+    } 
+    catch (error)
+    {
+      console.log("error: ", error);
       return { status: 500, message: ERROR_MESSAGES.SERVER_ERROR };
     }
   };
