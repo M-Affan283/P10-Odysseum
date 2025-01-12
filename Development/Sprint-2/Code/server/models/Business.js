@@ -1,15 +1,21 @@
 import mongoose from "mongoose";
 
 const businessSchema = new mongoose.Schema({
+
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+
     name: {
         type: String,
         required: [true, 'Please provide a business name'],
-    },
+    }, 
 
     category: {
         type: String,
         required: [true, 'Please provide a business type'],
-        enum: ['restaurant', 'hotel', 'shop', 'attraction', 'other'],
+        enum: ["Restaurant", "Hotel", "Shopping", "Fitness", "Health", "Beauty", "Education", "Entertainment", "Services", "Other"],
     },
 
     description: {
@@ -59,12 +65,12 @@ const businessSchema = new mongoose.Schema({
 
     activityCount: { // New field for tracking popularity
         type: Number,
-        default: 0,
+        default: 0.0,
     },
 
     averageRating: { // New field for heatmap intensity
         type: Number,
-        default: 0,
+        default: 0.0,
     },
     
     lastInteraction: { // To track dynamic popularity
@@ -74,7 +80,7 @@ const businessSchema = new mongoose.Schema({
 
     heatmapScore: { // To track heatmap intensity
         type: Number,
-        default: 0,
+        default: 0.0,
     },
 
 
