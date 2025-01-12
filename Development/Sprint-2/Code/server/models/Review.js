@@ -40,6 +40,13 @@ const reviewSchema = new mongoose.Schema({
         max: 5
     },
 
+    title: {
+        type: String,
+        required: [true, 'Please provide a review title'],
+        trim: true,
+        maxlength: [100, 'Review title cannot be more than 100 characters']
+    },
+
     reviewContent: {
         type: String,
         required: [true, 'Please provide a review content'],
