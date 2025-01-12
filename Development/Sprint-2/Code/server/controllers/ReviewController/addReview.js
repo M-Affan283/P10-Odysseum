@@ -11,12 +11,17 @@ import { entityMetricUpdator, InteractionTypes } from "../../utils/scoringUtilit
 
 /**
  * Add a new review
- * @param {Object} req - The request object
- * @param {Object} res - The response object
  */
 export const addReview = async (req, res) =>
 {
-    const { creatorId, entityType, entityId, rating, reviewContent, imageUrls } = req.body;
+    const { creatorId, entityType, entityId, rating, title, reviewContent, imageUrls } = req.body;
+
+    if (!creatorId) return res.status(400).json({ message: "Creator ID is required" });
+    if (!entityType) return res.status(400).json({ message: "Entity type is required" });
+    if (!entityId) return res.status(400).json({ message: "Entity ID is required" });
+    if (!rating) return res.status(400).json({ message: "Rating is required" });
+    if (!title) return res.status(400).json({ message: "Review title is required" });
+    if (!reviewContent) return res.status(400).json({ message: "Review content is required" });
 
     try
     {
@@ -26,9 +31,10 @@ export const addReview = async (req, res) =>
         const entityModel = entityType === "Location" ? Location : Business;
         const entity = await entityModel.findById(entityId);
         if(!entity) return res.status(404).json({ message:  `${entityType} not found` });
-
+        
 
         const review = new Review({
+            title,
             creatorId,
             entityType,
             entityId,

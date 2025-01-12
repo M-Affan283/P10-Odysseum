@@ -40,12 +40,12 @@ const locationSchema = new mongoose.Schema({
 
     activityCount: { // New field to track overall activity
         type: Number,
-        default: 0,
+        default: 0.0,
     },
 
     avgRating: { // New field to track average rating
         type: Number,
-        default: 0,
+        default: 0.0,
     },
     
     lastInteraction: { // New field for tracking dynamic heatmap data
@@ -55,7 +55,7 @@ const locationSchema = new mongoose.Schema({
 
     heatmapScore: { // New field for tracking heatmap intensity
         type: Number,
-        default: 0,
+        default: 0.0,
     },
 
 }, { timestamps: true });

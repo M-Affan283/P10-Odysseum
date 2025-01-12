@@ -60,7 +60,7 @@ const CreatePostScreen = () => {
       allowsMultipleSelection: true,
     });
 
-    // console.log(result);
+
     if (!result.canceled)
     {
       // console.log(result);
@@ -73,7 +73,7 @@ const CreatePostScreen = () => {
       {
         //compress images
         const compressedImages = await Promise.all(result.assets.map(async (asset) => {
-          //if size > 6mb, compress or maybe compress based on image dimensions.
+          //if size > 3mb, compress or maybe compress based on image dimensions.
           if(asset.fileSize > 3*1024*1024)
           {
             let compressedImage = await ImageManipulator.manipulateAsync(

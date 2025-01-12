@@ -73,6 +73,7 @@ export const InteractionTypes = {
     CHAT_MENTION: 'chat_mention'
 };
 
+
 /**
  * Weight configurations for different interaction types
  * Weights determine how much each interaction type affects the activity count
@@ -81,8 +82,8 @@ const InteractionWeights = {
     [InteractionTypes.REVIEW]: 1.0,      // Full weight for reviews
     [InteractionTypes.SHARE]: 0.8,       // High impact for shares
     [InteractionTypes.PHOTO_UPLOAD]: 0.6, // Medium-high impact for photos
-    [InteractionTypes.BOOKMARK]: 0.5,     // Medium impact for bookmarks
-    [InteractionTypes.CHAT_MENTION]: 0.3,  // Low-medium impact for mentions
+    [InteractionTypes.BOOKMARK]: 0.4,     // Medium impact for bookmarks
+    [InteractionTypes.CHAT_MENTION]: 0.2,  // Low-medium impact for mentions
     [InteractionTypes.VIEW]: 0.1,        // Minimal impact for views
 };
 

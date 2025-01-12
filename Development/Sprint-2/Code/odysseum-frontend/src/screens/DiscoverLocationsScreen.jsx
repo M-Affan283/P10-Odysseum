@@ -27,7 +27,7 @@ const DiscoverLocationsScreen = () => {
     {
         console.log("Retrieving locations. Change to pagination if locations are too many...");
 
-        axiosInstance.get('/location/getAllLocations')
+        axiosInstance.get('/location/getAll')
         .then((res)=>
         {
             // console.log("Locations received: ", res.data.locations);
@@ -76,21 +76,21 @@ const DiscoverLocationsScreen = () => {
         {/* add create iteinirary and show itinerary buttons here simimal fashion of homme screen */}
         <ScrollView showsVerticalScrollIndicator={false} className="space-y-4 py-5">
 
-            <View className="mx-3 flex-row justify-between items-center mb-10">
+                <View className="mx-3 flex-row justify-between items-center mb-10">
 
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    className="py-4"
-                    >
-                    <ChevronLeftIcon size={30} strokeWidth={4} color="black" />
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="py-4"
+                        >
+                        <ChevronLeftIcon size={30} strokeWidth={4} color="black" />
+                    </TouchableOpacity>
 
-                <Text className="font-dsbold text-neutral-700 text-3xl">Discover Locations</Text>
+                    <Text className="font-dsbold text-neutral-700 text-3xl">Discover Locations</Text>
 
-                <TouchableOpacity>
-                    <Image source={DefaultLocationPNG} style={{width: 80, height: 80, borderRadius: 35}} />
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity>
+                        <Image source={DefaultLocationPNG} style={{width: 80, height: 80, borderRadius: 35}} />
+                    </TouchableOpacity>
+                </View>
 
             <View className="mx-5 mb-4">
                 <View className="flex-row items-center bg-neutral-100 rounded-full space-x-2 pl-6">

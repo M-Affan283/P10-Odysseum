@@ -24,7 +24,7 @@ const getQueryPosts = async ({ pageParam = 1 }) => {
   
   try
   {
-    const res = await axiosInstance.get(`/post/getAllPosts?page=${pageParam}`);
+    const res = await axiosInstance.get(`/post/getAll?page=${pageParam}`);
     // console.log("Res:", res.data);
     return res.data;
   }

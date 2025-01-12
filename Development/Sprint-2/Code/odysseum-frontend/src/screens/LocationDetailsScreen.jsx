@@ -220,7 +220,7 @@ const LocationDetailsComponent = ({location}) => {
     >
 
       <Animatable.View
-        style={{paddingHorizontal: 24, paddingVertical: 24}}
+        style={{paddingHorizontal: 24, paddingVertical: 24, gap: 10}}
         animation="fadeInUp"
         delay={500}
         easing="ease-in-out"
@@ -247,16 +247,21 @@ const LocationDetailsComponent = ({location}) => {
           </View>
 
           <View className="justify-between mt-4">
-            <Text className="text-lg mx-4 font-semibold text-gray-700 mt-4">Review Summary</Text>
+
+            <View className="flex-row justify-between items-center">
+            
+              <Text className="text-lg mx-4 font-semibold text-gray-700 ">Review Summary</Text>
+              <TouchableOpacity onPress={()=> router.push({pathname: `/review/location/${location._id}`, params: {name: location?.name}})}>
+                <Text className="text-base mx-4 font-medium text-blue-600">View All</Text>
+              </TouchableOpacity>
+            
+            </View>
 
             <View className="flex-row justify-between items-center mx-4 mt-4">
               <Text className="text-base font-medium text-gray-700">Average Rating</Text>
               <StarRatingDisplay rating={4.5} starSize={25} color='purple'/>
             </View>
 
-            <TouchableOpacity>
-              <Text className="text-base mx-4 font-medium text-blue-600">View All</Text>
-            </TouchableOpacity>
           </View>
         </Animated.View>
       </BottomSheetScrollView>
