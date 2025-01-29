@@ -36,6 +36,11 @@ const getBusinessByLocation = async (req, res) => {};
 const getBusinessByCategory = async (req, res) => {};
 
 /**
+ * Get business by search query
+ */
+const getBusinessBySearchQuery = async (req, res) => {};
+
+/**
  * Get all businesses by user (also includes by search query)
  */
 const getBusinessByUser = async (req, res) => {};
@@ -69,6 +74,7 @@ export {
   getBusinessById,
   getBusinessByLocation,
   getBusinessByCategory,
+  getBusinessBySearchQuery,
   getBusinessByUser,
   getBusinessByCategoryAndLocation,
   getBusinessByHeatmapScoreAndLocation,

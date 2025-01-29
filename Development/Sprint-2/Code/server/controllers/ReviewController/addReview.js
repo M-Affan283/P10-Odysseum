@@ -8,14 +8,16 @@ import { User } from "../../models/User.js";
 import { Location } from "../../models/Location.js";
 import { Business } from "../../models/Business.js";
 import { entityMetricUpdator, InteractionTypes } from "../../utils/scoringUtility.js";
+import { uploadFile } from "../../services/firebaseService.js";
 
 /**
  * Add a new review
  */
 export const addReview = async (req, res) =>
 {
-    const { creatorId, entityType, entityId, rating, title, reviewContent, imageUrls } = req.body;
-
+    const { creatorId, entityType, entityId, rating, title, reviewContent } = req.body;
+    const files = req.files || [];
+    
     if (!creatorId) return res.status(400).json({ message: "Creator ID is required" });
     if (!entityType) return res.status(400).json({ message: "Entity type is required" });
     if (!entityId) return res.status(400).json({ message: "Entity ID is required" });
@@ -31,6 +33,11 @@ export const addReview = async (req, res) =>
         const entityModel = entityType === "Location" ? Location : Business;
         const entity = await entityModel.findById(entityId);
         if(!entity) return res.status(404).json({ message:  `${entityType} not found` });
+
+        // Upload files to firebase
+        const fileURLS = await uploadFile(files, creatorId);
+
+        if (fileURLS.status !== 200) return res.status(500).json({ message: fileURLS.message });
         
 
         const review = new Review({
@@ -40,7 +47,7 @@ export const addReview = async (req, res) =>
             entityId,
             rating,
             reviewContent,
-            // imageUrls
+            imageUrls: fileURLS.urls
         });
 
         await review.save();
@@ -49,7 +56,7 @@ export const addReview = async (req, res) =>
         const updatedEntity = await entityMetricUpdator(entityType, entityId, InteractionTypes.REVIEW, rating);
         
 
-        res.status(201).json({ 
+        return res.status(201).json({ 
             message: "Review added successfully",
             review: review,
             entityMetrics: {
@@ -63,6 +70,6 @@ export const addReview = async (req, res) =>
     catch (error)
     {
         console.log(error);
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 }

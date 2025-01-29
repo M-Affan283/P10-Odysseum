@@ -7,10 +7,11 @@ import express from "express";
 import { addReview } from "../controllers/ReviewController/addReview.js";
 import { editReview, upvoteReview, downvoteReview } from "../controllers/ReviewController/updateReview.js";
 import { getReviewById, getReviewsByEntity, getReviewsByUser } from "../controllers/ReviewController/getReview.js";
+import upload from "../middleware/multerMiddleware.js";
 
 const reviewRouter = express.Router();
 
-reviewRouter.post("/add", addReview);
+reviewRouter.post("/add", upload.array("media", 5), addReview);
 reviewRouter.post("/edit", editReview);
 reviewRouter.post("/upvote", upvoteReview);
 reviewRouter.post("/downvote", downvoteReview);

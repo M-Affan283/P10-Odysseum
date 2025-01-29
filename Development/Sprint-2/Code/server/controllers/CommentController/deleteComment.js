@@ -15,9 +15,6 @@ import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../utils/constants.js";
 
 /**
  * Delete a single comment
- * @param {Object} req - Request object. Must contain commentId, postId, deletinguserId
- * @param {Object} res - Response object
- * @returns {Object} - Returns a response object with a message
  */
 export const deleteSingleComment = async (req, res) => {
     const { commentId, postId, deletinguserId } = req.body;
@@ -41,7 +38,7 @@ export const deleteSingleComment = async (req, res) => {
             return res.status(403).json({ error: ERROR_MESSAGES.UNAUTHORIZED });
         }
         
-        await comment.remove();
+        await comment.deleteOne();
 
         return res.status(200).json({ message: SUCCESS_MESSAGES.COMMENT_DELETED });
     }

@@ -58,15 +58,17 @@ const reviewSchema = new mongoose.Schema({
         type: String
     }],
 
-    upvotes: {
-        type: Number,
-        default: 0
-    },
+    upvotes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: []
+    }],
 
-    downvotes: {
-        type: Number,
-        default: 0
-    },
+    downvotes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: []
+    }],
 
 }, { timestamps: true });
 

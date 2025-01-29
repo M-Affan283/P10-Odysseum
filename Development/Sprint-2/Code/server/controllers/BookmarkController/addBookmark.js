@@ -1,7 +1,8 @@
 //  Author: Haroon Khawaja
 
 import { User } from "../../models/User.js";
-import { Location } from "../../models/Location.js"
+import { Location } from "../../models/Location.js";
+import { entityMetricUpdator, InteractionTypes } from "../../utils/scoringUtility.js";
 
 // Adds or removes a bookmark from the user's bookmarks
 export const bookmarkLocation = async (req, res) => {
@@ -10,6 +11,7 @@ export const bookmarkLocation = async (req, res) => {
     console.log("userId: ", userId);
     try
     {
+        let updatedEntity = null;
         // Find if user exists
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found"});
@@ -24,6 +26,8 @@ export const bookmarkLocation = async (req, res) => {
             console.log("Removing bookmark...");
             user.bookmarks = user.bookmarks.filter(bookmark => bookmark != locationId);
 
+            updatedEntity = entityMetricUpdator("Location", locationId, InteractionTypes.BOOKMARK)
+
         }
         else
         {
@@ -37,7 +41,15 @@ export const bookmarkLocation = async (req, res) => {
         let userBookmarks = await Location.find({_id: { $in: user.bookmarks }}).select('_id name imageUrl');
 
         //send bookmarks back to user to update in local storage
-        return res.status(200).json({ message: "Bookmarks updated successfully", bookmarks: userBookmarks });
+        return res.status(200).json({ 
+            message: "Bookmarks updated successfully",
+            bookmarks: userBookmarks,
+            entityMetrics: updatedEntity ? {
+                activityCount: updatedEntity.activityCount,
+                avgRating: updatedEntity.avgRating,
+                heatmapScore: updatedEntity.heatmapScore
+            } : null
+        });
 
 
     }
