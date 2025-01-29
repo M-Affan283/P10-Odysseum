@@ -69,7 +69,7 @@ export const InteractionTypes = {
     VIEW: 'view',
     BOOKMARK: 'bookmark',
     SHARE: 'share',
-    PHOTO_UPLOAD: 'photo_upload',
+    POST: 'post',
     CHAT_MENTION: 'chat_mention'
 };
 
@@ -81,9 +81,9 @@ export const InteractionTypes = {
 const InteractionWeights = {
     [InteractionTypes.REVIEW]: 1.0,      // Full weight for reviews
     [InteractionTypes.SHARE]: 0.8,       // High impact for shares
-    [InteractionTypes.PHOTO_UPLOAD]: 0.6, // Medium-high impact for photos
-    [InteractionTypes.BOOKMARK]: 0.4,     // Medium impact for bookmarks
-    [InteractionTypes.CHAT_MENTION]: 0.2,  // Low-medium impact for mentions
+    [InteractionTypes.POST]: 0.6, // Medium-high impact for photos
+    [InteractionTypes.BOOKMARK]: 0.2,     // Medium impact for bookmarks
+    [InteractionTypes.CHAT_MENTION]: 0.15,  // Low-medium impact for mentions
     [InteractionTypes.VIEW]: 0.1,        // Minimal impact for views
 };
 
@@ -104,51 +104,75 @@ export const entityMetricUpdator = async (entityType, entityId, interactionType,
         throw new Error(`Invalid interaction type: ${interactionType}`);
     }
 
-    const entityModel = entityType === "Location" ? Location : Business;
-    const entity = await entityModel.findById(entityId);
-
-    if (!entity) throw new Error(`${entityType} not found`);
-
-    // Update activity count and last interaction time based on interaction type weight
-    entity.activityCount += InteractionWeights[interactionType];
-    entity.lastInteraction = new Date();
-
-    // Update average rating if a rating is provided and interaction type is "review"
-    if(interactionType === InteractionTypes.REVIEW && rating !== null)
+    try
     {
-        const avgRating = await Review.aggregate([
-            { $match: { entityId: entityId } },
-            { $group: { _id: null, avgRating: { $avg: "$rating" } } }
-        ]);
-        entity.avgRating = avgRating[0]?.avgRating || rating; // If no reviews, use the new rating
-    }
-
-    // Calculate new heatmap score
-    entity.heatmapScore = calculateHeatmapScore(entity.activityCount, entity.avgRating, entity.lastInteraction);
-
-    await entity.save();
-
-    //If entity is business update parent location metrics
-    if (entityType === "Business")
-    {
-        const location = await Location.findById(entity.locationId);
-
-        if (!location) throw new Error("Location not found");
-
-        location.activityCount += InteractionWeights[interactionType] * 0.5; //parent gets half the weight
-        location.lastInteraction = new Date();
-
-        // No rating update for location
-
+        const now = new Date();
+        const entityModel = entityType === "Location" ? Location : Business;
+        const entity = await entityModel.findById(entityId);
+    
+        if (!entity) throw new Error(`${entityType} not found`);
+    
+        // Update activity count and last interaction time based on interaction type weight
+        // entity.activityCount += InteractionWeights[interactionType];
+        // entity.lastInteraction = new Date();
+    
+        let newAvgRating = entity.avgRating;
+    
+        // Update average rating if a rating is provided and interaction type is "review"
+        if(interactionType === InteractionTypes.REVIEW && rating !== null)
+        {
+            const avgRating = await Review.aggregate([
+                { $match: { entityId: entityId } },
+                { $group: { _id: null, avgRating: { $avg: "$rating" } } }
+            ]);
+            // entity.avgRating = avgRating[0]?.avgRating || rating; // If no reviews, use the new rating
+            newAvgRating = avgRating[0]?.avgRating || rating;
+        }
+    
         // Calculate new heatmap score
-        location.heatmapScore = calculateHeatmapScore({
-            activityCount: location.activityCount,
-            avgRating: location.avgRating,
-            lastInteraction: location.lastInteraction
-        });
-
-        await location.save();
+        const newHeatmapScore = calculateHeatmapScore(entity.activityCount + InteractionWeights[interactionType], newAvgRating, now);
+    
+        // await entity.save();
+    
+        const updatedEntity = await entityModel.findByIdAndUpdate(entityId, {
+            $inc: { activityCount: InteractionWeights[interactionType] },
+            $set: { lastInteraction: now, avgRating: newAvgRating, heatmapScore: newHeatmapScore }
+        }, { new: true, runValidators: true });
+    
+        //If entity is business update parent location metrics
+        if (entityType === "Business")
+        {
+            const location = await Location.findById(entity.locationId);
+    
+            if (!location) throw new Error("Location not found");
+    
+            // location.activityCount += InteractionWeights[interactionType] * 0.5; //parent gets half the weight
+            // location.lastInteraction = new Date();
+    
+            // // No rating update for location
+    
+            // // Calculate new heatmap score
+            // location.heatmapScore = calculateHeatmapScore({
+            //     activityCount: location.activityCount,
+            //     avgRating: location.avgRating,
+            //     lastInteraction: location.lastInteraction
+            // });
+    
+            // await location.save();
+    
+            const newLocationHeatmapScore = calculateHeatmapScore(location.activityCount + InteractionWeights[interactionType] * 0.5, location.avgRating, now);
+    
+            await Location.findByIdAndUpdate(entity.locationId, {
+                $inc: { activityCount: InteractionWeights[interactionType] * 0.5 },
+                $set: { lastInteraction: now, heatmapScore: newLocationHeatmapScore }
+            }, { new: true, runValidators: true });
+        }
+        
+        return updatedEntity;
+    }
+    catch(error)
+    {
+        throw error;
     }
 
-    return entity;
 };
