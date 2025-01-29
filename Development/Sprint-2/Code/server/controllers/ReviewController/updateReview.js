@@ -39,17 +39,25 @@ const editReview = async (req, res) =>
 
 const upvoteReview = async (req, res) =>
 {
-    const { reviewId } = req.body;
+    const { reviewId, userId } = req.body;
 
     try
     {
-        const review = await Review.findByIdAndUpdate(
-            reviewId,
-            { $inc: { upvotes: 1 } },
-            { new: true } // Return the updated document
-        );
+        const user = await User.findById(userId);
+        if(!user) return res.status(404).json({ message: "User not found" });
 
+        const review = await Review.findById(reviewId);
         if (!review) return res.status(404).json({ message: "Review not found" });
+
+        // Check if the user has already upvoted the review
+        if (review.upvotes.includes(userId)) return res.status(400).json({ message: "You have already upvoted this review" });
+
+        review.upvotes.push(userId);
+
+        const downvoteIndex = review.downvotes.indexOf(userId);
+        if (downvoteIndex !== -1) review.downvotes.splice(downvoteIndex, 1);
+
+        await review.save();
 
         res.status(200).json({ message: "Review upvoted successfully", review });
     }
@@ -62,19 +70,25 @@ const upvoteReview = async (req, res) =>
 
 const downvoteReview = async (req, res) =>
 {
-    const { reviewId } = req.body;
+    const { reviewId, userId } = req.body;
 
     try
     {
-        const review = await Review.findByIdAndUpdate(
-            reviewId,
-            { $inc: { downvotes: 1 } },
-            { new: true } // Return the updated document
-        );
+        const user = await User.findById(userId);
+        if(!user) return res.status(404).json({ message: "User not found" });
 
+        const review = await Review.findById(reviewId);
         if (!review) return res.status(404).json({ message: "Review not found" });
 
-        review.downvotes += 1;
+        // Check if the user has already downvoted the review
+        if (review.downvotes.includes(userId)) return res.status(400).json({ message: "You have already downvoted this review" });
+
+        review.downvotes.push(userId);
+
+        const upvoteIndex = review.upvotes.indexOf(userId);
+        if (upvoteIndex !== -1) review.upvotes.splice(upvoteIndex, 1);
+        
+
         await review.save();
 
         res.status(200).json({ message: "Review downvoted successfully", review });
