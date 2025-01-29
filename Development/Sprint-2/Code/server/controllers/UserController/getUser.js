@@ -8,11 +8,7 @@ import { Location } from "../../models/Location.js";
 import { SUCCESS_MESSAGES,ERROR_MESSAGES } from "../../utils/constants.js";
 
 /**
- * Get all users. This is an admin function.
- * @param {Object} req - request object. Must contain the requestorId.
- * @param {Object} res - response object
- * @returns {Object} - response object
-
+ * Get all users. (Restricted to admin users only)
  */
 const getAllUsers = async (req,res) =>
 {
@@ -50,16 +46,11 @@ const getAllUsers = async (req,res) =>
 
 
 /**
- * Get a user by their id. This function if for when users click on a user profile.
- * @param {Object} req - request object. Must contain the requestorId and the userToViewId.
- * @param {Object} res - response object
- * @returns {Object} - response object
- * 
+ * Get a user by their id.
 */
 const getUserById = async (req,res) =>
 {
     const {requestorId, userToViewId} = req.query;
-    console.log(req.query)
     if(!requestorId || !userToViewId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
 
     try
@@ -80,7 +71,7 @@ const getUserById = async (req,res) =>
         // }
 
         //only send the necessary user details for security reasons
-        userToView = {
+        const retUserToView = {
             firstName: userToView.firstName,
             lastName: userToView.lastName,
             username: userToView.username,
@@ -89,9 +80,10 @@ const getUserById = async (req,res) =>
             location: userToView.location,
             followers: userToView.followers,
             following: userToView.following,
+            followed: (requestor.following.includes(userToViewId) && userToView.followers.includes(requestorId))
         }
 
-        return res.status(200).json({message: SUCCESS_MESSAGES.USER_FOUND, user: userToView});
+        return res.status(200).json({message: SUCCESS_MESSAGES.USER_FOUND, user: retUserToView});
     }
     catch(error)
     {
@@ -102,11 +94,7 @@ const getUserById = async (req,res) =>
 }
 
 /**
- * Get a user by their username. This function is for when users search for a user. This function is an alternative to the getUserById function.
- * @param {Object} req - request object. Must contain the requestorId and the username.
- * @param {Object} res - response object
- * @returns {Object} - response object
- * 
+ * Get a user by their username. (alternative to getUserById)
 */
 const getUserByUsername = async (req,res) =>
 {
@@ -140,50 +128,23 @@ const getUserByUsername = async (req,res) =>
 
 
 /**
- * Get a user by their username, first and last name. This function is implemented for the search functionality so
+ * Get a user by their username. This function is implemented for the search functionality so
    it is the primary api function to use. 
-   It will use cursor-based pagination to return a list of users based on the search parameters.
- * @param {Object} req - request object. Must contain the requestorId and the search parameters and the cursor (last user id).
- * @param {Object} res - response object
- * @returns {Object} - response object
  */
-const getUserBySearchParams = async (req,res) =>
+const searchUser = async (req,res) =>
 {
-    const {requestorId ,searchParam="", page = 1} = req.query;
+    const {searchParam="", page = 1} = req.query;
     // console.log(req.query)
+    if(!searchParam) return res.status(400).json({error: "This api requires a search parameter"});
     let limit = 10;
-    if(!requestorId || !searchParam) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
-    // if(!lastId) return res.status(400).json({error: ERROR_MESSAGES.NO_CURSOR});
 
     try
     {
-        const requestor = await User.findById(requestorId);
-
-        if(!requestor) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
-
-        let searchQuery = {
-            isDeactivated: false  // Always filter out deactivated users
-        };
-
-        if (searchParam) {
-            searchQuery.username = { $regex: searchParam.toLowerCase(), $options: 'i' };
-        }
-
-        if(lastId) searchQuery._id = { $gt: lastId };
-        
         let skip = (page - 1) * limit;
-        let users = await User.find(searchQuery).skip(skip).limit(limit);
 
-        const numberOfUsers = await User.countDocuments(searchQuery);
-
-        // console.log(users);
-        // change users to send only username. once user clicks on the username, then we can fetch the user details
-        users = users.map(user => {
-            return {
-                _id: user._id,
-                username: user.username
-            }
-        });
+        const users = await User.find({username: { $regex: searchParam, $options: 'i' }}).skip(skip).limit(limit).select('_id username profilePicture');
+        
+        const numberOfUsers = await User.countDocuments({username: { $regex: searchParam, $options: 'i' }});
 
         return res.status(200).json({
             message: "Users found",
@@ -202,4 +163,4 @@ const getUserBySearchParams = async (req,res) =>
 
 }
 
-export { getAllUsers, getUserById, getUserByUsername, getUserBySearchParams };
+export { getAllUsers, getUserById, getUserByUsername, searchUser };
