@@ -3,15 +3,13 @@
 //author: Luqman, Shahrez, Affan
 
 import { Location } from "../../models/Location.js";
+import { User } from "../../models/User.js";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../utils/constants.js";
 
 
 /**
  * Get all locations.
- * @param {Object} req - Request object.
- * @param {Object} res - Response object.
- * @returns {Object} - Response object.
- */
+*/
 const getAllLocations = async (req,res) =>
 {
     try
@@ -30,60 +28,62 @@ const getAllLocations = async (req,res) =>
 
 /**
  * Search for locations by name or description.
- * @param {Object} req - Request object containing the search parameters.
- * @param {Object} res - Response object.
- */
+*/
 
 const searchLocations = async (req, res) => 
 {
 
-  const { searchParam="", limit = 5, lastId } = req.query;
+  const { searchParam="", page=1 } = req.query;
 
-  if (!searchParam) return res.status(400).json({ error: ERROR_MESSAGES.NO_SEARCH_PARAM });
+  if(!searchParam) return res.status(400).json({error: "This api requires a search parameter"});
+  
+  let limit = 10;
 
-  try {
-    const searchQuery = {
-      name: { $regex: searchParam, $options: 'i' },
-    };
+  try
+  {
+    let skip = (page - 1) * limit;
 
-    if (lastId) searchQuery._id = { $gt: lastId }; //if lastid is not given that means it is the first page
-
-    let locations = await Location.find(searchQuery).limit(Number(limit)).sort({ _id: 1 }).exec();
-    const hasMore = locations.length === Number(limit);
-
-    // change locations to send only name. once user clicks on the location, then we can fetch the location details
-    locations = locations.map(location => {
-      return {
-        _id: location._id,
-        name: location.name,
-      };
-    });
-
+    const locations = await Location.find({name: { $regex: searchParam, $options: 'i' }}).skip(skip).limit(limit).select('_id name');
+    
+    const totalLocations = await Location.countDocuments({name: { $regex: searchParam, $options: 'i' }});
 
     return res.status(200).json({
-      locations,
-      pagination: {
-        hasMore,
-        lastId: locations.length > 0 ? locations[locations.length - 1]._id : null,
-      },
+      message: "Locations found",
+      locations: locations,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalLocations / limit)
     });
-  } catch (error) {
+
+  } 
+  catch(error)
+  {
     console.log(error);
     return res.status(500).json({ error: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
 
+/**
+ * Get location by id.  
+*/
 const getLocationById = async (req, res) =>
 {
-  const { locationId } = req.query;
+  const { locationId, requestorId } = req.query;
 
   try
   {
+    const user = await User.findById(requestorId);
+    if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
+
     const location = await Location.findById(locationId);
 
     if(!location) return res.status(404).json({error: ERROR_MESSAGES.LOCATION_NOT_FOUND});
 
-    return res.status(200).json({location: location});
+    const retLocation = {
+      ...location._doc,
+      bookmarked: user.bookmarks.includes(locationId)
+    }
+
+    return res.status(200).json({location: retLocation});
   }
   catch(error)
   {
@@ -92,4 +92,21 @@ const getLocationById = async (req, res) =>
   }
 }
 
-export { getAllLocations, searchLocations, getLocationById };
+/**
+ * Get top 5 popular locations. (based on average rating and heatmap score) 
+*/
+const getPopularLocations = async (req, res) =>
+{
+  try
+  {
+    const locations = await Location.find({}).sort({averageRating: -1, heatmapScore: -1}).limit(5).select('_id name');
+    return res.status(200).json({locations: locations});
+  }
+  catch(error)
+  {
+    console.log(error);
+    return res.status(500).json({error: ERROR_MESSAGES.SERVER_ERROR});
+  }
+}
+
+export { getAllLocations, searchLocations, getLocationById, getPopularLocations };
