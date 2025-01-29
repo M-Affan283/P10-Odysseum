@@ -15,16 +15,19 @@ const categories = ["Restaurant", "Hotel", "Shopping", "Fitness", "Health", "Bea
 */
 export const createBusiness = async (req, res) =>
 {
-    const { name, category, description, imageUrls, contactInfo, operatingHours, locationId, creatorId, longitude, latitude } = req.body;
+    const { name, category, address, description, website, imageUrls, contactInfo, operatingHours, locationId, ownerId, longitude, latitude } = req.body;
 
     if (!name) return res.status(400).json({ message: "Business name is required" });
     if (!category) return res.status(400).json({ message: "Business category is required" });
+    if (!address) return res.status(400).json({ message: "Business address is required" });
+    if (!description) return res.status(400).json({ message: "Business description is required" });
     if (!locationId) return res.status(400).json({ message: "Location ID is required" });
+    if (!ownerId) return res.status(400).json({ message: "Owner ID is required" });
     if (!coordinates) return res.status(400).json({ message: "Coordinates are required" });
 
     try
     {
-        const creator = await User.findById(creatorId);
+        const creator = await User.findById(ownerId);
         if (!creator) return res.status(404).json({ message: "User not found" });
 
         const location = await Location.findById(locationId);
@@ -32,15 +35,37 @@ export const createBusiness = async (req, res) =>
 
         if (categories.indexOf(category) === -1) return res.status(400).json({ message: "Invalid category" });
 
+        // Check if any business is at the same coordinates or in the same location
+        const existingBusiness = await Business.findOne({
+            $or: [
+                {
+                    coordinates: {
+                        $geoIntersects: {
+                            $geometry: {
+                                type: "Point",
+                                coordinates: [longitude, latitude]
+                            }
+                        }
+                    }
+                },
+                { locationId: locationId }
+            ]
+        });
+        
+        if (existingBusiness) return res.status(400).json({ message: "Business already exists at this location" });
+
+
         const business = new Business({
+            ownerId,
             name,
             category,
+            address,
             description,
+            website,
             imageUrls,
             contactInfo,
             operatingHours,
             locationId,
-            creatorId,
             coordinates: {
                 type: "Point",
                 coordinates: [longitude, latitude]
