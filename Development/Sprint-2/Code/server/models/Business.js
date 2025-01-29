@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const businessSchema = new mongoose.Schema({
 
-    owner: {
+    ownerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
@@ -11,6 +11,11 @@ const businessSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide a business name'],
     }, 
+
+    address: {
+        type: String,
+        required: [true, 'Please provide a business address'],
+    },
 
     category: {
         type: String,
@@ -24,6 +29,10 @@ const businessSchema = new mongoose.Schema({
         maxlength: [250, 'Description cannot be more than 500 characters']
     },
 
+    website: {
+        type: String,
+    },
+
     imageUrls: [{
         type: String,
         // required: [true, 'Please provide an image URL'], make true later
@@ -32,7 +41,6 @@ const businessSchema = new mongoose.Schema({
     contactInfo: {
         phone: String,
         email: String,
-        website: String,
     },
 
     operatingHours: {
