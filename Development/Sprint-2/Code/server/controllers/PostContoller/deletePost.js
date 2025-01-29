@@ -19,9 +19,6 @@ import { deleteFiles } from "../../services/firebaseService.js";
 
 /**
  * Deletes a post from the database
- * @param {Object} req - Request object. Must contain postId and userId
- * @param {Object} res - Response object
- * @returns {Object} - Returns a response object with a success message or an error message
  */
 export const deletePost = async (req,res) =>
 {
@@ -49,7 +46,7 @@ export const deletePost = async (req,res) =>
         //delete all comments for the post if any
         await Comment.deleteMany({postId: postId});
 
-        await post.remove();
+        await post.deleteOne();
 
         return res.status(200).json({message: SUCCESS_MESSAGES.POST_DELETED});
 
