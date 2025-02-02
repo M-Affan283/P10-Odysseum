@@ -137,10 +137,10 @@ const CommentModal = ({postId, visible, setVisible}) =>
                 {
                     isFetching ? (
                         <LottieView
-                            source={require('../../assets/LoadingAnimation.json')}
+                            source={require('../../assets/animations/Loading2.json')}
                             style={{
-                            width: 100,
-                            height: 100,
+                                width: 100,
+                                height: 100,
                             }}
                             autoPlay
                             loop
