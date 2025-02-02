@@ -2,8 +2,11 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import dotenv from 'dotenv';
 // import { db, storage } from './config/firebase.js'
 
+// Configuring dotenv to use environment variables
+dotenv.config({ path: './config.env' });
 
 // Importing routes
 import { checkServerHealth } from './utils/serverHealthUtils.js';

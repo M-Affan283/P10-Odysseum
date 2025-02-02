@@ -7,7 +7,7 @@ import ActionSheet from 'react-native-actions-sheet';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
 import LottieView from 'lottie-react-native';
-import tempComments from '../screens/tempfiles/tempcomment';
+// import tempComments from '../screens/tempfiles/tempcomment';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 const getQueryComments = async ({pageParam = 1, postId }) => {

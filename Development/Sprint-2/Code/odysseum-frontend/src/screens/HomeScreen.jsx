@@ -15,6 +15,10 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 // import tempPosts from "./tempfiles/homescreenposts";
 
 
+///////////////////////////////////////
+// import tempPosts from "/tempfiles/homescreenposts";
+//////////////////////////////////////
+
 //change this to getFollowigPosts. requires user id
 const getQueryPosts = async ({ pageParam = 1 }) => {
   console.log("Page param:", pageParam);

@@ -10,7 +10,7 @@ import LottieView from 'lottie-react-native';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import images from '../../assets/images/images';
 // Temporary Locations since database currently lacks many locations
-import tempLocations from './tempfiles/templocations';
+// import tempLocations from '/tempfiles/templocations';
 
 const DiscoverLocationsScreen = () => {
 
