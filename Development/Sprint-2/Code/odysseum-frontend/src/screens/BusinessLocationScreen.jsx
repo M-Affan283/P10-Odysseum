@@ -79,7 +79,7 @@ const BusinessLocationScreen = ({ locationId, locationName }) => {
         position: "bottom",
         text1: "Failed to fetch popular businesses",
         text2: "Error occurred server side",
-        visibilityTime: 300
+        visibilityTime: 2000
       });
       setLoading(false);
     })
