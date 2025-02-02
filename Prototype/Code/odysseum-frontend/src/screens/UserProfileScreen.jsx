@@ -7,10 +7,9 @@ import axios from 'axios'
 import axiosInstance from '../utils/axios'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import InfoBox from '../components/InfoBox';
+import { getAccessToken } from '../utils/tokenUtils';
 
 const UserProfileScreen = () => {
-
-
     const user = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
     const logout = useUserStore((state) => state.logout);
@@ -23,6 +22,8 @@ const UserProfileScreen = () => {
         bio: '',
         profilePicture: ''
     });
+
+    // New state for report functionality
     const [showReportModal, setShowReportModal] = useState(false);
     const [reportReason, setReportReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,19 +31,29 @@ const UserProfileScreen = () => {
     const userLogout = () => {
         console.log("Logging out user: ", user.username);
         logout();
-        // router.dismissAll();
         router.replace('/sign-in')
     }
 
-
-    // this hook will run when the screen is focused meaning when the user navigates to this screen again since the screen is already mounted
     useFocusEffect(
         useCallback(() => {
-            // Do something when the screen is focused
             getPosts();
         }, [])
     );
 
+    // Add this near your other useEffect hooks
+    useEffect(() => {
+        // Test server connection
+        const testConnection = async () => {
+            try {
+                const response = await axiosInstance.get('/user/getAll');  // or any other endpoint you know works
+                console.log('Server connection test successful');
+            } catch (error) {
+                console.log('Server connection test failed:', error);
+            }
+        };
+
+        testConnection();
+    }, []);
 
     const getPosts = async () => {
         console.log("Retrieving user posts...");
@@ -56,14 +67,11 @@ const UserProfileScreen = () => {
             })
                 .then((res) => {
                     if (res.data.posts.length > 0) {
-                        // console.log("Posts received: ", res.data.posts)
                         setPosts(res.data.posts);
                     }
                     else {
                         console.log("User has no posts");
                     }
-
-
                 })
                 .catch((error) => {
                     console.log(error);
@@ -79,7 +87,6 @@ const UserProfileScreen = () => {
         }
     }
 
-    // Updates user bio
     const updateUserBio = async () => {
         try {
             axiosInstance.post('/user/updateUserBio', { userId: user._id, bio: form.bio })
@@ -88,7 +95,6 @@ const UserProfileScreen = () => {
                     setUser({
                         ...user,
                         bio: form.bio,
-                        // profilePicture: form.profilePicture
                     })
                 })
                 .catch((error) => {
@@ -109,6 +115,10 @@ const UserProfileScreen = () => {
 
         setIsSubmitting(true);
         try {
+            // Debug: Log the token
+            const token = await getAccessToken();
+            console.log("Current token:", token);
+
             const response = await axiosInstance.post('/user/report', {
                 reportedUserId: user._id,
                 reason: reportReason
@@ -120,14 +130,15 @@ const UserProfileScreen = () => {
                 setReportReason('');
             }
         } catch (error) {
-            console.log('Error submitting report:', error);
-            alert('Failed to submit report. Please try again.');
+            console.log('Full error:', error);
+            console.log('Error response:', error.response?.data);
+            console.log('Error status:', error.response?.status);
+            alert(`Failed to submit report: ${error.response?.data?.message || error.message}`);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    //show username, profile picture, bio, number of followers, number of following, number of posts, then in a scrollview and gridview (like instagram) show the posts. also show logout button
     return (
         <SafeAreaView className="bg-primary h-full">
             <FlatList
@@ -141,7 +152,6 @@ const UserProfileScreen = () => {
                         <Image source={{ uri: item.mediaUrls[0] }} style={{ width: 100, height: 100 }} />
                         <Text className="text-white">{item.caption}</Text>
                         <Text className="text-white">{item.commentCount} comments</Text>
-                        {/* <Text>{item.likeCount} likes</Text> */}
                     </View>
                 )}
                 ListEmptyComponent={() => (
@@ -153,36 +163,34 @@ const UserProfileScreen = () => {
                         </Text>
                     </View>
                 )}
-
                 ListHeaderComponent={() => (
                     <View className='w-full flex justify-center items-center mt-6 mb-12 px-4'>
                         <View className="flex w-full flex-row justify-between items-center mb-10">
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={() => setShowReportModal(true)}
-                                className="p-2">
+                                className="p-2"
+                            >
                                 <MaterialIcons name="report" size={24} color="red" />
                             </TouchableOpacity>
-                            
+
                             <TouchableOpacity onPress={userLogout}>
-                                <MaterialIcons name="logout" size={24} color="white" className='w-6 h-6'/>
+                                <MaterialIcons name="logout" size={24} color="white" className='w-6 h-6' />
                             </TouchableOpacity>
                         </View>
-                
-                        {/* place button to update profile picture later which will open media and update picture*/}
+
                         <View className="w-16 h-16 border border-secondary rounded-lg flex justify-center items-center">
-                            <Image source={{uri: user.profilePicture}} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover' />
+                            <Image source={{ uri: user.profilePicture }} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover' />
                         </View>
-                
-                        <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
+
+                        <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg" />
                         <Text style={{ fontSize: 15, color: "grey" }}>{user?.username}</Text>
-                
+
                         <View className="mt-5 flex flex-row space-x-5">
-                            <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/>
-                            <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/>
-                            <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4"/>
+                            <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4" />
+                            <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4" />
+                            <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4" />
                         </View>
-                
-                        {/* for bio */}
+
                         <View className="w-full mt-5">
                             <TouchableOpacity onPress={() => setUpdateBio(true)} className="w-full flex justify-center items-center">
                                 <InfoBox title={user?.bio || '...'} subtitle="Click to update bio" containerStyles="p-2" titleStyles="text-base" />
@@ -192,9 +200,7 @@ const UserProfileScreen = () => {
                 )}
             />
 
-            {/*  Open a modal to update bio */}
             <Modal visible={updateBio} animationType='slide' transparent={true}>
-
                 <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
                     <View className="bg-white p-6 rounded-lg w-80">
                         <Text className="text-xl font-semibold mb-4">Update Bio</Text>
@@ -228,15 +234,18 @@ const UserProfileScreen = () => {
                     <View className="bg-white p-6 rounded-lg w-80">
                         <Text className="text-xl font-semibold mb-4">Report User</Text>
 
-                        <FormField
-                            title="Reason for reporting"
-                            placeholder="Please provide details about why you're reporting this user"
-                            value={reportReason}
-                            handleChangeText={setReportReason}
-                            multiline={true}
-                            numberOfLines={4}
-                            otherStyles="mb-4"
-                        />
+                        <View className="mb-4">
+                            <Text className="text-base font-medium mb-2">Reason for reporting</Text>
+                            <TextInput
+                                value={reportReason}
+                                onChangeText={setReportReason}
+                                placeholder="Please provide details about why you're reporting this user"
+                                multiline={true}
+                                numberOfLines={4}
+                                className="border-2 border-gray-300 p-3 rounded-lg"
+                                style={{ textAlignVertical: 'top' }}
+                            />
+                        </View>
 
                         <TouchableOpacity
                             onPress={handleReportSubmit}
@@ -260,7 +269,6 @@ const UserProfileScreen = () => {
                     </View>
                 </View>
             </Modal>
-
         </SafeAreaView>
     )
 }

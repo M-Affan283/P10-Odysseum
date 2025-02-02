@@ -39,7 +39,7 @@ userRouter.get("/getById", getUserById);
 userRouter.get("/getByUsername", getUserByUsername);
 userRouter.get("/search", getUserBySearchParams);
 userRouter.post("/updateUserBio", updateUserBio);
-userRouter.post("/report", reportUser);
+userRouter.post("/report", verifyToken, reportUser);
 
 // Bookmarking routes
 userRouter.post("/addBookmark", addBookmark);
@@ -51,6 +51,5 @@ userRouter.post("/addBookmark", addBookmark);
 // user_router.get("/getByUsername", verifyToken, UserController.getUserByUsername);
 // user_router.get("/search", verifyToken, UserController.getUserBySearchParams);
 // user_router.post("/update", verifyToken, UserController.updateUser);
-// user_router.post("/report", verifyToken, UserController.reportUser);
 
 export default userRouter;

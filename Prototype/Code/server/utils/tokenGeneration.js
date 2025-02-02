@@ -18,7 +18,7 @@ import jwt from 'jsonwebtoken';
 export const generateAccessToken = (userId) => {
     return jwt.sign(
         { id: userId },
-        process.env.ACCESS_KEY_SECRET,
+        process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: '1h' } // Access tokens expire in 1 hour
     );
 };
@@ -31,7 +31,7 @@ export const generateAccessToken = (userId) => {
 export const generateRefreshToken = (userId) => {
     return jwt.sign(
         { id: userId },
-        process.env.REFRESH_KEY_SECRET,
+        process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: '7d' } // Refresh tokens expire in 7 days
     );
 };
@@ -43,7 +43,7 @@ export const generateRefreshToken = (userId) => {
  */
 export const verifyRefreshToken = (refreshToken) => {
     try {
-        return jwt.verify(refreshToken, process.env.REFRESH_KEY_SECRET);
+        return jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     } catch (error) {
         return null;
     }
