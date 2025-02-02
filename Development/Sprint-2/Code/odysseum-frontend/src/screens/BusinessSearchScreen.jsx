@@ -2,19 +2,19 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import axiosInstance from "../../src/utils/axios";
-import useUserStore from "../../src/context/userStore";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from "expo-router";
+import BusinessSearchImg from '../../assets/BusinessSearch.jpg';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-const getQueryUsers = async ({ pageParam = 1, searchQuery }) =>
+const getQueryBusinesses = async ({ pageParam = 1, searchQuery }) =>
 {
   console.log("Search query: ", searchQuery);
 
   try
   {
-    const res = await axiosInstance.get(`/user/search?searchParam=${searchQuery}&page=${pageParam}`);
+    const res = await axiosInstance.get(`/business/search?searchParam=${searchQuery}&page=${pageParam}`);
     // console.log(res.data);
     return res.data;
   }
@@ -25,17 +25,14 @@ const getQueryUsers = async ({ pageParam = 1, searchQuery }) =>
   }
 }
 
-const UserSearchScreen = () => {
-
+const BusinessSearchScreen = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
-  const user = useUserStore((state) => state.user);
-
   const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
-    queryKey: ["userSearch", debouncedSearchQuery],
-    queryFn: ({ pageParam = 1 }) => getQueryUsers({ pageParam, searchQuery: debouncedSearchQuery }),
+    queryKey: ["businessSearch", debouncedSearchQuery],
+    queryFn: ({ pageParam = 1 }) => getQueryBusinesses({ pageParam, searchQuery: debouncedSearchQuery }),
     getNextPageParam: (lastPage) => {
       const { currentPage, totalPages } = lastPage;
       return currentPage < totalPages ? currentPage + 1 : undefined;
@@ -43,9 +40,10 @@ const UserSearchScreen = () => {
     enabled: (debouncedSearchQuery.length > 0), //only work if search query is present
   });
 
-  let users = data?.pages.flatMap((page)=> page.users) || [];
+  let businesses = data?.pages.flatMap((page)=> page.businesses) || [];
 
-  const loadMoreUsers = () => {
+  const loadMoreBusiness = () =>
+  {
     if(hasNextPage) fetchNextPage();
   }
 
@@ -59,7 +57,6 @@ const UserSearchScreen = () => {
       clearTimeout(timer);
     }
   }, [searchQuery]);
-
 
   return (
     <SafeAreaView className="flex-1 bg-[#070f1b]">
@@ -75,10 +72,10 @@ const UserSearchScreen = () => {
           </TouchableOpacity>
 
           {/* Search Bar */}
-          <View className="flex-1 flex-row items-center bg-gray-900 border-gray-400 border rounded-full pl-2">
-            <MaterialIcons name="search" size={30} color="white" />
+          <View className="flex-1 flex-row items-center bg-gray-900 border-gray-400 border rounded-full pl-6">
+            <MaterialIcons name="search" size={20} color="white" />
             <TextInput
-              placeholder="Search locations"
+              placeholder="Search businesses"
               placeholderTextColor="gray"
               value={searchQuery}
               clearButtonMode="always"
@@ -92,11 +89,11 @@ const UserSearchScreen = () => {
       </View>
 
       <FlatList
-        data={users}
+        data={businesses}
         keyExtractor={(item) => item._id}
         keyboardShouldPersistTaps="handled"
         removeClippedSubviews={true}
-        onEndReached={loadMoreUsers}
+        onEndReached={loadMoreBusiness}
         onEndReachedThreshold={0.5}
         ListEmptyComponent={() => {
           if (isFetching) 
@@ -104,7 +101,7 @@ const UserSearchScreen = () => {
             return (
               <View className="flex-1 mt-5 justify-center items-center">
                 <ActivityIndicator size="large" color="black" />
-                <Text className="mt-3 text-gray-300">Loading users...</Text>
+                <Text className="mt-3 text-gray-300">Loading businesses...</Text>
               </View>
             );
           } 
@@ -112,7 +109,7 @@ const UserSearchScreen = () => {
           {
             return (
               <View className="flex-1 mt-5 justify-center items-center">
-                <Text className="text-lg text-red-500">Failed to fetch users.</Text>
+                <Text className="text-lg text-red-500">Failed to fetch businesses.</Text>
                 <TouchableOpacity
                   className="mt-3 bg-blue-500 py-2 px-4 rounded-full"
                   onPress={refetch}
@@ -122,11 +119,11 @@ const UserSearchScreen = () => {
               </View>
             );
           }
-          else if (debouncedSearchQuery.length > 0 && users?.length === 0)
+          else if (debouncedSearchQuery.length > 0 && locations.length === 0)
           {
             return (
               <View className="flex-1 mt-5 justify-center items-center">
-                <Text className="text-lg text-gray-300">No users found for "{debouncedSearchQuery}"</Text>
+                <Text className="text-lg text-gray-300">No businesses found for "{debouncedSearchQuery}"</Text>
               </View>
             );
           }
@@ -134,7 +131,7 @@ const UserSearchScreen = () => {
           {
             return (
               <View className="flex-1 mt-5 justify-center items-center">
-                <Text className="text-lg text-gray-300">Search for users</Text>
+                <Text className="text-lg text-gray-300">Search for businesses</Text>
               </View>
             );
           }
@@ -142,12 +139,13 @@ const UserSearchScreen = () => {
         }}
         renderItem={({item}) => (
           <View>
-            <TouchableOpacity className="flex-row items-center ml-5 mt-5" onPress={() => item._id !== user._id ? router.push(`/user/${item._id}`) : router.push(`/profile`)}>
-              <Image source={{uri: item.profilePicture}} style={{width: 50, height: 50, borderRadius: 25}} />
+            <TouchableOpacity className="flex-row items-center ml-5 mt-5" onPress={() => router.push(`/business/profile/${item._id}`)}>
+              <Image source={item.mediaUrls ? {uri: item.mediaUrls[0]} : BusinessSearchImg} style={{ width: 50, height: 50, borderRadius: 25 }} />
 
-              <View>
-                <Text className="text-lg text-neutral-200 px-3">{item.username}</Text>
-                {/* <Text className="text-sm text-neutral-500 ml-2">{item.firstName} {item.lastName}</Text> */}
+              <View className="px-3">
+                <Text className="text-lg text-neutral-200 ">{item.name}</Text>
+                <Text className="text-sm text-neutral-500 ">{item.category}</Text>
+                <Text className="text-sm text-neutral-500 ">{item.locationId.name}</Text>
               </View>
 
             </TouchableOpacity>
@@ -160,4 +158,4 @@ const UserSearchScreen = () => {
   )
 }
 
-export default UserSearchScreen
+export default BusinessSearchScreen
