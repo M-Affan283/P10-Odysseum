@@ -7,7 +7,6 @@ import axios from 'axios'
 import axiosInstance from '../utils/axios'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import InfoBox from '../components/InfoBox';
-import { getAccessToken } from '../utils/tokenUtils';
 
 const UserProfileScreen = () => {
     const user = useUserStore((state) => state.user);
@@ -23,10 +22,6 @@ const UserProfileScreen = () => {
         profilePicture: ''
     });
 
-    // New state for report functionality
-    const [showReportModal, setShowReportModal] = useState(false);
-    const [reportReason, setReportReason] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const userLogout = () => {
         console.log("Logging out user: ", user.username);
@@ -107,38 +102,6 @@ const UserProfileScreen = () => {
         }
     }
 
-    const handleReportSubmit = async () => {
-        if (!reportReason.trim()) {
-            alert('Please provide a reason for reporting');
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            // Debug: Log the token
-            const token = await getAccessToken();
-            console.log("Current token:", token);
-
-            const response = await axiosInstance.post('/user/report', {
-                reportedUserId: user._id,
-                reason: reportReason
-            });
-
-            if (response.data.success) {
-                alert('Report submitted successfully');
-                setShowReportModal(false);
-                setReportReason('');
-            }
-        } catch (error) {
-            console.log('Full error:', error);
-            console.log('Error response:', error.response?.data);
-            console.log('Error status:', error.response?.status);
-            alert(`Failed to submit report: ${error.response?.data?.message || error.message}`);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
     return (
         <SafeAreaView className="bg-primary h-full">
             <FlatList
@@ -166,12 +129,6 @@ const UserProfileScreen = () => {
                 ListHeaderComponent={() => (
                     <View className='w-full flex justify-center items-center mt-6 mb-12 px-4'>
                         <View className="flex w-full flex-row justify-between items-center mb-10">
-                            <TouchableOpacity
-                                onPress={() => setShowReportModal(true)}
-                                className="p-2"
-                            >
-                                <MaterialIcons name="report" size={24} color="red" />
-                            </TouchableOpacity>
 
                             <TouchableOpacity onPress={userLogout}>
                                 <MaterialIcons name="logout" size={24} color="white" className='w-6 h-6' />
@@ -223,48 +180,6 @@ const UserProfileScreen = () => {
                             className="mt-4 items-center"
                         >
                             <Text className="text-red-500">Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-
-            {/* Report User Modal */}
-            <Modal visible={showReportModal} animationType='slide' transparent={true}>
-                <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-                    <View className="bg-white p-6 rounded-lg w-80">
-                        <Text className="text-xl font-semibold mb-4">Report User</Text>
-
-                        <View className="mb-4">
-                            <Text className="text-base font-medium mb-2">Reason for reporting</Text>
-                            <TextInput
-                                value={reportReason}
-                                onChangeText={setReportReason}
-                                placeholder="Please provide details about why you're reporting this user"
-                                multiline={true}
-                                numberOfLines={4}
-                                className="border-2 border-gray-300 p-3 rounded-lg"
-                                style={{ textAlignVertical: 'top' }}
-                            />
-                        </View>
-
-                        <TouchableOpacity
-                            onPress={handleReportSubmit}
-                            disabled={isSubmitting}
-                            className="bg-red-500 p-3 rounded-lg items-center"
-                        >
-                            <Text className="text-white font-semibold">
-                                {isSubmitting ? "Submitting..." : "Submit Report"}
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                setShowReportModal(false);
-                                setReportReason('');
-                            }}
-                            className="mt-4 items-center"
-                        >
-                            <Text className="text-gray-500">Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

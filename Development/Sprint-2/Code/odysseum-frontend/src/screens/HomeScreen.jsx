@@ -11,7 +11,7 @@ import { BellIcon, ChatBubbleLeftRightIcon, ExclamationCircleIcon } from "react-
 import useUserStore from "../context/userStore";
 
 ///////////////////////////////////////
-import tempPosts from "./tempfiles/homescreenposts";
+// import tempPosts from "/tempfiles/homescreenposts";
 //////////////////////////////////////
 
 //testing tanstack query
