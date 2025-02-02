@@ -4,7 +4,7 @@ Filename: userRouter.js
 
 This file contains the routes for the user-related API endpoints. It defines the routes for creating, updating, deleting, and fetching users.
 
-Author: Affan & Shahrez
+Author: Affan & Shahrez & [Your Name]
 
 */
 
@@ -16,6 +16,7 @@ import { getAllUsers, getAllLocations, getUserById, getUserByUsername, getUserBy
 import { updateUserBio } from "../controllers/UserController/updateUser.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
 import { refreshToken } from "../controllers/UserController/refreshToken.js";
+import { reportUser } from "../controllers/UserController/reportUser.js";
 
 // Bookmark CRUD
 import { addBookmark } from "../controllers/BookmarkController/addBookmark.js";
@@ -38,6 +39,7 @@ userRouter.get("/getById", getUserById);
 userRouter.get("/getByUsername", getUserByUsername);
 userRouter.get("/search", getUserBySearchParams);
 userRouter.post("/updateUserBio", updateUserBio);
+userRouter.post("/report", reportUser);
 
 // Bookmarking routes
 userRouter.post("/addBookmark", addBookmark);
@@ -49,5 +51,6 @@ userRouter.post("/addBookmark", addBookmark);
 // user_router.get("/getByUsername", verifyToken, UserController.getUserByUsername);
 // user_router.get("/search", verifyToken, UserController.getUserBySearchParams);
 // user_router.post("/update", verifyToken, UserController.updateUser);
+// user_router.post("/report", verifyToken, UserController.reportUser);
 
 export default userRouter;

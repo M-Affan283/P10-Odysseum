@@ -63,6 +63,8 @@ const ERROR_MESSAGES = { //add more error messages as needed
     NO_REQUESTOR_ID: "No requestor ID provided",
     NO_CURSORS: "No cursors provided for pagination",
     REQUESTOR_NOT_FOUND: "Requestor not found",
+    USER_NOT_FOUND: "User not found",
+    CANNOT_REPORT_SELF: "You cannot report yourself",
 }
 
 /**
@@ -102,6 +104,7 @@ const SUCCESS_MESSAGES = { //add more success messages as needed
     REPLY_ADDED: "Reply added successfully",
     FILES_UPLOADED: "Files uploaded successfully",
     USER_UPDATED: "User updated successfully",
+    REPORT_SUBMITTED: "Report submitted successfully",
 }
 
 

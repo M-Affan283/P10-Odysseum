@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, Image, FlatList, TouchableOpacity, Modal, TextInput } from 'react-native'
-import {useState, useEffect, useCallback} from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import useUserStore from '../context/userStore'
 import { router, useFocusEffect } from 'expo-router'
@@ -23,9 +23,11 @@ const UserProfileScreen = () => {
         bio: '',
         profilePicture: ''
     });
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [reportReason, setReportReason] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const userLogout = () =>
-    {
+    const userLogout = () => {
         console.log("Logging out user: ", user.username);
         logout();
         // router.dismissAll();
@@ -42,44 +44,36 @@ const UserProfileScreen = () => {
     );
 
 
-    const getPosts = async () =>
-    {
+    const getPosts = async () => {
         console.log("Retrieving user posts...");
         setLoading(true);
-        try
-        {
+        try {
             axiosInstance.get(`/post/getUserPosts`, {
                 params: {
                     requestorId: user._id,
                     userId: user._id
                 }
             })
-            .then((res)=>
-            {
-                if(res.data.posts.length > 0)
-                {
-                    // console.log("Posts received: ", res.data.posts)
-                    setPosts(res.data.posts);
-                }
-                else
-                {
-                    console.log("User has no posts");
-                }
+                .then((res) => {
+                    if (res.data.posts.length > 0) {
+                        // console.log("Posts received: ", res.data.posts)
+                        setPosts(res.data.posts);
+                    }
+                    else {
+                        console.log("User has no posts");
+                    }
 
-                
-            })
-            .catch((error) =>
-            {
-                console.log(error);
-                setError(error.message);
-            })
-            .finally(()=>
-            {
-                setLoading(false);
-            })
+
+                })
+                .catch((error) => {
+                    console.log(error);
+                    setError(error.message);
+                })
+                .finally(() => {
+                    setLoading(false);
+                })
         }
-        catch(error)
-        {
+        catch (error) {
             setError(error.message);
             setLoading(false);
         }
@@ -88,119 +82,187 @@ const UserProfileScreen = () => {
     // Updates user bio
     const updateUserBio = async () => {
         try {
-            axiosInstance.post('/user/updateUserBio', {userId: user._id, bio: form.bio})
-            .then((res) => {
-                console.log("message: ", res.data.message);
-                setUser({
-                    ...user,
-                    bio: form.bio,
-                    // profilePicture: form.profilePicture
+            axiosInstance.post('/user/updateUserBio', { userId: user._id, bio: form.bio })
+                .then((res) => {
+                    console.log("message: ", res.data.message);
+                    setUser({
+                        ...user,
+                        bio: form.bio,
+                        // profilePicture: form.profilePicture
+                    })
                 })
-            })
-            .catch((error) => {
-                console.log(error);
-                setError(error.message);
-            })
+                .catch((error) => {
+                    console.log(error);
+                    setError(error.message);
+                })
         }
-        catch(error) {
+        catch (error) {
             setError(error.message);
         }
     }
 
+    const handleReportSubmit = async () => {
+        if (!reportReason.trim()) {
+            alert('Please provide a reason for reporting');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const response = await axiosInstance.post('/user/report', {
+                reportedUserId: user._id,
+                reason: reportReason
+            });
+
+            if (response.data.success) {
+                alert('Report submitted successfully');
+                setShowReportModal(false);
+                setReportReason('');
+            }
+        } catch (error) {
+            console.log('Error submitting report:', error);
+            alert('Failed to submit report. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     //show username, profile picture, bio, number of followers, number of following, number of posts, then in a scrollview and gridview (like instagram) show the posts. also show logout button
-  return (
-    <SafeAreaView className="bg-primary h-full">
-        <FlatList 
-            data={posts}
-            keyExtractor={(item) => item._id}
-            key={'_'}
-            numColumns={3}
-            columnWrapperStyle={{justifyContent: 'space-between'}}
-            renderItem={({item}) => (
-                <View className="flex-1 p-1">
-                    <Image source={{uri: item.mediaUrls[0]}} style={{width: 100, height: 100}} />
-                    <Text className="text-white">{item.caption}</Text>
-                    <Text className="text-white">{item.commentCount} comments</Text> 
-                    {/* <Text>{item.likeCount} likes</Text> */}
-                </View>
-            )}
-            ListEmptyComponent={() => ( 
-                <View className="flex justify-center items-center px-4">
-                    <MaterialIcons name='hourglass-empty' size={24} color='white' className="w-[270px] h-[216px]"/>
-                    <Text className="text-sm font-medium text-gray-100">Empty</Text>
-                    <Text className="text-xl text-center font-semibold text-white mt-2">
-                        This user has not posted anything yet.
-                    </Text>
-                </View>
-             )}
-
-            //show user data and logout button in header
-            ListHeaderComponent={() => (
-                <View className='w-full flex justify-center items-center mt-6 mb-12 px-4'>
-                    <TouchableOpacity onPress={userLogout} className="flex w-full items-end mb-10">
-                        <MaterialIcons name="logout" size={24} color="white" className='w-6 h-6'/>
-                    </TouchableOpacity>
-
-                    {/* place button to update profile picture later which will open media and update picture*/}
-                    <View className="w-16 h-16 border border-secondary rounded-lg flex justify-center items-center">
-                        <Image source={{uri: user.profilePicture}} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover' />
+    return (
+        <SafeAreaView className="bg-primary h-full">
+            <FlatList
+                data={posts}
+                keyExtractor={(item) => item._id}
+                key={'_'}
+                numColumns={3}
+                columnWrapperStyle={{ justifyContent: 'space-between' }}
+                renderItem={({ item }) => (
+                    <View className="flex-1 p-1">
+                        <Image source={{ uri: item.mediaUrls[0] }} style={{ width: 100, height: 100 }} />
+                        <Text className="text-white">{item.caption}</Text>
+                        <Text className="text-white">{item.commentCount} comments</Text>
+                        {/* <Text>{item.likeCount} likes</Text> */}
                     </View>
-
-                    <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
-                    <Text style={{ fontSize: 15, color: "grey" }}>{user?.username}</Text>
-
-                    <View className="mt-5 flex flex-row space-x-5">
-                        <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/>
-                        <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/>
-                        <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4"/>
+                )}
+                ListEmptyComponent={() => (
+                    <View className="flex justify-center items-center px-4">
+                        <MaterialIcons name='hourglass-empty' size={24} color='white' className="w-[270px] h-[216px]" />
+                        <Text className="text-sm font-medium text-gray-100">Empty</Text>
+                        <Text className="text-xl text-center font-semibold text-white mt-2">
+                            This user has not posted anything yet.
+                        </Text>
                     </View>
+                )}
 
-                    {/* for bio */}
-                    <View className="w-full mt-5">
-                        <TouchableOpacity onPress={() => setUpdateBio(true)} className="w-full flex justify-center items-center">
-                            <InfoBox title={user?.bio || '...'} subtitle="Click to update bio" containerStyles="p-2" titleStyles="text-base" />
+                ListHeaderComponent={() => (
+                    <View className='w-full flex justify-center items-center mt-6 mb-12 px-4'>
+                        <View className="flex w-full flex-row justify-between items-center mb-10">
+                            <TouchableOpacity 
+                                onPress={() => setShowReportModal(true)}
+                                className="p-2">
+                                <MaterialIcons name="report" size={24} color="red" />
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity onPress={userLogout}>
+                                <MaterialIcons name="logout" size={24} color="white" className='w-6 h-6'/>
+                            </TouchableOpacity>
+                        </View>
+                
+                        {/* place button to update profile picture later which will open media and update picture*/}
+                        <View className="w-16 h-16 border border-secondary rounded-lg flex justify-center items-center">
+                            <Image source={{uri: user.profilePicture}} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover' />
+                        </View>
+                
+                        <InfoBox title={user?.firstName + ' ' + user?.lastName} containerStyles="mt-7" titleStyles="text-lg"/>
+                        <Text style={{ fontSize: 15, color: "grey" }}>{user?.username}</Text>
+                
+                        <View className="mt-5 flex flex-row space-x-5">
+                            <InfoBox title={user?.followers.length || 0} subtitle="Followers" containerStyles="mr-4"/>
+                            <InfoBox title={user?.following.length || 0} subtitle="Following" containerStyles="mr-4"/>
+                            <InfoBox title={posts?.length || 0} subtitle="Posts" containerStyles="mr-4"/>
+                        </View>
+                
+                        {/* for bio */}
+                        <View className="w-full mt-5">
+                            <TouchableOpacity onPress={() => setUpdateBio(true)} className="w-full flex justify-center items-center">
+                                <InfoBox title={user?.bio || '...'} subtitle="Click to update bio" containerStyles="p-2" titleStyles="text-base" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+            />
+
+            {/*  Open a modal to update bio */}
+            <Modal visible={updateBio} animationType='slide' transparent={true}>
+
+                <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+                    <View className="bg-white p-6 rounded-lg w-80">
+                        <Text className="text-xl font-semibold mb-4">Update Bio</Text>
+                        <TextInput
+                            value={form.bio}
+                            onChangeText={(text) => setForm({ ...form, bio: text })}
+                            placeholder="Enter your new bio"
+                            multiline
+                            numberOfLines={4}
+                            className="border border-gray-300 p-3 rounded-md mb-4"
+                        />
+                        <TouchableOpacity
+                            onPress={() => { updateUserBio(); setUpdateBio(false) }}
+                            className="bg-primary p-3 rounded-lg items-center"
+                        >
+                            <Text className="text-white font-semibold">Submit</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => setUpdateBio(false)}
+                            className="mt-4 items-center"
+                        >
+                            <Text className="text-red-500">Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Report User Modal */}
+            <Modal visible={showReportModal} animationType='slide' transparent={true}>
+                <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+                    <View className="bg-white p-6 rounded-lg w-80">
+                        <Text className="text-xl font-semibold mb-4">Report User</Text>
+
+                        <FormField
+                            title="Reason for reporting"
+                            placeholder="Please provide details about why you're reporting this user"
+                            value={reportReason}
+                            handleChangeText={setReportReason}
+                            multiline={true}
+                            numberOfLines={4}
+                            otherStyles="mb-4"
+                        />
+
+                        <TouchableOpacity
+                            onPress={handleReportSubmit}
+                            disabled={isSubmitting}
+                            className="bg-red-500 p-3 rounded-lg items-center"
+                        >
+                            <Text className="text-white font-semibold">
+                                {isSubmitting ? "Submitting..." : "Submit Report"}
+                            </Text>
                         </TouchableOpacity>
 
-
+                        <TouchableOpacity
+                            onPress={() => {
+                                setShowReportModal(false);
+                                setReportReason('');
+                            }}
+                            className="mt-4 items-center"
+                        >
+                            <Text className="text-gray-500">Cancel</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
-            )}
-        />
+            </Modal>
 
-        {/*  Open a modal to update bio */}
-        <Modal visible={updateBio} animationType='slide' transparent={true}>
-
-            <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-                <View className="bg-white p-6 rounded-lg w-80">
-                    <Text className="text-xl font-semibold mb-4">Update Bio</Text>
-                    <TextInput
-                        value={form.bio}
-                        onChangeText={(text) => setForm({ ...form, bio: text })}
-                        placeholder="Enter your new bio"
-                        multiline
-                        numberOfLines={4}
-                        className="border border-gray-300 p-3 rounded-md mb-4"
-                    />
-                    <TouchableOpacity
-                        onPress={()=> {updateUserBio(); setUpdateBio(false)}}
-                        className="bg-primary p-3 rounded-lg items-center"
-                    >
-                        <Text className="text-white font-semibold">Submit</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setUpdateBio(false)}
-                        className="mt-4 items-center"
-                    >
-                        <Text className="text-red-500">Cancel</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-
-        </Modal>
-
-    </SafeAreaView>
-  )
+        </SafeAreaView>
+    )
 }
 
 export default UserProfileScreen
