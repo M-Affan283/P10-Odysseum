@@ -77,12 +77,17 @@ const SingleUserProfileScreen = ({ userId }) => {
 
     // const posts = user?.posts || []; // use for ui testing
     const posts = postData?.pages.map((page) => page.posts).flat() || [];
-    console.log(posts)
+    // console.log(posts)
+
+    // useEffect(()=>
+    // {
+    //   if(user.following.includes(userId)) setFollowing(true);
+    // },[])
 
     useEffect(()=>
     {
-      if(user.following.includes(userId)) setFollowing(true);
-    },[])
+      if(userToView.followed) setFollowing(true);
+    },[userToView])
 
     useEffect(()=>
     {
@@ -187,7 +192,7 @@ const SingleUserProfileScreen = ({ userId }) => {
         isFetchingUser ? (
           <View className="flex justify-center items-center mt-6 mb-12 px-4">
             <LottieView
-              source={require('../../assets/LoadingAnimation.json')}
+              source={require('../../assets/animations/Loading1.json')}
               style={{
                 width: 100,
                 height: 100,
@@ -236,7 +241,7 @@ const SingleUserProfileScreen = ({ userId }) => {
             {
                 isFetchingPosts ? (
                     <LottieView
-                        source={require('../../assets/LoadingAnimation.json')}
+                        source={require('../../assets/animations/Loading1.json')}
                         style={{
                         width: 100,
                         height: 100,

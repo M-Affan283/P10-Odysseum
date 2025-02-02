@@ -8,16 +8,13 @@ import PostCard from "../components/PostCard";
 import Toast from "react-native-toast-message";
 import LottieView from "lottie-react-native";
 import { BellIcon, ChatBubbleLeftRightIcon, ExclamationCircleIcon } from "react-native-heroicons/solid";
-import useUserStore from "../context/userStore";
-
-///////////////////////////////////////
-import tempPosts from "./tempfiles/homescreenposts";
-//////////////////////////////////////
-
-//testing tanstack query
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { LightBulbIcon } from "react-native-heroicons/outline";
-//queryFn:
+import useUserStore from "../context/userStore";
+import { useInfiniteQuery } from "@tanstack/react-query";
+
+// import tempPosts from "./tempfiles/homescreenposts";
+
+
 //change this to getFollowigPosts. requires user id
 const getQueryPosts = async ({ pageParam = 1 }) => {
   console.log("Page param:", pageParam);
@@ -52,7 +49,6 @@ const HomeScreen = () => {
     const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
       queryKey: ['posts'],
       queryFn: ({ pageParam =1 }) => getQueryPosts({pageParam}),
-      // initialPageParam: 1,
       getNextPageParam: (lastPage) => {
         const { currentPage, totalPages } = lastPage;
         return currentPage < totalPages ? currentPage + 1 : undefined;
@@ -95,7 +91,7 @@ const HomeScreen = () => {
         <SafeAreaView className="flex-1 items-center justify-center">
           { isFetching ? (
               <LottieView
-                source={require('../../assets/LoadingAnimation.json')}
+                source={require('../../assets/animations/Loading2.json')}
                 style={{
                   width: 100,
                   height: 100,
@@ -174,7 +170,6 @@ const HomeScreen = () => {
               offset: 500 * index,  // Position of the item in the list
               index
             })}
-            // refreshControl={}
           />
 
         </SafeAreaView>

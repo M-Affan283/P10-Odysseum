@@ -18,10 +18,11 @@ import {
   getBusinessByUser,
 } from "../controllers/BusinessController/getBusiness.js";
 import { updateBusiness, likeBusiness, bookmarBusiness } from "../controllers/BusinessController/updateBusiness.js";
+import upload from "../middleware/multerMiddleware.js";
 
 const businessRouter = express.Router();
 
-businessRouter.post("/create", createBusiness);
+businessRouter.post("/create", upload.array("media", 5), createBusiness);
 businessRouter.get("/getById", getBusinessById);
 businessRouter.get("/getAll", getAllBusinesses);
 businessRouter.get("/getByCategory", getBusinessByCategory);
