@@ -8,6 +8,7 @@ import Foundation from '@expo/vector-icons/Foundation';
 import LottieView from 'lottie-react-native'
 import { ExclamationCircleIcon, UserPlusIcon } from 'react-native-heroicons/solid'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
