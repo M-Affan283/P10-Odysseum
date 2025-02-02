@@ -4,24 +4,22 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import FindUserImg from '../../assets/FindUserJPG.jpg';
-import DiscoverLocationImg from '../../assets/DiscoverLocationJPG.jpg';
-import BusinessSearchImg from '../../assets/BusinessSearch.jpg';
+import images from "../../assets/images/images";
 
 
 const searchList = [
     {
-        img: FindUserImg,
+        img: images.UserSearchImg,
         title: 'Find Users',
         onPress: () => router.push(`/user`)
     },
     {
-        img: DiscoverLocationImg,
+        img: images.DiscoverLocationImg,
         title: 'Discover Locations',
         onPress: () => router.push(`/location`)
     },
     {
-        img: BusinessSearchImg,
+        img: images.BusinessSearchImg,
         title: 'Find Businesses',
         onPress: () => router.push(`/business`)
     }
