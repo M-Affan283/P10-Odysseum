@@ -24,7 +24,7 @@ import { readBookmark } from "../controllers/BookmarkController/readBookmark.js"
 
 const userRouter = express.Router();
 
-// Auth routes (no middleware needed)
+// Auth routes 
 userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
 userRouter.post("/login/oauth", oAuthLoginUser);

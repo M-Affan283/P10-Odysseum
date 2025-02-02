@@ -4,7 +4,7 @@ Filname: tokenVerification.js
 
 This file contains the middleware function for verifying the access token sent by the client.
 
-Author: Affan
+Author: Shahrez
 
 */
 

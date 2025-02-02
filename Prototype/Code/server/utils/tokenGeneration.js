@@ -4,7 +4,7 @@ Filename: tokenGeneration.js
 
 This file contains the function to generate a JWT access or refresh token for a user. The token is generated using the user's id and a secret key stored in the environment variables.
 
-Author: Affan & Shahrez
+Author: Shahrez
 
 */
 
