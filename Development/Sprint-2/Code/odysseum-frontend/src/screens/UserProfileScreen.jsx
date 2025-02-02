@@ -172,7 +172,7 @@ const UserProfileScreen = () => {
                 {
                     isFetching ? (
                         <LottieView
-                            source={require('../../assets/LoadingAnimation.json')}
+                            source={require('../../assets/animations/Loading1.json')}
                             style={{
                             width: 100,
                             height: 100,
