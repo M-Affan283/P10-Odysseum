@@ -14,13 +14,16 @@ import { loginUser, oAuthLoginUser } from "../controllers/UserController/loginUs
 import { followUser } from "../controllers/UserController/followUser.js";
 import { getAllUsers, getUserById, getUserByUsername, searchUser } from "../controllers/UserController/getUser.js";
 import { updateUserBio } from "../controllers/UserController/updateUser.js";
-import { verifyToken } from "../middleware/tokenVerification.js";
-import { refreshToken } from "../controllers/UserController/refreshToken.js";
 import { reportUser } from "../controllers/UserController/reportUser.js";
+import { updateUserUsername } from "../controllers/UserController/updateUser.js";
+import { updateUserPassword } from "../controllers/UserController/updateUser.js";
 
 // Bookmark CRUD
 import { bookmarkLocation } from "../controllers/BookmarkController/addBookmark.js";
-import { readBookmark } from "../controllers/BookmarkController/readBookmark.js";
+
+
+import { verifyToken } from "../middleware/tokenVerification.js";
+import { refreshToken } from "../controllers/UserController/refreshToken.js";
 
 const userRouter = express.Router();
 
@@ -37,6 +40,8 @@ userRouter.get("/getById", getUserById);
 userRouter.get("/getByUsername", getUserByUsername);
 userRouter.get("/search", searchUser);
 userRouter.post("/updateUserBio", updateUserBio);
+userRouter.post("/updateUserUsername", updateUserUsername);
+userRouter.post("/updateUserPassword", updateUserPassword);
 userRouter.post("/report", verifyToken, reportUser);
 
 // Bookmarking routes

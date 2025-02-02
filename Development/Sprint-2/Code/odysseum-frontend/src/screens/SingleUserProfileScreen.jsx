@@ -1,5 +1,5 @@
 import { View, Text, Image, FlatList, TouchableOpacity, ImageBackground, Dimensions, Modal, TextInput } from 'react-native'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, {useState, useEffect, useCallback} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import useUserStore from '../context/userStore'
 import { router } from 'expo-router'
@@ -8,12 +8,11 @@ import Foundation from '@expo/vector-icons/Foundation';
 import LottieView from 'lottie-react-native'
 import { ExclamationCircleIcon, UserPlusIcon } from 'react-native-heroicons/solid'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 
-const imageWidth = (Dimensions.get('window').width - 20) / 2;
+const imageWidth = (Dimensions.get('window').width-20) / 2;
 
 const getQueryUserPosts = async ({ pageParam = 1, userId, requestorId }) => {
     console.log("Fetching user posts...");
@@ -80,9 +79,10 @@ const SingleUserProfileScreen = ({ userId }) => {
     const posts = postData?.pages.map((page) => page.posts).flat() || [];
     // console.log(posts)
 
-    useEffect(() => {
-        if (user.following.includes(userId)) setFollowing(true);
-    }, [])
+    useEffect(()=>
+    {
+        if(userToView.followed) setFollowing(true);
+    },[userToView])
 
     useEffect(() => {
         if (postError) {
@@ -250,15 +250,11 @@ const SingleUserProfileScreen = ({ userId }) => {
                         </ImageBackground>
 
                         <View className="items-center mt-5 gap-2">
-                            <Text className="font-bold text-xl text-white top-1">
-                                {userToView?.firstName + " " + userToView?.lastName}
-                            </Text>
-                            <Text style={{ fontSize: 15, color: "rgba(255,255,255,0.6)" }}>
-                                @{userToView?.username}
-                            </Text>
+                            <Text className="font-bold text-xl text-white top-1">{userToView?.firstName + " " + userToView?.lastName}</Text>
+                            <Text style={{ fontSize: 15, color: "rgba(255,255,255,0.6)" }}>@{userToView?.username}</Text>
                             <TouchableOpacity onPress={() => setUpdateBio(true)}>
                                 <Text style={{ fontSize: 15, color: "rgba(255,255,255,0.6)" }}>
-                                    {userToView?.bio || "Add a bio"}
+                                    {userToView?.bio || "Such empty. Much wow."}
                                 </Text>
                             </TouchableOpacity>
                         </View>
