@@ -87,6 +87,7 @@ const PostDetailsScreen = ({postId}) => {
           text1: 'Error',
           text2: 'An error occurred while fetching post details'
         });
+        setLoading(false);
       }
     }
 
@@ -162,17 +163,18 @@ const PostDetailsScreen = ({postId}) => {
                     </View>
                 )}
               />
-
-            <Pagination.Basic 
-                progress={progress}
-                data={post?.mediaUrls}
-                onPress={onPressPagination}
-                size={10}
-                dotStyle={{backgroundColor: 'gray', borderRadius: 100}}
-                activeDotStyle={{backgroundColor: 'white', overflow: 'hidden', aspectRatio: 1, borderRadius: 15}}
-                containerStyle={{gap: 5, marginTop: 20}}
-                horizontal
-              />
+              {post?.mediaUrls && post?.mediaUrls.length > 0 && (
+                <Pagination.Basic 
+                  progress={progress}
+                  data={post?.mediaUrls}
+                  onPress={onPressPagination}
+                  size={10}
+                  dotStyle={{backgroundColor: 'gray', borderRadius: 100}}
+                  activeDotStyle={{backgroundColor: 'white', overflow: 'hidden', aspectRatio: 1, borderRadius: 15}}
+                  containerStyle={{gap: 5, marginTop: 20}}
+                  horizontal
+                />
+              )}
             </View>
 
 
