@@ -34,7 +34,7 @@ const tempPost = {
 
 const PostDetailsScreen = ({postId}) => {
 
-    const [post, setPost] = useState(tempPost || null); //post details will be fetched from backend
+    const [post, setPost] = useState(null); //post details will be fetched from backend
     const [loading, setLoading] = useState(false);
     const [commentModalVisibile, setCommentModalVisible] = useState(false);
 
@@ -98,18 +98,23 @@ const PostDetailsScreen = ({postId}) => {
 
   return loading ? (
     <SafeAreaView className="bg-primary h-full">
-      <View className="flex items-center justify-center h-full">
-      <LottieView
-        source={require('../../assets/LoadingAnimation.json')}
-        style={{
-          width: 100,
-          height: 100,
-          
-          // backgroundColor: '#eee',
-        }}
-        autoPlay
-        loop
-      />
+
+      <TouchableOpacity onPress={() => router.back()} className="items-start justify-start mt-5 ml-3">
+          <ChevronLeftIcon size={30} strokeWidth={4} color="white" />
+      </TouchableOpacity>
+      <View className="flex-1 items-center justify-center h-full">
+
+        <LottieView
+          source={require('../../assets/animations/Loading2.json')}
+          style={{
+            width: 200,
+            height: 150,
+            
+            // backgroundColor: '#eee',
+          }}
+          autoPlay
+          loop
+        />
       </View>
     </SafeAreaView>
   )
