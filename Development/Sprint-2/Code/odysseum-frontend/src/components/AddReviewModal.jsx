@@ -6,6 +6,7 @@ import useUserStore from '../context/userStore';
 import Toast from 'react-native-toast-message';
 import StarRating from 'react-native-star-rating-widget';
 import { PhotoIcon } from 'react-native-heroicons/solid';
+import LottieView from 'lottie-react-native';
 
 const AddReviewModal = ({entityId, entityType, entityName, visible, setVisible}) => {
 
@@ -35,7 +36,7 @@ const AddReviewModal = ({entityId, entityType, entityName, visible, setVisible})
     {
       Toast.show({
         type: "error",
-        position: "bottom",
+        position: "top",
         text1: "Error",
         text2: "Please fill in all fields",
         visibilityTime: 2000,
@@ -73,21 +74,24 @@ const AddReviewModal = ({entityId, entityType, entityName, visible, setVisible})
       console.log(res.data);
       setUploading(false);
       setForm({ title: "", reviewContent: "", rating: 0, media: [] });
+
       Toast.show({
         type: "success",
-        position: "bottom",
+        position: "top",
         text1: "Success",
         text2: "Review Posted successfully",
         visibilityTime: 2000,
       });
+      
       setVisible(false);
     })
     .catch((err) => {
-      console.log(err);
+      console.log(err.response.data.message);
       setUploading(false);
+      
       Toast.show({
         type: "error",
-        position: "bottom",
+        position: "top",
         text1: "Error",
         text2: "An error occurred. Please try again.",
         visibilityTime: 2000,
@@ -104,10 +108,7 @@ const AddReviewModal = ({entityId, entityType, entityName, visible, setVisible})
     else actionSheetRef.current?.setModalVisible(false);
   },[visible])
 
-  useEffect(()=>
-  {
-    console.log("Form: ", form);
-  }, [form])
+  
 
   return (
     <View className="flex-1">
@@ -140,7 +141,7 @@ const AddReviewModal = ({entityId, entityType, entityName, visible, setVisible})
               placeholderTextColor={"gray"}
               className="w-full p-3 text-lg font-semibold"
               // multiline={true}
-              maxLength={15}
+              maxLength={25}
               style={{textAlignVertical: 'top', borderRadius: 15}}
             />
 
@@ -148,8 +149,8 @@ const AddReviewModal = ({entityId, entityType, entityName, visible, setVisible})
 
           <View className="mt-5">
             <TextInput
-                value={form.title}
-                onChangeText={(text) => setForm({ ...form, title: text })} 
+                value={form.reviewContent}
+                onChangeText={(text) => setForm({ ...form, reviewContent: text })} 
                 placeholder="Add your thoughts..."
                 placeholderTextColor={"gray"}
                 className="w-full p-3 text-base"
@@ -178,12 +179,25 @@ const AddReviewModal = ({entityId, entityType, entityName, visible, setVisible})
 
           <TouchableOpacity
             className="bg-[#8C00E3] mx-auto w-3/4 min-h-[50px] rounded-full flex-row justify-center items-center mt-10"
-            // onPress={submitForm}
+            onPress={submitReview}
             disabled={uploading}
           >
-            <Text className={`text-white font-semibold text-lg`}>
-              {uploading ? "Sharing..." : "Share Review"}
-            </Text>
+            {
+              uploading ?
+              (
+                <LottieView
+                  source={require('../../assets/animations/Loading2.json')}
+                  autoPlay
+                  loop
+                  style={{width: 50, height: 50}}
+                />
+              )
+              :
+              (
+                <Text className={`text-white font-semibold text-lg`}>Share Review</Text>
+              )
+
+            }
           </TouchableOpacity>
 
         </ScrollView>
