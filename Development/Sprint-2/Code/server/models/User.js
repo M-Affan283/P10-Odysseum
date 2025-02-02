@@ -1,8 +1,14 @@
 /*  
-    Author/s: Affan & Haroon
+Author/s: Affan & Haroon
+Filename: User.js
+Description:
+    This file contains the schema for the User model. 
+    It defines the structure of the user document in the MongoDB database.
 */
 
 import mongoose from "mongoose";
+import bookmarkSchema from "../models/Bookmark.js"
+
 /**
  * User Schema
  * @param {String} firstName - The first name of the user
@@ -70,6 +76,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide a password'],
         minlength: [6, 'Password cannot be less than 6 characters'],
+        select: false // exclude password from query results
     },
     
     profilePicture: {
@@ -90,16 +97,27 @@ const userSchema = new mongoose.Schema({
     },
     
     followers: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        },
     }],
     
     following: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
     }],
     
-
     emailVerified: {
         type: Boolean,
         default: false
@@ -110,15 +128,17 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin', 'businessOwner'],
         default: 'user'
     },
+
+    // resetPasswordToken: String, // for password reset
+    // resetPasswordExpire: Date, 
     
-    // verificationToken: String, // for email verification (if we want to add email verification)
-    // verificationExpire: Date,
+    verificationToken: String, // for email verification (if we want to add email verification)
+    verificationExpire: Date,
     
     twoFactorEnabled: {
         type: Boolean,
         default: false
     },
-
     twoFactorSecret: String,// for two factor authentication
     
     refreshToken: {
@@ -130,12 +150,16 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    
+    // Adding the bookmark field.
+    // It is a list that containes all the bookmarks associated with the user
+    bookmarks: [bookmarkSchema]
 
     //array of location ids that the user has bookmarked
-    bookmarks: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Location'
-    }]
+    // bookmarks: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Location'
+    // }]
 
 }, {timestamps: true});
 

@@ -1,20 +1,19 @@
 // Importing modules
-import express from 'express';
+import express, { application } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import dotenv from 'dotenv';
 // import { db, storage } from './config/firebase.js'
+import { Location } from './models/Location.js';
+import { User } from './models/User.js';
 
 
 // Importing routes
-import { checkServerHealth } from './utils/serverHealthUtils.js';
-
 import userRouter from './routes/userRouter.js';
 import postRouter from './routes/postRouter.js';
-import commentRouter from './routes/commentRouter.js';
-import locationRouter from "./routes/locationRouter.js";
-import reviewRouter from './routes/reviewRouter.js';
-import businessRouter from './routes/businessRouter.js';
 
+import locationRouter from "./routes/locationRouter.js";
+import { checkServerHealth } from './utils/serverHealthUtils.js';
 
 // Initializing variables
 const app = express();
@@ -34,26 +33,16 @@ app.use(express.urlencoded({ extended: true }));
 
 //------------------ Route Configurations ------------------- //
 
-app.get('/', (req,res) => {
-    return res.status(200).json({
-
-            message: "Welcome to Odysseum API Here is the list of available routes",
-            routes: ['/health', '/api/user', '/api/post', '/api/comment', '/api/location', '/api/review', '/api/business']
-        });
-})
-
 app.get('/health', async (req,res)=>
 {
     let health = await checkServerHealth(SERVER_START_TIME);
+
     return res.status(200).json(health);
 })
 
-app.use('/api/user', userRouter);
-app.use('/api/post', postRouter);
-app.use("/api/location", locationRouter);
-app.use('/api/comment', commentRouter);
-app.use('/api/review', reviewRouter);
-app.use('/api/business', businessRouter);
+app.use('/api/user', userRouter)
+app.use('/api/post', postRouter)
+// app.use("/api/locations", locationRouter);
 
 
 export default app;

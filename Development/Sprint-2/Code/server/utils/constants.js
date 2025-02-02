@@ -1,6 +1,11 @@
 /*
-    Filename: constants.js
-    Author: Affan
+
+Filename: constants.js
+
+This file contains all the constants used in the application. This includes error messages, success messages, regex patterns, etc.
+
+Author: Affan & Shahrez
+
 */
 
 /**
@@ -15,9 +20,11 @@ const ERROR_MESSAGES = { //add more error messages as needed
     INVALID_USERNAME: "Invalid username",
     EMAIL_ALREADY_EXISTS: "Email already exists",
     USERNAME_ALREADY_EXISTS: "Username already exists",
-    INVALID_TOKEN: "Invalid token",
-    TOKEN_EXPIRED: "Token expired",
+    INVALID_TOKEN: "Invalid or expired token",
     NO_TOKEN_PROVIDED: "No token provided",
+    TOKEN_EXPIRED: "Token has expired",
+    INVALID_REFRESH_TOKEN: "Invalid refresh token",
+    REFRESH_TOKEN_EXPIRED: "Refresh token has expired",
     UNAUTHORIZED: "Unauthorized",
     USER_NOT_FOUND: "User not found",
     INVALID_PASSWORD: "Invalid password",
@@ -56,10 +63,8 @@ const ERROR_MESSAGES = { //add more error messages as needed
     NO_REQUESTOR_ID: "No requestor ID provided",
     NO_CURSORS: "No cursors provided for pagination",
     REQUESTOR_NOT_FOUND: "Requestor not found",
-    LOCATION_NOT_FOUND: "Location not found",
-    LOCATION_ALREADY_EXISTS: "Location already exists",
-    USER_EXISTS: "User already exists",
-    
+    USER_NOT_FOUND: "User not found",
+    CANNOT_REPORT_SELF: "You cannot report yourself",
 }
 
 /**
@@ -99,7 +104,7 @@ const SUCCESS_MESSAGES = { //add more success messages as needed
     REPLY_ADDED: "Reply added successfully",
     FILES_UPLOADED: "Files uploaded successfully",
     USER_UPDATED: "User updated successfully",
-    LOCATION_ADDED: "Location added successfully",
+    REPORT_SUBMITTED: "Report submitted successfully",
 }
 
 
