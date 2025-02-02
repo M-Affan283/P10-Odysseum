@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import axiosInstance from "../../src/utils/axios";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from "expo-router";
-import BusinessSearchImg from '../../assets/BusinessSearch.jpg';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import { useInfiniteQuery } from "@tanstack/react-query";
+import images from "../../assets/images/images";
 
 const getQueryBusinesses = async ({ pageParam = 1, searchQuery }) =>
 {
@@ -140,7 +140,7 @@ const BusinessSearchScreen = () => {
         renderItem={({item}) => (
           <View>
             <TouchableOpacity className="flex-row items-center ml-5 mt-5" onPress={() => router.push(`/business/profile/${item._id}`)}>
-              <Image source={item.mediaUrls ? {uri: item.mediaUrls[0]} : BusinessSearchImg} style={{ width: 50, height: 50, borderRadius: 25 }} />
+              <Image source={item.mediaUrls ? {uri: item.mediaUrls[0]} : images.BusinessSearchImg} style={{ width: 50, height: 50, borderRadius: 25 }} />
 
               <View className="px-3">
                 <Text className="text-lg text-neutral-200 ">{item.name}</Text>
