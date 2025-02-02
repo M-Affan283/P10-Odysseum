@@ -1,6 +1,6 @@
 /*
     Filename: postRouter.js
-    Author: Affan
+    Author: Affan & Shahrez
 */
 
 import express from "express";
@@ -10,6 +10,7 @@ import { updatePost, likePost } from "../controllers/PostContoller/updatePost.js
 import { deletePost } from "../controllers/PostContoller/deletePost.js";
 import upload from "../middleware/multerMiddleware.js";
 import { verifyToken } from "../middleware/tokenVerification.js";
+import { reportPost } from "../controllers/PostContoller/reportPost.js";
 
 const postRouter = express.Router();
 
@@ -22,6 +23,8 @@ postRouter.get("/getAll", getAllPosts);
 postRouter.post("/update", updatePost);
 postRouter.post("/like", likePost);
 postRouter.delete("/delete", deletePost);
+
+postRouter.post("/report", verifyToken, reportPost);
 
 // Routes with middleware
 // post_router.post("/create", verifyToken, upload.array("media",5), PostController.createPost);
