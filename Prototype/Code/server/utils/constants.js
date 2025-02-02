@@ -4,7 +4,7 @@ Filename: constants.js
 
 This file contains all the constants used in the application. This includes error messages, success messages, regex patterns, etc.
 
-Author: Affan
+Author: Affan & Shahrez
 
 */
 
@@ -20,9 +20,11 @@ const ERROR_MESSAGES = { //add more error messages as needed
     INVALID_USERNAME: "Invalid username",
     EMAIL_ALREADY_EXISTS: "Email already exists",
     USERNAME_ALREADY_EXISTS: "Username already exists",
-    INVALID_TOKEN: "Invalid token",
-    TOKEN_EXPIRED: "Token expired",
+    INVALID_TOKEN: "Invalid or expired token",
     NO_TOKEN_PROVIDED: "No token provided",
+    TOKEN_EXPIRED: "Token has expired",
+    INVALID_REFRESH_TOKEN: "Invalid refresh token",
+    REFRESH_TOKEN_EXPIRED: "Refresh token has expired",
     UNAUTHORIZED: "Unauthorized",
     USER_NOT_FOUND: "User not found",
     INVALID_PASSWORD: "Invalid password",
