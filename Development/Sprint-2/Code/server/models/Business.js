@@ -29,11 +29,7 @@ const businessSchema = new mongoose.Schema({
         maxlength: [250, 'Description cannot be more than 500 characters']
     },
 
-    website: {
-        type: String,
-    },
-
-    imageUrls: [{
+    mediaUrls: [{
         type: String,
         // required: [true, 'Please provide an image URL'], make true later
     }],
@@ -41,16 +37,17 @@ const businessSchema = new mongoose.Schema({
     contactInfo: {
         phone: String,
         email: String,
+        website: String,
     },
 
     operatingHours: {
-        monday: { open: String, close: String },
-        tuesday: { open: String, close: String },
-        wednesday: { open: String, close: String },
-        thursday: { open: String, close: String },
-        friday: { open: String, close: String },
-        saturday: { open: String, close: String },
-        sunday: { open: String, close: String }
+        monday: String,
+        tuesday: String,
+        wednesday: String,
+        thursday: String,
+        friday: String,
+        saturday: String,
+        sunday: String
     },
 
     locationId: {
