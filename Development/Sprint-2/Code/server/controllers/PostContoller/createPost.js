@@ -19,8 +19,10 @@ export const createPost = async (req,res) =>
     const files = req.files;
     console.log("Body: ", req.body)
     if(!creatorId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
-    // if(!locationId) return res.status(400).json({error: ERROR_MESSAGES.NO_LOCATION_ID}); //uncomment later
+    if(!locationId) return res.status(400).json({error: ERROR_MESSAGES.NO_LOCATION_ID}); //uncomment later
     // if(!files || files.length === 0) return res.status(400).json({error: ERROR_MESSAGES.NO_FILES});
+
+    // return res.status(200).json({message: "Post added successfully"});
 
     try
     {
