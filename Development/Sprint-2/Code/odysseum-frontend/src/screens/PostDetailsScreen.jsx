@@ -34,7 +34,7 @@ const tempPost = {
 
 const PostDetailsScreen = ({postId}) => {
 
-    const [post, setPost] = useState(tempPost || null); //post details will be fetched from backend
+    const [post, setPost] = useState(null); //post details will be fetched from backend
     const [loading, setLoading] = useState(false);
     const [commentModalVisibile, setCommentModalVisible] = useState(false);
 
@@ -87,6 +87,7 @@ const PostDetailsScreen = ({postId}) => {
           text1: 'Error',
           text2: 'An error occurred while fetching post details'
         });
+        setLoading(false);
       }
     }
 
@@ -98,18 +99,23 @@ const PostDetailsScreen = ({postId}) => {
 
   return loading ? (
     <SafeAreaView className="bg-primary h-full">
-      <View className="flex items-center justify-center h-full">
-      <LottieView
-        source={require('../../assets/LoadingAnimation.json')}
-        style={{
-          width: 100,
-          height: 100,
-          
-          // backgroundColor: '#eee',
-        }}
-        autoPlay
-        loop
-      />
+
+      <TouchableOpacity onPress={() => router.back()} className="items-start justify-start mt-5 ml-3">
+          <ChevronLeftIcon size={30} strokeWidth={4} color="white" />
+      </TouchableOpacity>
+      <View className="flex-1 items-center justify-center h-full">
+
+        <LottieView
+          source={require('../../assets/animations/Loading2.json')}
+          style={{
+            width: 200,
+            height: 150,
+            
+            // backgroundColor: '#eee',
+          }}
+          autoPlay
+          loop
+        />
       </View>
     </SafeAreaView>
   )
@@ -157,17 +163,18 @@ const PostDetailsScreen = ({postId}) => {
                     </View>
                 )}
               />
-
-            <Pagination.Basic 
-                progress={progress}
-                data={post?.mediaUrls}
-                onPress={onPressPagination}
-                size={10}
-                dotStyle={{backgroundColor: 'gray', borderRadius: 100}}
-                activeDotStyle={{backgroundColor: 'white', overflow: 'hidden', aspectRatio: 1, borderRadius: 15}}
-                containerStyle={{gap: 5, marginTop: 20}}
-                horizontal
-              />
+              {post?.mediaUrls && post?.mediaUrls.length > 0 && (
+                <Pagination.Basic 
+                  progress={progress}
+                  data={post?.mediaUrls}
+                  onPress={onPressPagination}
+                  size={10}
+                  dotStyle={{backgroundColor: 'gray', borderRadius: 100}}
+                  activeDotStyle={{backgroundColor: 'white', overflow: 'hidden', aspectRatio: 1, borderRadius: 15}}
+                  containerStyle={{gap: 5, marginTop: 20}}
+                  horizontal
+                />
+              )}
             </View>
 
 

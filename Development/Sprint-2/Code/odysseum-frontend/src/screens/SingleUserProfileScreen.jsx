@@ -215,11 +215,14 @@ const SingleUserProfileScreen = ({ userId }) => {
         return (
             isFetchingUser ? (
                 <View className="flex justify-center items-center mt-6 mb-12 px-4">
-                    <LottieView
-                        source={require('../../assets/LoadingAnimation.json')}
-                        style={{ width: 100, height: 100 }}
-                        autoPlay
-                        loop
+                  <LottieView
+                    source={require('../../assets/animations/Loading1.json')}
+                    style={{
+                      width: 100,
+                      height: 100,
+                    }}
+                    autoPlay
+                    loop
                     />
                 </View>
             ) : (
@@ -275,17 +278,17 @@ const SingleUserProfileScreen = ({ userId }) => {
     const ListEmptyComponent = () => {
         return (
             <View className="flex justify-center items-center px-4">
-                {
-                    isFetchingPosts ? (
-                        <LottieView
-                            source={require('../../assets/LoadingAnimation.json')}
-                            style={{
-                                width: 100,
-                                height: 100,
-                            }}
-                            autoPlay
-                            loop
-                        />
+              {
+                  isFetchingPosts ? (
+                      <LottieView
+                          source={require('../../assets/animations/Loading1.json')}
+                          style={{
+                          width: 100,
+                          height: 100,
+                          }}
+                          autoPlay
+                          loop
+                      />
                     ) : postError ? (
                         <View className="flex justify-center items-center">
                             <ExclamationCircleIcon size={24} color="white" />
@@ -293,12 +296,12 @@ const SingleUserProfileScreen = ({ userId }) => {
                                 "Something went wrong. Please try again later."
                             </Text>
                         </View>
-                    ) : (
-                        <Text className="text-xl text-center font-semibold text-white mt-2">
-                            "No posts yet."
-                        </Text>
-                    )
-                }
+                  ) : (
+                      <Text className="text-xl text-center font-semibold text-white mt-2">
+                          "No posts yet."
+                      </Text>
+                  )
+              }
             </View>
         )
     };

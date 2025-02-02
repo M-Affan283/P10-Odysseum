@@ -3,18 +3,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axiosInstance from '../utils/axios';
 import { router } from 'expo-router';
 import useUserStore from '../context/userStore';
-import DefaultLocationPNG from '../../assets/Sunset.jpg';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
-import { BookmarkIcon, ChevronDoubleUpIcon } from 'react-native-heroicons/solid';
+import { BookmarkIcon, ChevronDoubleUpIcon, BriefcaseIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
 import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import * as Animatable from 'react-native-animatable';
 import Animated, { Extrapolation, interpolate, interpolateColor, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
+import { useQuery } from '@tanstack/react-query';
+import LottieView from 'lottie-react-native';
+import images from '../../assets/images/images';
 
 const tempLocation = {
   _id: "67310369aa977e99fcc2c31e",
   name: "Chitral, KPK",
+  avgRating: 4.5,
   coordinates: {
     type: "Point",
     coordinates: [71.8003, 35.8989]
@@ -22,11 +25,27 @@ const tempLocation = {
   description: "Chitral is the capital of the Chitral District, situated on the western bank of the Chitral River in Khyber Pakhtunkhwa, Pakistan. It also served as the capital of the princely state of Chitral until 1969. The town is at the foot of Tirich Mir, the highest peak of the Hindu Kush, which is 25,289 ft (7,708 m) high. It has a population of 20,000. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempora aut vitae quibusdam architecto numquam. Rerum asperiores sunt, eaque, animi praesentium natus sed fugiat quaerat magni eligendi voluptatum accusamus laudantium. Earum.Lorem ipsum dolor sit amet consectetur adipisicing elit. Aperiam, voluptates porro fuga temporibus iusto ipsum? Facere architecto.",
 }
 
+const getQueryLocation = async ({locationId, requestorId}) => {
+  console.log("Retrieving location info...");
+
+  try
+  {
+    const res = await axiosInstance.get(`/location/getById?locationId=${locationId}&requestorId=${requestorId}`);
+    // console.log(res.data)
+    return res.data
+  }
+  catch(error)
+  {
+    console.log(error);
+    throw error;
+  }
+}
+
 const LocationDetailsScreen = ({locationId}) => {
   
-  const [location, setLocation] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // const [location, setLocation] = useState(tempLocation);
+  // const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   
   const user = useUserStore((state) => state.user);
@@ -40,38 +59,27 @@ const LocationDetailsScreen = ({locationId}) => {
     };
   })
 
+  const { data, isFetching, error, refetch } = useQuery({
+    queryKey: ['location', locationId],
+    queryFn: () => getQueryLocation({locationId, requestorId: user._id}),
+    // enabled: !!locationId,
+  })
+
+  const location = data?.location || tempLocation; //later change to {}
+  // const location = tempLocation; //later change to {}
+
   useEffect(() => {
     // Trigger the animation based on loading state
-    viewOpacity.value = withTiming(loading ? 0 : 1, { duration: 500 }); // Interpolate from 0 to 1
-  }, [loading]);
+    viewOpacity.value = withTiming(isFetching ? 0 : 1, { duration: 500 }); // Interpolate from 0 to 1
+  }, [isFetching]);
 
   useEffect(() => {
-    getLocationInfo();
-    if(user.bookmarks.some(bookmark => bookmark._id === locationId)) setBookmarked(true);
-  }, [])
+    //convert this to use usequery hook
+    if(location.bookmarked) setBookmarked(true);
+  }, [location])
 
-  const getLocationInfo = async () =>
-  {
-    console.log("Retrieving location info...");
 
-    setLoading(true);
-
-    axiosInstance.get(`/location/getById?locationId=${locationId}`)
-    .then((res)=>
-    {
-      setLocation(res.data.location);
-      setLoading(false);
-    })
-    .catch((error)=>
-    {
-      console.log(error);
-      setError(error);
-      setLoading(false);
-    })
-  }
-
-  //add or remove bookmark 
-  // TODO: UPDATE THE BOOKMARK ICON ON PRESS
+  // add or remove bookmark 
   const bookmarkLocation = async () =>
   {
       console.log("Bookmarking location...");
@@ -103,23 +111,40 @@ const LocationDetailsScreen = ({locationId}) => {
   return (
     <View className="bg-primary flex-1">
 
-      { loading ? (
+      { isFetching ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="white" />
+          <LottieView
+            source={require('../../assets/animations/Loading1.json')}
+            style={{
+              width: 150,
+              height: 150,
+            }}
+            autoPlay
+            loop
+          />
         </View>
       )
       :
       (
         <Animated.View style={viewStyle}>
-            <Image source={location?.imageUrl ? { uri: location?.imageUrl } : DefaultLocationPNG} style={{width: "100%", height: '100%'}} resizeMode='cover'/>
+            <Image source={location?.imageUrl ? { uri: location?.imageUrl } : images.DefaultLocationImg} style={{width: "100%", height: '100%'}} resizeMode='cover'/>
     
             <SafeAreaView className="flex-row justify-between items-center w-full absolute mt-4">
               <TouchableOpacity className="p-2 rounded-full ml-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={()=>router.back()}>
                 <ChevronLeftIcon size={30} strokeWidth={4} color='white' />
               </TouchableOpacity>
-              <TouchableOpacity className="p-2 rounded-full mr-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={bookmarkLocation}>
-                <BookmarkIcon size={30} strokeWidth={4} color={bookmarked ? 'red' : 'white'} />
-              </TouchableOpacity>
+
+              <View className="flex-row items-center">
+                {/* <TouchableOpacity className="p-2 rounded-full mr-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={()=>router.push({pathname: `/business/location/${locationId}`, params: {name: location?.name}})}>
+                  <BriefcaseIcon size={30} strokeWidth={4} color={'white'} />
+                </TouchableOpacity> */}
+                
+                <TouchableOpacity className="p-2 rounded-full mr-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={bookmarkLocation}>
+                  <BookmarkIcon size={30} strokeWidth={4} color={bookmarked ? 'red' : 'white'} />
+                </TouchableOpacity>
+
+
+              </View>
             </SafeAreaView>
     
             
@@ -162,7 +187,7 @@ const LocationDetailsComponent = ({location}) => {
     color: interpolateColor(
       animatedIndex.value,
       [0, 0.08],
-      ['black', '#070f18'],
+      ['black', 'white'],
     ),
     marginBottom: interpolate(
       animatedIndex.value,
@@ -175,7 +200,7 @@ const LocationDetailsComponent = ({location}) => {
   const CustomBackground = ({animatedIndex, style}) => {
     const containerStyle = useAnimatedStyle(() => ({
       ...style,
-      backgroundColor: '#fff',
+      backgroundColor: '#070f1b',
       borderTopLeftRadius: 16,
       borderTopRightRadius: 16,
       opacity: interpolate(
@@ -206,7 +231,6 @@ const LocationDetailsComponent = ({location}) => {
       </Animated.View>
     )
   }
-
 
 
 
@@ -241,25 +265,37 @@ const LocationDetailsComponent = ({location}) => {
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}>
         <Animated.View style={contentStyle}>
-          <Text className="text-lg mx-4 font-semibold text-gray-700 mt-4">Description</Text>
-          <View style={{marginHorizontal: 24}}>
-            <Text className="text-black">{location?.description}</Text>
+
+
+          {/* Action buttons */}
+          <View className="flex-row mt-4">
+            <TouchableOpacity onPress={()=>router.push({pathname: `/business/location/${location._id}`, params: {name: location?.name}})} className="w-28 h-28 rounded-full items-center justify-center mx-auto mt-2 border-2 border-purple-700"  >
+              <BriefcaseIcon size={40} strokeWidth={4} color={'purple'} />
+              <Text className="font-dsregular text-white text-lg">Businesses</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={()=>router.push({pathname: `/review/location/${location._id}`, params: {name: location?.name}})} className="w-28 h-28 rounded-full items-center justify-center mx-auto mt-2 border-2 border-orange-700">
+              <PencilSquareIcon size={40} strokeWidth={4} color={'orange'} />
+              <Text className="font-dsregular text-white text-lg">Reviews</Text>
+            </TouchableOpacity>
           </View>
+
+          <View className="flex-row justify-between items-center mx-4 mt-4">
+            <Text className="text-base font-medium text-white">Rating</Text>
+            <StarRatingDisplay rating={location?.avgRating} starSize={25} color='orange'/>
+          </View>
+
+
+          <Text className="text-lg mx-4 font-semibold text-white mt-6">About</Text>
+          <View className="flex-1 mx-4 mt-2">
+            <Text className="text-white">{location?.description}</Text>
+          </View>
+
 
           <View className="justify-between mt-4">
 
             <View className="flex-row justify-between items-center">
-            
               <Text className="text-lg mx-4 font-semibold text-gray-700 ">Review Summary</Text>
-              <TouchableOpacity onPress={()=> router.push({pathname: `/review/location/${location._id}`, params: {name: location?.name}})}>
-                <Text className="text-base mx-4 font-medium text-blue-600">View All</Text>
-              </TouchableOpacity>
-            
-            </View>
-
-            <View className="flex-row justify-between items-center mx-4 mt-4">
-              <Text className="text-base font-medium text-gray-700">Average Rating</Text>
-              <StarRatingDisplay rating={4.5} starSize={25} color='purple'/>
             </View>
 
           </View>

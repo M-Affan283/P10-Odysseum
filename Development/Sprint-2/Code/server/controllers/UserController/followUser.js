@@ -29,22 +29,21 @@ export const followUser = async (req, res) =>
 
         if(!user || !userToFollow) return res.status(404).json({success:false, message: ERROR_MESSAGES.USER_NOT_FOUND});
 
+        const isFollowing = user.following.includes(userToFollowId);
 
-        // If the user is already following the user to follow, then unfollow the user
-        if(user.following.includes(userToFollowId))
+        if(isFollowing)
         {
-            user.following = user.following.filter(following => following.toString() !== userToFollowId);
-            userToFollow.followers = userToFollow.followers.filter(follower => follower.toString() !== userId);
-            await user.save();
-            await userToFollow.save();
+            await User.updateOne({_id: userId}, {$pull: {following: userToFollowId}});
+            await User.updateOne({_id: userToFollowId}, {$pull: {followers: userId}});
+
             return res.status(200).json({success:true, message: SUCCESS_MESSAGES.USER_UNFOLLOWED, status: "unfollowed"});
         }
-        else // If the user is not following the user to follow, then follow the user
+        else
         {
-            user.following.push(userToFollowId);
-            userToFollow.followers.push(userId);
-            await user.save();
-            await userToFollow.save();
+            //use addToSet to avoid duplicates
+            await User.updateOne({_id: userId}, {$addToSet: {following: userToFollowId}});
+            await User.updateOne({_id: userToFollowId}, {$addToSet: {followers: userId}});
+
             return res.status(200).json({success:true, message: SUCCESS_MESSAGES.USER_FOLLOWED, status: "followed"});
         }
 

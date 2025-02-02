@@ -16,7 +16,7 @@ import Toast from 'react-native-toast-message';
 import { useColorScheme } from 'nativewind';
 import { router } from 'expo-router';
 import { ArrowLeftIcon, MagnifyingGlassIcon } from 'react-native-heroicons/solid';
-import { BellIcon, ChevronRightIcon, DevicePhoneMobileIcon, InformationCircleIcon, LockClosedIcon, ShieldCheckIcon, UserIcon } from 'react-native-heroicons/outline';
+import { BellIcon, ChevronRightIcon, DevicePhoneMobileIcon, InformationCircleIcon, LockClosedIcon, ShieldCheckIcon, UserIcon, BriefcaseIcon } from 'react-native-heroicons/outline';
 
 
 
@@ -35,26 +35,38 @@ const SettingsScreen = () => {
         {
             title: 'Profile',
             icon: <UserIcon size={20} color="white" />,
+            routeUrl: ''
+        },
+        {
+            title: 'Businesses',
+            icon: <BriefcaseIcon size={20} color="white" />,
+            routeUrl: '/settings/business'
+            
         },
         {
             title: 'Notifications',
             icon: <BellIcon size={20} color="white" />,
+            routeUrl: ''
         },
         {
             title: 'Display',
             icon: <DevicePhoneMobileIcon size={20} color="white" />,
+            routeUrl: ''
         },
         {
             title: 'Privacy',
             icon: <LockClosedIcon size={20} color="white" />,
+            routeUrl: ''
         },
         {
             title: 'Security',
             icon: <ShieldCheckIcon size={20} color="white" />,
+            routeUrl: ''
         },
         {
             title: 'About',
             icon: <InformationCircleIcon size={20} color="white" />,
+            routeUrl: ''
         }
     ];
 
@@ -134,7 +146,7 @@ const SettingsScreen = () => {
                     clearButtonMode="always"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    className="flex-1 text-base pl-2 tracking-wider"
+                    className="flex-1 text-base pl-2 tracking-wider text-white"
                     // onChangeText={(text) => setSearch(text)}
                     />
                 </View>
@@ -143,7 +155,7 @@ const SettingsScreen = () => {
                 <View className="flex-1 mt-8">
 
                     {settingsList.map((setting, index) => (
-                        <TouchableOpacity key={index} className="flex-row items-center p-4 my-1">
+                        <TouchableOpacity key={index} className="flex-row items-center p-4 my-1" onPress={() => router.push(setting.routeUrl)}>
                             {setting.icon}
                             <Text className="ml-3 text-white text-lg">{setting.title}</Text>
                             <View className="flex-1 items-end">
