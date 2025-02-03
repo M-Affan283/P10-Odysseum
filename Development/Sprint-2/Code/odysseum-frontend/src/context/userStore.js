@@ -4,22 +4,16 @@ File: userStore.js
 
 This file contains the user store context which is used to store the user data and provide it to the components that need it.
 
-Author: Affan
-
-
+Author: Affan & Shahrez
 
 */
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { setAccessToken,getAccessToken,deleteAccessToken } from "../utils/tokenUtils"; // Assuming you have this utility to delete the token from SecureStorage
+import { deleteAccessToken } from "../utils/tokenUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 //test async sotrage
-// Creating Zustand store for user management
-
-//Create a temoporay store for user so that we dont have to login again and again
-
 let tempUser = {
   _id: "672f358fb3e56fac046d76a5",
   firstName: "Muhammad Affan",
@@ -78,11 +72,13 @@ let tempUser = {
   ],
 };
 
+
+// Creating Zustand store for user management
 const useUserStore = create(
   persist(
     (set) => ({
       // Initial state
-      user: tempUser || null,
+      user: tempUser || null, // user is an object with properties: _id, firstName, lastName, email, username, role
       isLoggedIn: false,
 
       // Actions
@@ -91,14 +87,12 @@ const useUserStore = create(
       logout: async () => {
         set({ user: null, isLoggedIn: false });
         await AsyncStorage.removeItem("user-storage"); // Remove user from storage
-        // deleteAccessToken(); // Remove token from secure storage
+        deleteAccessToken(); // Remove token from secure storage
       },
-
-      
     }),
     {
       name: "user-storage", // Key for persistence
-      storage: createJSONStorage(() => AsyncStorage), // Storage medium
+      storage: createJSONStorage(()=>AsyncStorage), // Storage medium
     }
   )
 );

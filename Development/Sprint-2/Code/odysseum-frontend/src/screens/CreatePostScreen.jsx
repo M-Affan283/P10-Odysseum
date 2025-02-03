@@ -1,22 +1,26 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, Platform, TextInput } from 'react-native'
-import {useState, useRef} from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { View, Text, ScrollView, TouchableOpacity, Image, Platform, TextInput } from 'react-native';
+import {useState, useRef} from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import Toast from 'react-native-toast-message';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
-import { FolderPlusIcon, MapIcon, PhotoIcon, TrashIcon } from 'react-native-heroicons/solid';
+import { FolderPlusIcon, MapIcon, TrashIcon } from 'react-native-heroicons/solid';
 import { useSharedValue } from 'react-native-reanimated';
+import LocationsModal from '../components/LocationsModal';
+import LottieView from 'lottie-react-native';
 
 const CreatePostScreen = () => {
   const FormData = global.FormData;
-  // const [firstImage, setFirstImage] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [locationModalVisible, setLocationModalVisible] = useState(false);
+  
   const [form, setForm] = useState({
     caption: "",
-    media: []
+    media: [],
+    location: null,
   });
 
   const carouselRef = useRef(null);
@@ -49,7 +53,8 @@ const CreatePostScreen = () => {
 
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync(); //ask for permission. if already granted, it will return granted
 
-    if (permissionResult.granted === false) {
+    if (permissionResult.granted === false)
+    {
       alert("Permission to access camera roll is required!");
       return;
     }
@@ -63,11 +68,6 @@ const CreatePostScreen = () => {
 
     if (!result.canceled)
     {
-      // console.log(result);
-      //old code
-      // if(form.media.length===0) setFirstImage(result.assets[0].uri);
-      // setForm({ ...form, media: [...form.media, ...result.assets] });
-      //
 
       try
       {
@@ -88,8 +88,7 @@ const CreatePostScreen = () => {
           return asset;
         }));
           
-        //if no media, set first image
-        // if(form.media.length === 0) setFirstImage(result.assets[0].uri);
+
         setForm({ ...form, media: [...compressedImages] });
       }
       catch(error)
@@ -103,7 +102,7 @@ const CreatePostScreen = () => {
 
   const submitForm = async () =>
   {
-    if(form.caption === "" || form.media.length === 0)
+    if(form.caption === "" || form.media.length === 0 || form.location === null)
     {
       Toast.show({
         type: "error",
@@ -121,8 +120,9 @@ const CreatePostScreen = () => {
 
     formData.append("creatorId", user._id);
     formData.append("caption", form.caption);
+    formData.append("locationId", form.location._id);
 
-    //later change to handle multiple media
+    // handles single media
     // formData.append('media', {
     //   uri: Platform.OS === 'android' ? form.media[0].uri : form.media[0].uri.replace('file://', ''),
     //   type: form.media[0].mimeType,
@@ -139,6 +139,9 @@ const CreatePostScreen = () => {
       })
     })
 
+    // console.log("Form Data: ", formData);
+    // setUploading(false);
+
     try
     {
       axiosInstance.post("/post/create", formData, {
@@ -149,8 +152,8 @@ const CreatePostScreen = () => {
       })
       .then((res) => {
         console.log(res.data);
-        // setUploading(false);
-        setForm({ caption: "", media: [] });
+        
+        setForm({ caption: "", media: [], location: null });
 
         Toast.show({
           type: "success",
@@ -164,9 +167,7 @@ const CreatePostScreen = () => {
 
       })
       .catch((err) => {
-        console.log(err);
-        alert("An error occurred: " + err.response.data.message);
-        // setUploading(false);
+        console.log(err.response.data);
 
         Toast.show({
           type: "error",
@@ -192,7 +193,7 @@ const CreatePostScreen = () => {
   return (
     <SafeAreaView className="bg-[#070f1b] h-full">
       
-      <ScrollView className="px-4 my-6">
+      <ScrollView className="px-4 py-6" contentContainerStyle={{paddingBottom: 40}}>
 
         <Text className="text-xl text-white font-semibold text-center mb-4">Create Post</Text>
 
@@ -212,8 +213,8 @@ const CreatePostScreen = () => {
                     data={form.media.map((media) => media.uri)}
                     loop={true}
                     ref={carouselRef}
-                    width={200}
-                    height={250}
+                    width={250}
+                    height={300}
                     scrollAnimationDuration={100}
                     style={{alignItems: 'center',justifyContent: 'center'}}
                     onProgressChange={progress}
@@ -225,7 +226,7 @@ const CreatePostScreen = () => {
                         <View className="items-center">
                             <Image
                                 source={{uri: item}}
-                                style={{width: 200,height: 250, borderRadius: 15}}
+                                style={{width: 250,height: 300, borderRadius: 15}}
                                 resizeMode="cover"
                                 />
                             <TouchableOpacity onPress={() => removeSingleMedia(index)} className="absolute top-2 right-2">
@@ -270,10 +271,25 @@ const CreatePostScreen = () => {
               style={{textAlignVertical: 'top', borderRadius: 15}}
             />
 
-            {/* <View className="flex-row mt-2 p-3">
-              <MapIcon size={20} color="#000" />
-              <Text className="text-gray-500 ml-2">Add location</Text>
-            </View> */}
+            {
+              form.location === null ? (
+                <TouchableOpacity className="flex-row mt-2 p-3" onPress={() => setLocationModalVisible(true)}>
+                  <MapIcon size={20} color="#fff" />
+                  <Text className="text-gray-500 ml-2">Add location</Text>
+                </TouchableOpacity>
+              )
+              :
+              (
+                <View className="flex-row mt-2 p-3">
+                  <MapIcon size={25} color="#fff" />
+                  <Text className="text-gray-500 text-base ml-2">{form.location?.name}</Text>
+
+                  <TouchableOpacity onPress={() => setForm({ ...form, location: null })} className="ml-auto">
+                    <TrashIcon size={25} color="red" />
+                  </TouchableOpacity>
+                </View>
+              )
+            }
           </View>
 
 
@@ -284,13 +300,26 @@ const CreatePostScreen = () => {
           onPress={submitForm}
           disabled={uploading}
         >
-          <Text className={`text-white font-semibold text-lg`}>
-            {uploading ? "Uploading..." : "Create post"}
-          </Text>
+          {
+            uploading ?
+            (
+              <LottieView
+                source={require('../../assets/animations/Loading2.json')}
+                autoPlay
+                loop
+                style={{width: 50, height: 50}}
+              />
+            )
+            :
+            (
+              <Text className={`text-white font-semibold text-lg`}>Share Review</Text>
+            )
+
+          }
         </TouchableOpacity>
       </ScrollView>
 
-
+      <LocationsModal visible={locationModalVisible} setVisible={setLocationModalVisible} setForm={setForm} />
 
     </SafeAreaView>
   )

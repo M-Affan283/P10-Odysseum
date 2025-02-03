@@ -7,7 +7,7 @@ import ActionSheet from 'react-native-actions-sheet';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
 import LottieView from 'lottie-react-native';
-import tempComments from '../screens/tempfiles/tempcomment';
+// import tempComments from '../screens/tempfiles/tempcomment';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 const getQueryComments = async ({pageParam = 1, postId }) => {
@@ -137,10 +137,10 @@ const CommentModal = ({postId, visible, setVisible}) =>
                 {
                     isFetching ? (
                         <LottieView
-                            source={require('../../assets/LoadingAnimation.json')}
+                            source={require('../../assets/animations/Loading2.json')}
                             style={{
-                            width: 100,
-                            height: 100,
+                                width: 100,
+                                height: 100,
                             }}
                             autoPlay
                             loop

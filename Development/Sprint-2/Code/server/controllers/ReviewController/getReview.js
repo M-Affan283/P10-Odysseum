@@ -38,17 +38,26 @@ const getReviewById = async (req, res) =>
  */
 const getReviewsByEntity = async (req, res) =>
 {
-    const { entityType, entityId, page=1 } = req.query;
+    const { requestorId, entityType, entityId, page=1 } = req.query;
 
     let limit = 5;
 
     try
     {
+        const user = await User.findById(requestorId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
         const skip = (page - 1) * limit;
         //get all reviews for a specific entity
         const reviews = await Review.find({ entityType: entityType, entityId: entityId }).populate('creatorId').populate({ path: 'entityId' }).sort({ createdAt: -1 }).skip(skip).limit(limit);
 
         const totalReviews = await Review.countDocuments({ entityType, entityId });
+
+        //go through each review and check if the user has upvoted or downvoted the review and add an extra field to the review object
+        reviews.forEach(review => {
+            if (review.upvotes.includes(requestorId)) review.hasUpvoted = true;
+            if (review.downvotes.includes(requestorId)) review.hasDownvoted = true;
+        });
 
 
         res.status(200).json({ 

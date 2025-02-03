@@ -12,6 +12,12 @@ import MainSearchScreen from "../src/screens/MainSearchScreen";
 import BusinessScreen from "../src/screens/BusinessScreen";
 import CreateItineraryScreen from "../src/screens/CreateItineraryScreen";
 import ReviewsScreen from "../src/screens/ReviewsScreen";
+import BusinessLocationScreen from "../src/screens/BusinessLocationScreen";
+import LocationDetailsScreen from "../src/screens/LocationDetailsScreen";
+import BusinessCategoryScreen from "../src/screens/BusinessCategoryScreen";
+import BusinessProfileScreen from "../src/screens/BusinessProfileScreen";
+import BusinessCreateScreen from "../src/screens/BusinessCreateScreen";
+import LottieView from "lottie-react-native";
 
 import SettingsScreen from "../src/screens/SettingsScreen";
 import AboutScreen from "../src/screens/AboutScreen";
@@ -35,13 +41,20 @@ export default function App() {
       {/* <MainSearchScreen /> */}
       {/* <BusinessScreen /> */}
       {/* <CreateItineraryScreen /> */}
-      {/* <ReviewsScreen /> */}
+      {/* <ReviewsScreen entityId={'12345'} entityType={"Location"} entityName={"Test Entity"} /> */}
+      {/* <BusinessScreen /> */}
+      {/* <LocationDetailsScreen locationId={'6781353badab4c338ff55148'}/> */}
 
       <SettingsScreen />
       {/* <AboutScreen /> */}
       {/* <SecurityScreen /> */}
       {/* <PrivacyScreen /> */}
 
+      {/* <BusinessLocationScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'}/> */}
+      {/* <BusinessCategoryScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'} category={'Test Category'}/> */}
+      {/* <BusinessProfileScreen businessId={'6781353badab4c338ff55148'}/> */}
+      {/* <BusinessCreateScreen /> */}
+      
     </>
   );
 }

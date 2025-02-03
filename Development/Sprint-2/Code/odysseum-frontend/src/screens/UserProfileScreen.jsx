@@ -102,6 +102,21 @@ const UserProfileScreen = () => {
         refetch();
     }
 
+    // Add this near your other useEffect hooks
+    // useEffect(() => {
+    //     // Test server connection
+    //     const testConnection = async () => {
+    //         try {
+    //             const response = await axiosInstance.get('/user/getAll');  // or any other endpoint you know works
+    //             console.log('Server connection test successful');
+    //         } catch (error) {
+    //             console.log('Server connection test failed:', error);
+    //         }
+    //     };
+
+    //     testConnection();
+    // }, []);
+
 
     useEffect(() => {
         if(error)
@@ -172,7 +187,7 @@ const UserProfileScreen = () => {
                 {
                     isFetching ? (
                         <LottieView
-                            source={require('../../assets/LoadingAnimation.json')}
+                            source={require('../../assets/animations/Loading1.json')}
                             style={{
                             width: 100,
                             height: 100,

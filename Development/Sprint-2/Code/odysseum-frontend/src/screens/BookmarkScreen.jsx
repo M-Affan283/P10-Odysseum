@@ -2,11 +2,10 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Image } from 'reac
 import {useEffect, useState} from 'react'
 import useUserStore from '../context/userStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import BookmarkPNG from '../../assets/Bookmark.png'
-import DefaultBookmarkPNG from '../../assets/DefaultBookmark.png'
+import images from '../../assets/images/images'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router'
+import { router } from 'expo-router';
 
 const BookmarkScreen = () => {
     
@@ -41,27 +40,27 @@ const BookmarkScreen = () => {
 
     
   return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-[#070f1b]">
         <ScrollView showsVerticalScrollIndicator={false} className="space-y-6 mt-10">
 
             <View className="mx-7 flex-row justify-between items-center mb-10">
-                <Text className="font-bold text-neutral-700 text-2xl">Bookmarks</Text>
+                <Text className="font-dsbold text-neutral-200 text-3xl">Bookmarks</Text>
 
                 <TouchableOpacity>
-                    <Image source={BookmarkPNG} style={{width: 80, height: 80, borderRadius: 35}} />
+                    <Image source={images.BookmarkImg} style={{width: 120, height: 120, borderRadius: 9999}} resizeMode='cover' />
                 </TouchableOpacity>
             </View>
 
             {/* Search bookmarks */}
             <View className="mx-5 mb-4">
-                <View className="flex-row items-center bg-neutral-100 rounded-full space-x-2 pl-6">
-                <MaterialIcons name="search" size={20} color="black" />
+                <View className="flex-row items-center border-gray-200 border rounded-full space-x-2 pl-6">
+                <MaterialIcons name="search" size={20} color="white" />
 
                 <TextInput
                     placeholder='Search bookmarks'
                     placeholderTextColor={'gray'}
                     value={search}
-                    className="flex-1 text-base mb-1 pl-1 tracking-wider"
+                    className="flex-1 text-base mb-1 pl-1 tracking-wider text-white"
                     onChangeText={(text) => setSearch(text)}
                 />
 
@@ -86,7 +85,7 @@ const BookmarkScreen = () => {
 const BookMarkCard = ({bookmark}) => {
     return (
         <TouchableOpacity className="flex justify-end relative p-0 py-6 space-y-2 mb-4" style={{ width: '44%', height: 150 }} onPress={()=> router.push(`/location/${bookmark._id}`)}>
-            <Image source={bookmark?.imageUrl? {uri: bookmark?.imageUrl} : DefaultBookmarkPNG}  className="absolute rounded-lg h-full w-full" />
+            <Image source={bookmark?.imageUrl? {uri: bookmark?.imageUrl} : images.DefaultBookmarkImg}  className="absolute rounded-lg h-full w-full" />
         
             <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,1)']}

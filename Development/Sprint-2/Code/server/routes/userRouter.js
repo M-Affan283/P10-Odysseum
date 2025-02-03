@@ -1,6 +1,11 @@
 /*
-    Filename: userRouter.js
-    Author: Affan
+
+Filename: userRouter.js
+
+This file contains the routes for the user-related API endpoints. It defines the routes for creating, updating, deleting, and fetching users.
+
+Author: Affan & Shahrez
+
 */
 
 import express from "express";
@@ -9,22 +14,26 @@ import { loginUser, oAuthLoginUser } from "../controllers/UserController/loginUs
 import { followUser } from "../controllers/UserController/followUser.js";
 import { getAllUsers, getUserById, getUserByUsername, searchUser } from "../controllers/UserController/getUser.js";
 import { updateUserBio } from "../controllers/UserController/updateUser.js";
+import { reportUser } from "../controllers/UserController/reportUser.js";
 import { updateUserUsername } from "../controllers/UserController/updateUser.js";
 import { updateUserPassword } from "../controllers/UserController/updateUser.js";
-import { verifyToken } from "../middleware/tokenVerification.js";
-
 
 // Bookmark CRUD
 import { bookmarkLocation } from "../controllers/BookmarkController/addBookmark.js";
-// import { deleteBookmark } from "../controllers/BookmarkController/deleteBookmark.js";
-// import { readBookmark } from "../controllers/BookmarkController/readBookmark.js";
+
+
+import { verifyToken } from "../middleware/tokenVerification.js";
+import { refreshToken } from "../controllers/UserController/refreshToken.js";
 
 const userRouter = express.Router();
 
-// Testing routes (without middleware)
+// Auth routes 
 userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
 userRouter.post("/login/oauth", oAuthLoginUser);
+userRouter.post("/refresh-token", refreshToken); 
+
+// Testing routes (without middleware)
 userRouter.post("/follow", followUser);
 userRouter.get("/getAll", getAllUsers);
 userRouter.get("/getById", getUserById);
@@ -33,14 +42,12 @@ userRouter.get("/search", searchUser);
 userRouter.post("/updateUserBio", updateUserBio);
 userRouter.post("/updateUserUsername", updateUserUsername);
 userRouter.post("/updateUserPassword", updateUserPassword);
+userRouter.post("/report", verifyToken, reportUser);
 
 // Bookmarking routes
-userRouter.post("/bookmark", bookmarkLocation);
+userRouter.post("/addBookmark", bookmarkLocation);
 
-// user_router.post("/update", updateUser);
-// Routes with middleware (login and register do not require jwt middleware)
-// user_router.post("/register", UserController.registerUser);
-// user_router.post("/login", UserController.loginUser);
+// Routes with middleware (commented for reference)
 // user_router.post("/follow", verifyToken, UserController.followUser);
 // user_router.get("/getAll", verifyToken, UserController.getAllUsers);
 // user_router.get("/getById", verifyToken, UserController.getUserById);

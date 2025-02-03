@@ -15,7 +15,7 @@ import axiosInstance from '../utils/axios';
 import Toast from 'react-native-toast-message';
 import { useColorScheme } from 'nativewind';
 import { ArrowLeftIcon, MagnifyingGlassIcon } from 'react-native-heroicons/solid';
-import { BellIcon, ChevronRightIcon, DevicePhoneMobileIcon, InformationCircleIcon, LockClosedIcon, ShieldCheckIcon, UserIcon } from 'react-native-heroicons/outline';
+import { BellIcon, ChevronRightIcon, DevicePhoneMobileIcon, InformationCircleIcon, LockClosedIcon, ShieldCheckIcon, UserIcon, BriefcaseIcon } from 'react-native-heroicons/outline';
 
 import { router } from 'expo-router';
 
@@ -115,7 +115,7 @@ const SettingsScreen = () => {
                     clearButtonMode="always"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    className="flex-1 text-base pl-2 tracking-wider"
+                    className="flex-1 text-base pl-2 tracking-wider text-white"
                     // onChangeText={(text) => setSearch(text)}
                     />
                 </View>
@@ -124,7 +124,7 @@ const SettingsScreen = () => {
                 <View className="flex-1 mt-8">
 
                     {settingsList.map((setting, index) => (
-                        <TouchableOpacity key={index} onPress={() => router.push(setting.route)} className="flex-row items-center p-4 my-1">
+                        <TouchableOpacity key={index} className="flex-row items-center p-4 my-1" onPress={() => router.push(setting.route)} >
                             {setting.icon}
                             <Text className="ml-3 text-white text-lg">{setting.title}</Text>
                             <View className="flex-1 items-end">

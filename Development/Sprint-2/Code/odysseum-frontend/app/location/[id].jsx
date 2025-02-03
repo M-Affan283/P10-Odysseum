@@ -1,6 +1,4 @@
-import { View, Text } from 'react-native'
 import React from 'react'
-import axiosInstance from '../../src/utils/axios'
 import { useLocalSearchParams } from 'expo-router'
 import LocationDetailsScreen from '../../src/screens/LocationDetailsScreen'
 

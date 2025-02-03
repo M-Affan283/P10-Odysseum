@@ -22,13 +22,20 @@ const editReview = async (req, res) =>
 
         if (review.creatorId.toString() !== creatorId) return res.status(401).json({ message: "You are not authorized to edit this review" });
 
-        if (reviewContent) review.content = reviewContent;
+        // Update the review fields
+        const updateFields = {};
+        if (reviewContent) updateFields.content = reviewContent;
+        if (rating !== null) updateFields.rating = rating;
 
-        if (rating !== null) review.rating = rating;
+        // Update the review without loading it into memory
+        const updatedReview = await Review.findOneAndUpdate(
+            { _id: reviewId },
+            { $set: updateFields },
+            { new: true }  // Return the updated document
+        );
 
-        await review.save();
+        res.status(200).json({ message: "Review updated successfully", review: updatedReview });
 
-        res.status(200).json({ message: "Review updated successfully", review });
     } 
     catch (error)
     {
@@ -50,16 +57,23 @@ const upvoteReview = async (req, res) =>
         if (!review) return res.status(404).json({ message: "Review not found" });
 
         // Check if the user has already upvoted the review
-        if (review.upvotes.includes(userId)) return res.status(400).json({ message: "You have already upvoted this review" });
+        if (review.upvotes.includes(userId)) {
+            // Remove the upvote
+            await Review.updateOne({ _id: reviewId },{$pull: { upvotes: userId },});
 
-        review.upvotes.push(userId);
+            return res.status(200).json({ message: "Upvote removed" });
+        }
+        
+        // Otherwise, add the upvote and remove the downvote if the user has downvoted
+        await Review.updateOne(
+            { _id: reviewId },
+            {
+                $addToSet: { upvotes: userId },  // Add to upvotes if not already there
+                $pull: { downvotes: userId },  // Remove from downvotes if the user has downvoted
+            }
+        );
 
-        const downvoteIndex = review.downvotes.indexOf(userId);
-        if (downvoteIndex !== -1) review.downvotes.splice(downvoteIndex, 1);
-
-        await review.save();
-
-        res.status(200).json({ message: "Review upvoted successfully", review });
+        res.status(200).json({ message: "Upvote Added" });
     }
     catch (error)
     {
@@ -81,17 +95,24 @@ const downvoteReview = async (req, res) =>
         if (!review) return res.status(404).json({ message: "Review not found" });
 
         // Check if the user has already downvoted the review
-        if (review.downvotes.includes(userId)) return res.status(400).json({ message: "You have already downvoted this review" });
+        if (review.downvotes.includes(userId))
+        {
+            // Remove the downvote
+            await Review.updateOne({ _id: reviewId },{$pull: { downvotes: userId },});
 
-        review.downvotes.push(userId);
+            return res.status(200).json({ message: "Downvote removed" });
+        }
 
-        const upvoteIndex = review.upvotes.indexOf(userId);
-        if (upvoteIndex !== -1) review.upvotes.splice(upvoteIndex, 1);
-        
+        // otherwise, add the downvote
+        await Review.updateOne(
+            { _id: reviewId },
+            {
+                $addToSet: { downvotes: userId },  // Add to downvotes if not already there
+                $pull: { upvotes: userId },  // Remove from upvotes if the user has upvoted
+            }
+        );
 
-        await review.save();
-
-        res.status(200).json({ message: "Review downvoted successfully", review });
+        res.status(200).json({ message: "Downvote Added" });
     }
     catch (error)
     {

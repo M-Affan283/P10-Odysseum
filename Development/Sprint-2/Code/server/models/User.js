@@ -135,6 +135,12 @@ const userSchema = new mongoose.Schema({
     bookmarks: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Location'
+    }],
+
+    //array of business ids that the user has bookmarked
+    businessBookmarks: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Business'
     }]
 
 }, {timestamps: true});
