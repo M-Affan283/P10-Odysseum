@@ -12,7 +12,6 @@ Author: Affan & Shahrez
  * Common Error messages to be used in the application
  * @constant ERROR_MESSAGES'
  */
-
 const ERROR_MESSAGES = { //add more error messages as needed
     INTERNAL_SERVER_ERROR: "Internal server error",
     INVALID_CREDENTIALS: "Invalid email/username or password",
@@ -63,6 +62,10 @@ const ERROR_MESSAGES = { //add more error messages as needed
     NO_REQUESTOR_ID: "No requestor ID provided",
     NO_CURSORS: "No cursors provided for pagination",
     REQUESTOR_NOT_FOUND: "Requestor not found",
+    LOCATION_NOT_FOUND: "Location not found",
+    LOCATION_ALREADY_EXISTS: "Location already exists",
+    USER_EXISTS: "User already exists",
+    INVALID_ITINERARY: "Invalid itinerary",
     USER_NOT_FOUND: "User not found",
     CANNOT_REPORT_SELF: "You cannot report yourself",
 }
@@ -71,7 +74,6 @@ const ERROR_MESSAGES = { //add more error messages as needed
  * Common Success messages to be used in the application
  * @constant SUCCESS_MESSAGES
 */
-
 const SUCCESS_MESSAGES = { //add more success messages as needed
     USER_REGISTERED: "User registered successfully",
     USER_LOGGED_IN: "User logged in successfully",
@@ -104,6 +106,8 @@ const SUCCESS_MESSAGES = { //add more success messages as needed
     REPLY_ADDED: "Reply added successfully",
     FILES_UPLOADED: "Files uploaded successfully",
     USER_UPDATED: "User updated successfully",
+    LOCATION_ADDED: "Location added successfully",
+    ITINERARY_CREATED: "Itinerary created successfully",
     REPORT_SUBMITTED: "Report submitted successfully",
 }
 

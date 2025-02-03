@@ -1,7 +1,6 @@
 import { View, Text, Image, FlatList, TouchableOpacity, Modal, TextInput, ImageBackground, Dimensions } from 'react-native'
 import {useState, useEffect} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import useUserStore from '../context/userStore'
 import { router } from 'expo-router'
 import Toast from 'react-native-toast-message';
 import axiosInstance from '../utils/axios'
@@ -10,6 +9,7 @@ import Foundation from '@expo/vector-icons/Foundation';
 import { Cog6ToothIcon, ExclamationCircleIcon } from 'react-native-heroicons/solid'
 import LottieView from 'lottie-react-native';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import useUserStore from '../context/userStore'
 
 //////////////////////////////////////////
 import tempPosts from './tempfiles/homescreenposts'

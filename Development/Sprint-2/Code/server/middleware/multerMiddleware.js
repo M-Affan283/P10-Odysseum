@@ -2,7 +2,8 @@
 
 Filename: multerMiddleware.js
 
-This file contains the multer middleware to handle file uploads. It uses the multer library to handle file uploads and restricts the file types to images and videos.
+This file contains the multer middleware to handle file uploads. 
+It uses the multer library to handle file uploads and restricts the file types to images and videos.
 
 Author: Affan
 

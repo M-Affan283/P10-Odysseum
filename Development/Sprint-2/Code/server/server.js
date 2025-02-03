@@ -39,7 +39,7 @@ mongoose.connect(MONGO_URI)
 
       // Starting the server and listening for incoming requests
       server.listen(PORT, () => {
-          console.log(`${environment.toUpperCase()} Server running on port ${PORT} at ${new Date().toLocaleString()}`);
+          console.log(`[${environment.toUpperCase()}] Server running on port ${PORT} at ${new Date().toLocaleString()}`);
       });
   })
   .catch((error)=> {
