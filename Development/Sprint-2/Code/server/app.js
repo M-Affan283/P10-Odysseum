@@ -14,7 +14,7 @@ import commentRouter from './routes/commentRouter.js';
 import locationRouter from "./routes/locationRouter.js";
 import reviewRouter from './routes/reviewRouter.js';
 import businessRouter from './routes/businessRouter.js';
-
+import itineraryRouter from './routes/itineraryRouter.js';
 
 // Initializing variables
 const app = express();
@@ -38,7 +38,7 @@ app.get('/', (req,res) => {
     return res.status(200).json({
 
             message: "Welcome to Odysseum API Here is the list of available routes",
-            routes: ['/health', '/api/user', '/api/post', '/api/comment', '/api/location', '/api/review', '/api/business']
+            routes: ['/health', '/api/user', '/api/post', '/api/comment', '/api/location', '/api/review', '/api/business', '/api/itinerary']
         });
 })
 
@@ -54,6 +54,7 @@ app.use("/api/location", locationRouter);
 app.use('/api/comment', commentRouter);
 app.use('/api/review', reviewRouter);
 app.use('/api/business', businessRouter);
+app.use('/api/itinerary', itineraryRouter);
 
 
 export default app;
