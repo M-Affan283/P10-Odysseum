@@ -1,0 +1,5 @@
+Contains the logic for handling requests and responses. 
+Each controller typically corresponds to a specific resource.
+│   └── Examples:
+│       ├── userController.js (Handles user registration, login, etc.)
+│       └── postController.js (Handles creation, retrieval, and management of posts)
