@@ -14,10 +14,11 @@ import useUserStore from '../context/userStore';
 import axiosInstance from '../utils/axios';
 import Toast from 'react-native-toast-message';
 import { useColorScheme } from 'nativewind';
+import { router } from 'expo-router';
 import { ArrowLeftIcon, MagnifyingGlassIcon } from 'react-native-heroicons/solid';
 import { BellIcon, ChevronRightIcon, DevicePhoneMobileIcon, InformationCircleIcon, LockClosedIcon, ShieldCheckIcon, UserIcon, BriefcaseIcon } from 'react-native-heroicons/outline';
 
-import { router } from 'expo-router';
+
 
 const SettingsScreen = () => {
     const user = useUserStore(state => state.user);
@@ -31,12 +32,42 @@ const SettingsScreen = () => {
     const [modalType, setModalType] = useState('');
 
     const settingsList = [
-        { title: 'Profile', icon: <UserIcon size={20} color="white"/>, route: '/profile'},
-        { title: 'Notifications', icon: <BellIcon size={20} color="white" />, route: '/notifications'},
-        { title: 'Display', icon: <DevicePhoneMobileIcon size={20} color="white" />, route: '/display'},
-        { title: 'Privacy', icon: <LockClosedIcon size={20} color="white" />, route: '/privacy'},
-        { title: 'Security', icon: <ShieldCheckIcon size={20} color="white" />, route: '/security'},
-        { title: 'About', icon: <InformationCircleIcon size={20} color="white" />, route: '/about'}
+        {
+            title: 'Profile',
+            icon: <UserIcon size={20} color="white" />,
+            routeUrl: ''
+        },
+        {
+            title: 'Businesses',
+            icon: <BriefcaseIcon size={20} color="white" />,
+            routeUrl: '/settings/business'
+            
+        },
+        {
+            title: 'Notifications',
+            icon: <BellIcon size={20} color="white" />,
+            routeUrl: ''
+        },
+        {
+            title: 'Display',
+            icon: <DevicePhoneMobileIcon size={20} color="white" />,
+            routeUrl: ''
+        },
+        {
+            title: 'Privacy',
+            icon: <LockClosedIcon size={20} color="white" />,
+            routeUrl: ''
+        },
+        {
+            title: 'Security',
+            icon: <ShieldCheckIcon size={20} color="white" />,
+            routeUrl: ''
+        },
+        {
+            title: 'About',
+            icon: <InformationCircleIcon size={20} color="white" />,
+            routeUrl: ''
+        }
     ];
 
     const handleUpdateUsername = async () => {
@@ -124,7 +155,7 @@ const SettingsScreen = () => {
                 <View className="flex-1 mt-8">
 
                     {settingsList.map((setting, index) => (
-                        <TouchableOpacity key={index} className="flex-row items-center p-4 my-1" onPress={() => router.push(setting.route)} >
+                        <TouchableOpacity key={index} className="flex-row items-center p-4 my-1" onPress={() => router.push(setting.routeUrl)}>
                             {setting.icon}
                             <Text className="ml-3 text-white text-lg">{setting.title}</Text>
                             <View className="flex-1 items-end">

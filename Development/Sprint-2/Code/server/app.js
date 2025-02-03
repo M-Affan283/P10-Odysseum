@@ -59,5 +59,4 @@ app.use('/api/review', reviewRouter);
 app.use('/api/business', businessRouter);
 app.use('/api/itinerary', itineraryRouter);
 
-
 export default app;
