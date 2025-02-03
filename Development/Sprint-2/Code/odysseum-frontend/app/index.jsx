@@ -9,10 +9,14 @@ import DiscoverLocationsScreen from "../src/screens/DiscoverLocationsScreen";
 import PostCard from "../src/components/PostCard";
 import UserSearchScreen from "../src/screens/UserSearchScreen";
 import MainSearchScreen from "../src/screens/MainSearchScreen";
-import SettingsScreen from "../src/screens/SettingsScreen";
 import BusinessScreen from "../src/screens/BusinessScreen";
 import CreateItineraryScreen from "../src/screens/CreateItineraryScreen";
 import ReviewsScreen from "../src/screens/ReviewsScreen";
+
+import SettingsScreen from "../src/screens/SettingsScreen";
+import AboutScreen from "../src/screens/AboutScreen";
+import SecurityScreen from "../src/screens/SecurityScreen";
+import PrivacyScreen from "../src/screens/PrivacyScreen";
 
 // Component testing
 
@@ -20,7 +24,7 @@ export default function App() {
 
   return (
     <>
-      <WelcomeScreen />
+      {/* <WelcomeScreen /> */}
       {/* <HomeScreen /> */}
       {/* <BookmarkScreen /> */}
       {/* <CreatePostScreen /> */}
@@ -29,10 +33,14 @@ export default function App() {
       {/* <DiscoverLocationsScreen /> */}
       {/* <UserSearchScreen /> */}
       {/* <MainSearchScreen /> */}
-      {/* <SettingsScreen /> */}
       {/* <BusinessScreen /> */}
       {/* <CreateItineraryScreen /> */}
       {/* <ReviewsScreen /> */}
+
+      <SettingsScreen />
+      {/* <AboutScreen /> */}
+      {/* <SecurityScreen /> */}
+      {/* <PrivacyScreen /> */}
 
     </>
   );

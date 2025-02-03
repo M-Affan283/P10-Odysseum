@@ -10,9 +10,9 @@ import LottieView from "lottie-react-native";
 import { BellIcon, ChatBubbleLeftRightIcon, ExclamationCircleIcon } from "react-native-heroicons/solid";
 import useUserStore from "../context/userStore";
 
-///////////////////////////////////////
+// ///////////////////////////////////////
 import tempPosts from "./tempfiles/homescreenposts";
-//////////////////////////////////////
+// //////////////////////////////////////
 
 //testing tanstack query
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -41,14 +41,14 @@ const HomeScreen = () => {
     // UI RENDERING TEST
     // let isFetching = true;
     // const error = null;
-    // const [posts, setPosts] = React.useState([]);
+    const [posts, setPosts] = React.useState([]);
     // setTimeout(() => {
     //   setPosts(tempPosts);
     //   isFetching = false;
     // }, 3000);
     
     const user = useUserStore((state) => state.user);
-  
+    console.log(user)
     const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
       queryKey: ['posts'],
       queryFn: ({ pageParam =1 }) => getQueryPosts({pageParam}),
@@ -61,7 +61,7 @@ const HomeScreen = () => {
     })
 
     // const posts = tempPosts; // use for ui testing
-    const posts = data?.pages.flatMap((page) => page.posts) || []; //main posts array
+    // const posts = data?.pages.flatMap((page) => page.posts) || []; //main posts array
 
     const renderItem = useCallback(({item}) => <PostCard post={item} />, []);
 
