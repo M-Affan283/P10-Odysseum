@@ -1,0 +1,4 @@
+Contains the route definitions for your API. Each file typically corresponds to a specific resource and its related routes.
+│   └── Examples:
+│       ├── userRoutes.js (Routes for user-related operations)
+│       └── postRoutes.js (Routes for managing posts)
