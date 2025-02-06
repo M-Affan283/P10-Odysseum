@@ -15,8 +15,8 @@ import images from '../../assets/images/images';
 const DiscoverLocationsScreen = () => {
 
     // const user = useUserStore((state) => state.user);
-    const [locations, setLocations] = useState(tempLocations || []);
-    const [popularLocations, setPopularLocations] = useState(tempLocations.slice(0, 5) || []);
+    const [locations, setLocations] = useState([]);
+    const [popularLocations, setPopularLocations] = useState([]);
     const [filteredLocations, setFilteredLocations] = useState(locations);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
