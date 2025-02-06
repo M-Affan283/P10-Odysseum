@@ -9,7 +9,6 @@ import DiscoverLocationsScreen from "../src/screens/DiscoverLocationsScreen";
 import PostCard from "../src/components/PostCard";
 import UserSearchScreen from "../src/screens/UserSearchScreen";
 import MainSearchScreen from "../src/screens/MainSearchScreen";
-import BusinessScreen from "../src/screens/BusinessScreen";
 import CreateItineraryScreen from "../src/screens/CreateItineraryScreen";
 import ReviewsScreen from "../src/screens/ReviewsScreen";
 import BusinessLocationScreen from "../src/screens/BusinessLocationScreen";
@@ -17,8 +16,6 @@ import LocationDetailsScreen from "../src/screens/LocationDetailsScreen";
 import BusinessCategoryScreen from "../src/screens/BusinessCategoryScreen";
 import BusinessProfileScreen from "../src/screens/BusinessProfileScreen";
 import BusinessCreateScreen from "../src/screens/BusinessCreateScreen";
-import LottieView from "lottie-react-native";
-
 import SettingsScreen from "../src/screens/SettingsScreen";
 import AboutScreen from "../src/screens/AboutScreen";
 import SecurityScreen from "../src/screens/SecurityScreen";
@@ -30,7 +27,7 @@ export default function App() {
 
   return (
     <>
-      {/* <WelcomeScreen /> */}
+      <WelcomeScreen />
       {/* <HomeScreen /> */}
       {/* <BookmarkScreen /> */}
       {/* <CreatePostScreen /> */}
@@ -39,13 +36,11 @@ export default function App() {
       {/* <DiscoverLocationsScreen /> */}
       {/* <UserSearchScreen /> */}
       {/* <MainSearchScreen /> */}
-      {/* <BusinessScreen /> */}
       {/* <CreateItineraryScreen /> */}
       {/* <ReviewsScreen entityId={'12345'} entityType={"Location"} entityName={"Test Entity"} /> */}
-      {/* <BusinessScreen /> */}
       {/* <LocationDetailsScreen locationId={'6781353badab4c338ff55148'}/> */}
 
-      <SettingsScreen />
+      {/* <SettingsScreen /> */}
       {/* <AboutScreen /> */}
       {/* <SecurityScreen /> */}
       {/* <PrivacyScreen /> */}
