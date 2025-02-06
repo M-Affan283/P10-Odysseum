@@ -6,7 +6,7 @@ import { router } from 'expo-router'
 import axiosInstance from '../utils/axios'
 import Foundation from '@expo/vector-icons/Foundation';
 import LottieView from 'lottie-react-native'
-import { ExclamationCircleIcon, UserPlusIcon } from 'react-native-heroicons/solid'
+import { ChevronLeftIcon, ExclamationCircleIcon, UserPlusIcon } from 'react-native-heroicons/solid'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
@@ -228,6 +228,10 @@ const SingleUserProfileScreen = ({ userId }) => {
                 </View>
             ) : (
                 <View>
+                    <TouchableOpacity onPress={() => router.back()} className="items-start justify-start mt-5 ml-3">
+                        <ChevronLeftIcon size={40} strokeWidth={4} color="white" />
+                    </TouchableOpacity>
+
                     <View className="items-center mt-5">
                         <ImageBackground 
                             source={{ uri: userToView?.profilePicture }} 
