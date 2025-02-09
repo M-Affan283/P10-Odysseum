@@ -33,7 +33,6 @@ userRouter.post("/login", loginUser);
 userRouter.post("/login/oauth", oAuthLoginUser);
 userRouter.post("/refresh-token", refreshToken); 
 
-// Testing routes (without middleware)
 userRouter.post("/follow", followUser);
 userRouter.get("/getAll", getAllUsers);
 userRouter.get("/getById", getUserById);
@@ -42,17 +41,10 @@ userRouter.get("/search", searchUser);
 userRouter.post("/updateUserBio", updateUserBio);
 userRouter.post("/updateUserUsername", updateUserUsername);
 userRouter.post("/updateUserPassword", updateUserPassword);
-userRouter.post("/report", verifyToken, reportUser);
+userRouter.post("/report", reportUser);
 
 // Bookmarking routes
 userRouter.post("/addBookmark", bookmarkLocation);
 
-// Routes with middleware (commented for reference)
-// user_router.post("/follow", verifyToken, UserController.followUser);
-// user_router.get("/getAll", verifyToken, UserController.getAllUsers);
-// user_router.get("/getById", verifyToken, UserController.getUserById);
-// user_router.get("/getByUsername", verifyToken, UserController.getUserByUsername);
-// user_router.get("/search", verifyToken, UserController.getUserBySearchParams);
-// user_router.post("/update", verifyToken, UserController.updateUser);
 
 export default userRouter;
