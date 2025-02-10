@@ -10,6 +10,8 @@ dotenv.config({ path: './config.env' });
 
 // Importing routes
 import { checkServerHealth } from './utils/serverHealthUtils.js';
+import { verifyToken } from './middleware/tokenVerification.js';
+
 
 import userRouter from './routes/userRouter.js';
 import postRouter from './routes/postRouter.js';
@@ -50,6 +52,9 @@ app.get('/health', async (req,res)=>
     let health = await checkServerHealth(SERVER_START_TIME);
     return res.status(200).json(health);
 })
+
+//Applying token verification middleware globally (barring the whitelisted routes)
+app.use(verifyToken);
 
 app.use('/api/user', userRouter);
 app.use('/api/post', postRouter);

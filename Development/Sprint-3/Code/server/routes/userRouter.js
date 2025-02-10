@@ -22,7 +22,6 @@ import { updateUserPassword } from "../controllers/UserController/updateUser.js"
 import { bookmarkLocation } from "../controllers/BookmarkController/addBookmark.js";
 import { getUserLocationBookmarks,getUserBusinessBookmarks } from "../controllers/BookmarkController/getBookmark.js";
 
-
 import { verifyToken } from "../middleware/tokenVerification.js";
 import { refreshToken } from "../controllers/UserController/refreshToken.js";
 
@@ -43,7 +42,7 @@ userRouter.get("/search", searchUser);
 userRouter.post("/updateUserBio", updateUserBio);
 userRouter.post("/updateUserUsername", updateUserUsername);
 userRouter.post("/updateUserPassword", updateUserPassword);
-userRouter.post("/report", verifyToken, reportUser);
+userRouter.post("/report", reportUser);
 
 // Bookmarking routes
 userRouter.post("/addBookmark", bookmarkLocation);
