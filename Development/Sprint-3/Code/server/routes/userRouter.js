@@ -20,6 +20,7 @@ import { updateUserPassword } from "../controllers/UserController/updateUser.js"
 
 // Bookmark CRUD
 import { bookmarkLocation } from "../controllers/BookmarkController/addBookmark.js";
+import { getUserLocationBookmarks,getUserBusinessBookmarks } from "../controllers/BookmarkController/getBookmark.js";
 
 
 import { verifyToken } from "../middleware/tokenVerification.js";
@@ -46,6 +47,8 @@ userRouter.post("/report", verifyToken, reportUser);
 
 // Bookmarking routes
 userRouter.post("/addBookmark", bookmarkLocation);
+userRouter.get("/getLocationBookmarks", getUserLocationBookmarks);
+userRouter.get("/getBusinessBookmarks", getUserBusinessBookmarks);
 
 // Routes with middleware (commented for reference)
 // user_router.post("/follow", verifyToken, UserController.followUser);

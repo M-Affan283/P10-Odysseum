@@ -38,17 +38,17 @@ export const bookmarkLocation = async (req, res) => {
         await user.save();
         
         //get _id, name and image
-        let userBookmarks = await Location.find({_id: { $in: user.bookmarks }}).select('_id name imageUrl');
+        // let userBookmarks = await Location.find({_id: { $in: user.bookmarks }}).select('_id name imageUrl');
 
         //send bookmarks back to user to update in local storage
         return res.status(200).json({ 
             message: "Bookmarks updated successfully",
-            bookmarks: userBookmarks,
-            entityMetrics: updatedEntity ? {
-                activityCount: updatedEntity.activityCount,
-                avgRating: updatedEntity.avgRating,
-                heatmapScore: updatedEntity.heatmapScore
-            } : null
+            // bookmarks: userBookmarks,
+            // entityMetrics: updatedEntity ? {
+            //     activityCount: updatedEntity.activityCount,
+            //     avgRating: updatedEntity.avgRating,
+            //     heatmapScore: updatedEntity.heatmapScore
+            // } : null
         });
 
 
