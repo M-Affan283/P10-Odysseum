@@ -55,7 +55,7 @@ const CreateItineraryScreen = () => {
   const handleSubmit = () => {
     console.log(JSON.stringify(destinations, null, 2))
 
-    axios.post("/itinerary/create", { destinations })
+    axiosInstance.post("/itinerary/create", { destinations })
     .then((res) => {
       if (res.data.success) {
         console.log(res.data);
