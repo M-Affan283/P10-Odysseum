@@ -7,6 +7,12 @@ const businessSchema = new mongoose.Schema({
         ref: 'User',
     },
 
+    status: {
+        type: String,
+        enum: ["Pending", "Approved", "Rejected"],
+        default: "Pending",
+    },
+
     name: {
         type: String,
         required: [true, 'Please provide a business name'],

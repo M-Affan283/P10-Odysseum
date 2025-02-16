@@ -629,9 +629,9 @@ const BusinessCreateScreen = () => {
                         style={{ width: 300, height: 300 }}
                     />
 
-                    <Text className="text-gray-300 text-4xl p-5 font-dsbold">Business Created!!</Text>
+                    <Text className="text-gray-300 text-4xl p-5 font-dsbold">Business Request Submitted!!</Text>
 
-                    <Text className="text-gray-400 text-lg p-5 text-center">Congratulations! Your business has been successfully created. You can now view your business in the businesses screen or in your profile.</Text>
+                    <Text className="text-gray-400 text-lg p-5 text-center">Congratulations! Your business has been successfully sent for review. You will be notified once it is approved.</Text>
 
                     <View className="flex-row gap-x-10 py-5">
 

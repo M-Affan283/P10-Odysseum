@@ -153,10 +153,10 @@ const getBusinessByUser = async (req, res) =>
     if(!user) return res.status(404).json({ error: "User not found" });
 
     let skip = (page - 1) * limit;
-    const businesses = await Business.find({ owner: userId, name: { $regex: searchParam, $options: 'i' } })
+    const businesses = await Business.find({ ownerId: userId, name: { $regex: searchParam, $options: 'i' } })
                                      .skip(skip)
                                      .limit(limit)
-                                     .select('_id name category mediaUrls averageRating address');
+                                     .select('_id name category mediaUrls averageRating address status');
     
     const totalBusinesses = await Business.countDocuments({ owner: userId, name: { $regex: searchParam, $options: 'i' } });
 
