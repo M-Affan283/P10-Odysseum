@@ -154,7 +154,7 @@ const validatePricing = (pricing) =>
         }
     }
 
-    return true;
+    return {message: "Pricing is valid", error: false};
 }
 
 
@@ -171,7 +171,7 @@ const validatePaymentSettings = (paymentSettings) =>
 
     if (paymentSettings.taxRate < 0 || paymentSettings.taxRate > 100) return { message: "Tax rate must be between 0 and 100", error: true };
 
-    return true;
+    return {message: "Payment settings are valid", error: false};
 }
 
 
@@ -188,7 +188,7 @@ const validateBookingSettings = (bookingSettings) =>
     //     if (bookingSettings.creditCardPolicy.depositOnBooking && bookingSettings.creditCardPolicy.depositAmount < 0) return { message: "Deposit amount cannot be negative", error: true };
     // }
 
-    return true;
+    return {message: "Booking settings are valid", error: false};
 }
 
 const validateCancellationPolicy = (cancellationPolicy) =>
@@ -198,7 +198,7 @@ const validateCancellationPolicy = (cancellationPolicy) =>
     if (cancellationPolicy.freeCancellationHours < 0) return { message: "Free cancellation hours cannot be negative", error: true };
     if (cancellationPolicy.cancellationFee < 0) return { message: "Cancellation fee cannot be negative", error: true };
 
-    return true;
+    return {message: "Cancellation policy is valid", error: false};
 }
 
 
@@ -208,5 +208,5 @@ const validateAvailability = (availability) =>
 
     if (availability.totalCapacity < 0) return { message: "Total capacity cannot be negative", error: true };
 
-    return true;
+    return {message: "Availability is valid", error: false};
 }
