@@ -268,17 +268,17 @@ const validatePricing = (pricing) =>
         }
     }
 
-    if (pricing.groupPricing && pricing.groupPricing.enabled) 
-    {
-        for (const tier of pricing.groupPricing.tiers) {
-            if (!tier.minPeople) return { message: "Minimum people is required in group pricing", error: true };
-            if (!tier.maxPeople) return { message: "Maximum people is required in group pricing", error: true };
-            if (!tier.pricePerPerson) return { message: "Price per person is required in group pricing", error: true };
-            if (tier.minPeople < 0) return { message: "Minimum people cannot be negative", error: true };
-            if (tier.maxPeople < 0) return { message: "Maximum people cannot be negative", error: true };
-            if (tier.pricePerPerson < 0) return { message: "Price per person cannot be negative", error: true };
-        }
-    }
+    // if (pricing.groupPricing && pricing.groupPricing.enabled) 
+    // {
+    //     for (const tier of pricing.groupPricing.tiers) {
+    //         if (!tier.minPeople) return { message: "Minimum people is required in group pricing", error: true };
+    //         if (!tier.maxPeople) return { message: "Maximum people is required in group pricing", error: true };
+    //         if (!tier.pricePerPerson) return { message: "Price per person is required in group pricing", error: true };
+    //         if (tier.minPeople < 0) return { message: "Minimum people cannot be negative", error: true };
+    //         if (tier.maxPeople < 0) return { message: "Maximum people cannot be negative", error: true };
+    //         if (tier.pricePerPerson < 0) return { message: "Price per person cannot be negative", error: true };
+    //     }
+    // }
 
     return {message: "Pricing is valid", error: false};
 }
@@ -329,13 +329,27 @@ const validateCancellationPolicy = (cancellationPolicy) =>
 
 
 const validateAvailability = (availability) =>
-{
-    if (!availability) return { message: "Availability is required", error: true };
-
-    if (availability.totalCapacity < 0) return { message: "Total capacity cannot be negative", error: true };
-
-    return {message: "Availability is valid", error: false};
-}
+  {
+      if (!availability) return { message: "Availability is required", error: true };
+  
+      //validate dates
+      for (const date of availability.dates)
+      {
+          if (!date.date || !date.totalCapacity) return { message: "Date and total capacity are required", error: true };
+          if (date.totalCapacity < 0) return { message: "Total capacity cannot be negative", error: true };
+      }
+  
+      if (availability.recurring && !availability.recurringStartDate) return { message: "Recurring start date is required", error: true };
+  
+      //validate days of week
+      for (const day of availability.daysOfWeek)
+      {
+          if (!day.day || !day.totalCapacity) return { message: "Day and total capacity are required", error: true };
+          if (day.totalCapacity < 0) return { message: "Total capacity cannot be negative", error: true };
+      }
+  
+      return {message: "Availability is valid", error: false};
+  }
 
 export {
   updateServiceInfo,

@@ -1,13 +1,5 @@
 /**
  * File: Service.js
- * 
- * This file contains the schema for a service. Service can be created by a business a business owner such as for hotels a room,
- * for a restaurant a table, for a fitness center a class, etc.
- * There will some custom details based on category of the service.
- * which will be stored in the customDetails field.
- * Business will make the create these and then toursits can then view these services and make reservations/bookings.
- * This needs a intricate system and handling of locks, race conditions, etc.
- * Front end to create this reservation will be in the form of a horizonal flat list.
 */
 
 import mongoose from "mongoose"
@@ -62,30 +54,21 @@ const serviceSchema = new mongoose.Schema({
                 specificDates: [Date], // ["2022-01-01", "2022-02-14"]
                 minPeople: Number,
             }
-        }],
-        //possibly remove it
-        groupPricing: {
-            enabled: Boolean,
-            tiers: [{
-                minPeople: Number,
-                maxPeople: Number,
-                pricePerPerson: Number
-            }]
-        }
+        }]
     },
 
     paymentSettings: {
         acceptOnlinePayment: {
             type: Boolean,
-            default: false
-        },
-        acceptOnSitePayment: {
-            type: Boolean,
-            default: true
+            default: false, //if false then only cash on site payment assumed
         },
         deposit: {
-            required: { type: Boolean, default: false },
+            enabled: { type: Boolean, default: false }, // Require deposit on booking?
             percentage: { type: Number, default: 0 }, // Percentage of total price
+        },
+        chargeOnNoShow: {
+            enabled: { type: Boolean, default: false }, // Charge on no-show?
+            amount: { type: Number, default: 0 }, // Amount to charge
         },
         taxRate: {
             type: Number,
@@ -110,12 +93,6 @@ const serviceSchema = new mongoose.Schema({
             type: Number, // in minutes
             default: 15
         },
-        creditCardPolicy: {
-            required: { type: Boolean, default: false }, // Require card details?
-            chargeOnNoShow: { type: Boolean, default: false }, // Charge if no-show? charge same as service price in price object
-            depositOnBooking: { type: Boolean, default: false }, // Charge deposit on booking?
-            depositAmount: { type: Number, default: 0 }, // Deposit amount if depositOnBooking is true
-        }
     },
 
     cancellationPolicy: {
@@ -134,23 +111,28 @@ const serviceSchema = new mongoose.Schema({
     },
 
     availability: {
-        dates: [Date], // Available specific dates (for tours, events)
+        // Available specific dates (for tours, events)/ NOTE: ONLY IF NOT RECURRING
+        dates: [{
+            date: Date,
+            totalCapacity: Number,
+            bookingsMade: Number,
+        }], 
         // check this later
         recurring: {
             type: Boolean, // Whether it's a recurring service
             default: false,
         },
-        daysOfWeek: [String], // If recurring, which days (e.g., ["Monday", "Wednesday"])
-
-        totalCapacity: {
-            type: Number, // Max bookings per day
-            default: null, // Null means unlimited
+        recurringStartDate: {
+            type: Date, // Start date of recurring service
+            default: null,
         },
-        
-        bookingsMade: {
-            type: Number, // Track how many bookings have been made
-            default: 0,
-        }
+        daysOfWeek: [{
+            day: String, // "Monday", "Tuesday", etc.
+            totalCapacity: Number,
+            bookingsMade: Number,
+            
+        }], // If recurring, which days (e.g., ["Monday", "Wednesday"])
+
     },
 
     //custom values based on category. such as for a restaurant, table size, for a hotel, room type, etc.
@@ -158,8 +140,6 @@ const serviceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Mixed,
         default: {}
     },
-
-
 });
 
 export const Service = mongoose.model('Service', serviceSchema, 'Service');
