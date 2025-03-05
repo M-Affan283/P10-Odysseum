@@ -142,12 +142,12 @@ const validatePricing = (pricing) =>
 
     if (pricing.basePrice < 0) return { message: "Base price cannot be negative", error: true };
 
-    if (pricing.specialPrices) 
+    if (pricing.specialPrices && pricing.specialPrices.length > 0) 
     {
         for (const specialPrice of pricing.specialPrices) {
             if (!specialPrice.name) return { message: "Special price name is required", error: true };
             if (!specialPrice.price) return { message: "Special price is required", error: true };
-            if (specialPrice.price < 0) return { message: "Special price cannot be negative", error: true };
+            if (specialPrice.price <= 0) return { message: "Special price cannot be negative", error: true };
             if (!specialPrice.conditions) return { message: "Special price conditions are required", error: true };
 
             if (specialPrice.conditions.daysOfWeek && specialPrice.conditions.daysOfWeek.length > 0)
@@ -224,6 +224,8 @@ const validateAvailability = (availability) =>
     if (!availability) return { message: "Availability is required", error: true };
 
     //validate dates
+    if(!availability.recurring && (!availability.dates || availability.dates.length === 0)) return { message: "Dates are required for availability", error: true };
+    
     for (const date of availability.dates)
     {
         if (!date.date || !date.totalCapacity) return { message: "Date and total capacity are required", error: true };
@@ -231,8 +233,9 @@ const validateAvailability = (availability) =>
     }
 
     if (availability.recurring && !availability.recurringStartDate) return { message: "Recurring start date is required", error: true };
-
+    if (availability.recurring && (!availability.daysOfWeek || availability.daysOfWeek.length === 0)) return { message: "Days of week are required for recurring availability", error: true };
     //validate days of week
+
     for (const day of availability.daysOfWeek)
     {
         if (!day.day || !day.totalCapacity) return { message: "Day and total capacity are required", error: true };
