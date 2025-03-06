@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import useUserStore from '../context/userStore';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
-import { BookmarkIcon, ChevronDoubleUpIcon, BriefcaseIcon, PencilSquareIcon } from 'react-native-heroicons/solid';
+import { BookmarkIcon, ChevronDoubleUpIcon, BriefcaseIcon, PencilSquareIcon, ArrowPathIcon } from 'react-native-heroicons/solid';
 import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import * as Animatable from 'react-native-animatable';
 import Animated, { Extrapolation, interpolate, interpolateColor, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -135,9 +135,9 @@ const LocationDetailsScreen = ({locationId}) => {
               </TouchableOpacity>
 
               <View className="flex-row items-center">
-                {/* <TouchableOpacity className="p-2 rounded-full mr-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={()=>router.push({pathname: `/business/location/${locationId}`, params: {name: location?.name}})}>
-                  <BriefcaseIcon size={30} strokeWidth={4} color={'white'} />
-                </TouchableOpacity> */}
+                <TouchableOpacity className="p-2 rounded-full mr-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={refetch}>
+                  <ArrowPathIcon size={30} strokeWidth={4} color={'white'} />
+                </TouchableOpacity>
                 
                 <TouchableOpacity className="p-2 rounded-full mr-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={bookmarkLocation}>
                   <BookmarkIcon size={30} strokeWidth={4} color={bookmarked ? 'red' : 'white'} />

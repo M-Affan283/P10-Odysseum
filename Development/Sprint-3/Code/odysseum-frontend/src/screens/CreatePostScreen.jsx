@@ -312,7 +312,7 @@ const CreatePostScreen = () => {
             )
             :
             (
-              <Text className={`text-white font-semibold text-lg`}>Share Review</Text>
+              <Text className={`text-white font-semibold text-lg`}>Share Post</Text>
             )
 
           }

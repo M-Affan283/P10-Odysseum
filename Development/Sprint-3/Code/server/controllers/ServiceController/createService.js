@@ -51,12 +51,7 @@ export const createService = async (req, res) => {
     //     bookingSettings = JSON.parse(bookingSettings);
     //     cancellationPolicy = JSON.parse(cancellationPolicy);
     //     availability = JSON.parse(availability);
-    //     console.log(validatePricing(pricing));
-    //     console.log(validatePaymentSettings(paymentSettings));
-    //     console.log(validateBookingSettings(bookingSettings));
-    //     console.log(validateCancellationPolicy(cancellationPolicy));
-    //     console.log(validateAvailability(availability));
-
+    //     console.log(validatePricing(pricing), " \n", validatePaymentSettings(paymentSettings), " \n", validateBookingSettings(bookingSettings), " \n", validateCancellationPolicy(cancellationPolicy), " \n", validateAvailability(availability));
     // }
     // catch (error)
     // {
@@ -75,6 +70,7 @@ export const createService = async (req, res) => {
         cancellationPolicy = JSON.parse(cancellationPolicy);
         availability = JSON.parse(availability);
         customDetails = JSON.parse(customDetails);
+
 
         // Check if business exists
         const business = await Business.findById(businessId);
@@ -219,28 +215,41 @@ const validateCancellationPolicy = (cancellationPolicy) =>
 }
 
 
-const validateAvailability = (availability) =>
-{
+const validateAvailability = (availability) => {
     if (!availability) return { message: "Availability is required", error: true };
-
-    //validate dates
-    if(!availability.recurring && (!availability.dates || availability.dates.length === 0)) return { message: "Dates are required for availability", error: true };
-    
-    for (const date of availability.dates)
+  
+    // If availability is not recurring, validate dates
+    if (!availability.recurring) 
     {
-        if (!date.date || !date.totalCapacity) return { message: "Date and total capacity are required", error: true };
+      // Validate that availability.dates exists and is not empty
+      if (!availability.dates || availability.dates.length === 0) return { message: "Dates are required for availability", error: true };
+  
+      // Validate individual dates
+      for (const date of availability.dates) 
+      {
+        if (!date.date || !Date.parse(date.date)) return { message: "Invalid date format", error: true };
+        if (!date.totalCapacity) return { message: "Total capacity is required", error: true };
         if (date.totalCapacity < 0) return { message: "Total capacity cannot be negative", error: true };
-    }
-
-    if (availability.recurring && !availability.recurringStartDate) return { message: "Recurring start date is required", error: true };
-    if (availability.recurring && (!availability.daysOfWeek || availability.daysOfWeek.length === 0)) return { message: "Days of week are required for recurring availability", error: true };
-    //validate days of week
-
-    for (const day of availability.daysOfWeek)
+      }
+    } 
+    else 
+    {
+      // If availability is recurring, validate recurring-related fields
+      if (!availability.recurringStartDate) return { message: "Recurring start date is required", error: true };
+      
+      if (!Date.parse(availability.recurringStartDate)) return { message: "Invalid recurring start date", error: true };
+      
+      if (!availability.daysOfWeek || availability.daysOfWeek.length === 0) return { message: "Days of week are required for recurring availability", error: true };
+      
+  
+      // Validate individual days of the week
+      for (const day of availability.daysOfWeek) 
     {
         if (!day.day || !day.totalCapacity) return { message: "Day and total capacity are required", error: true };
         if (day.totalCapacity < 0) return { message: "Total capacity cannot be negative", error: true };
+      }
     }
-
-    return {message: "Availability is valid", error: false};
-}
+  
+    return { message: "Availability is valid", error: false };
+  };
+  
