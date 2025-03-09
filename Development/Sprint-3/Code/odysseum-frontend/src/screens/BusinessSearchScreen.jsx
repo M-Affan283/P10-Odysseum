@@ -119,7 +119,7 @@ const BusinessSearchScreen = () => {
               </View>
             );
           }
-          else if (debouncedSearchQuery.length > 0 && locations.length === 0)
+          else if (debouncedSearchQuery.length > 0 && businesses.length === 0)
           {
             return (
               <View className="flex-1 mt-5 justify-center items-center">

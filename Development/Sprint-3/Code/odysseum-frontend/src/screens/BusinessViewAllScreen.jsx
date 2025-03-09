@@ -10,11 +10,12 @@ import tempBusinesses from "./tempfiles/tempbusinesses";
 import icons from "../../assets/icons/icons";
 import images from "../../assets/images/images";
 
-const getQueryCategoryBusinesses = async ({pageParam = 1, locationId, category, searchParam}) =>
+
+const getQueryCategoryBusinesses = async ({pageParam = 1, locationId, searchParam}) =>
 {
   try
   {
-    const res = await axiosInstance.get(`/business/getByCategoryAndLocation?locationId=${locationId}&category=${category}&page=${pageParam}&searchParam=${searchParam}`);
+    const res = await axiosInstance.get(`/business/getByLocation?locationId=${locationId}&page=${pageParam}&searchParam=${searchParam}`);
     // console.log(res.data)
     return res.data;
   }
@@ -25,7 +26,7 @@ const getQueryCategoryBusinesses = async ({pageParam = 1, locationId, category, 
   }
 }
 
-const BusinessCategoryScreen = ({locationId, locationName, category}) => {
+const BusinessViewAllScreen = ({ locationId, locationName }) => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState();
@@ -192,4 +193,4 @@ const BusinessCard = ({business}) =>
   )
 }
 
-export default BusinessCategoryScreen;
+export default BusinessViewAllScreen
