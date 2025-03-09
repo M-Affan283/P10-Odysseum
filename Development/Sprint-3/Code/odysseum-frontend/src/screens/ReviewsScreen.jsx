@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
 import {ShareIcon, ChevronLeftIcon } from "react-native-heroicons/outline";
-import { HandThumbUpIcon, HandThumbDownIcon } from "react-native-heroicons/solid";
+import { HandThumbUpIcon, HandThumbDownIcon, PencilSquareIcon } from "react-native-heroicons/solid";
 import { calculateDuration } from "../utils/dateTimCalc";
 import { router } from "expo-router";
 import AddReviewModal from "../components/AddReviewModal";
@@ -70,7 +70,7 @@ const ReviewsScreen = ({ entityType, entityId, entityName }) => {
     enabled: true,
   });
 
-  const reviews = data?.pages.flatMap((page) => page.reviews) || tempReviews;
+  const reviews = data?.pages.flatMap((page) => page.reviews) || [];
 
 
   const loadMoreReviews = () =>
@@ -124,7 +124,8 @@ const ReviewsScreen = ({ entityType, entityId, entityName }) => {
 
         </View>
 
-          <TouchableOpacity className="px-5" onPress={() => setAddReviewModalVisible(true)}>
+          <TouchableOpacity className="px-5 flex-row gap-x-3" onPress={() => setAddReviewModalVisible(true)}>
+            <PencilSquareIcon size={30} color="blue" />
             <Text className="text-lg font-semibold text-blue-500">Write a review</Text>
           </TouchableOpacity>
       </View>

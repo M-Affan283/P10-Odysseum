@@ -7,6 +7,7 @@
 import { Location } from "../models/Location.js";
 import { Review } from "../models/Review.js";
 import { Business } from "../models/Business.js";
+import mongoose from "mongoose";
 
 /**
  * Calculate decay factor based on time elapsed
@@ -96,25 +97,26 @@ const InteractionWeights = {
  * @param {number} [rating] - Optional rating value for reviews
  * @returns {Promise<object>} - Updated entity object
  */
+
+// Use transaction here only if REMOTE DB is used
+// If LOCAL DB is used, transactions are not supported. Some weird replicaset problem becuase i dont know how to set up a replicaset
 export const entityMetricUpdator = async (entityType, entityId, interactionType, rating=null) => 
 {
-
     // Validate interaction type
-    if (!InteractionWeights[interactionType]) {
+    if (!InteractionWeights[interactionType])
         throw new Error(`Invalid interaction type: ${interactionType}`);
-    }
+
+    // Use transaction here only if REMOTE DB is used
+    // const session = await mongoose.startSession();
+    // session.startTransaction();
 
     try
     {
         const now = new Date();
         const entityModel = entityType === "Location" ? Location : Business;
-        const entity = await entityModel.findById(entityId);
+        const entity = await entityModel.findById(entityId)//.session(session);
     
         if (!entity) throw new Error(`${entityType} not found`);
-    
-        // Update activity count and last interaction time based on interaction type weight
-        // entity.activityCount += InteractionWeights[interactionType];
-        // entity.lastInteraction = new Date();
     
         let newAvgRating = entity.avgRating;
     
@@ -124,20 +126,19 @@ export const entityMetricUpdator = async (entityType, entityId, interactionType,
             const avgRating = await Review.aggregate([
                 { $match: { entityId: entityId } },
                 { $group: { _id: null, avgRating: { $avg: "$rating" } } }
-            ]);
-            // entity.avgRating = avgRating[0]?.avgRating || rating; // If no reviews, use the new rating
+            ])//.session(session);
             newAvgRating = avgRating[0]?.avgRating || rating;
         }
     
         // Calculate new heatmap score
         const newHeatmapScore = calculateHeatmapScore(entity.activityCount + InteractionWeights[interactionType], newAvgRating, now);
     
-        // await entity.save();
     
         const updatedEntity = await entityModel.findByIdAndUpdate(entityId, {
             $inc: { activityCount: InteractionWeights[interactionType] },
             $set: { lastInteraction: now, avgRating: newAvgRating, heatmapScore: newHeatmapScore }
-        }, { new: true, runValidators: true });
+        }, { new: true, runValidators: true});
+        // }, { new: true, runValidators: true, session });
     
         //If entity is business update parent location metrics
         if (entityType === "Business")
@@ -146,33 +147,27 @@ export const entityMetricUpdator = async (entityType, entityId, interactionType,
     
             if (!location) throw new Error("Location not found");
     
-            // location.activityCount += InteractionWeights[interactionType] * 0.5; //parent gets half the weight
-            // location.lastInteraction = new Date();
-    
-            // // No rating update for location
-    
-            // // Calculate new heatmap score
-            // location.heatmapScore = calculateHeatmapScore({
-            //     activityCount: location.activityCount,
-            //     avgRating: location.avgRating,
-            //     lastInteraction: location.lastInteraction
-            // });
-    
-            // await location.save();
-    
             const newLocationHeatmapScore = calculateHeatmapScore(location.activityCount + InteractionWeights[interactionType] * 0.5, location.avgRating, now);
     
             await Location.findByIdAndUpdate(entity.locationId, {
                 $inc: { activityCount: InteractionWeights[interactionType] * 0.5 },
                 $set: { lastInteraction: now, heatmapScore: newLocationHeatmapScore }
-            }, { new: true, runValidators: true });
+            }, { new: true, runValidators: true});
+            // }, { new: true, runValidators: true, session });
         }
+
+        await session.commitTransaction();
         
         return updatedEntity;
     }
     catch(error)
     {
+        // await session.abortTransaction();
         throw error;
     }
+    // finally
+    // {
+    //     session.endSession();
+    // }
 
 };
