@@ -20,6 +20,7 @@ import locationRouter from "./routes/locationRouter.js";
 import reviewRouter from './routes/reviewRouter.js';
 import businessRouter from './routes/businessRouter.js';
 import itineraryRouter from './routes/itineraryRouter.js';
+import chatRouter from './routes/chatRouter.js';
 
 // Initializing variables
 const app = express();
@@ -63,5 +64,6 @@ app.use('/api/comment', commentRouter);
 app.use('/api/review', reviewRouter);
 app.use('/api/business', businessRouter);
 app.use('/api/itinerary', itineraryRouter);
+app.use('/api/chat', chatRouter);
 
 export default app;

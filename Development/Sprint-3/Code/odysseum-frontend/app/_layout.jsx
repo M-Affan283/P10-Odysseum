@@ -6,18 +6,16 @@ import { useFonts, DancingScript_400Regular, DancingScript_500Medium, DancingScr
 import { StatusBar } from "expo-status-bar";
 import useUserStore from "../src/context/userStore";
 import { router } from "expo-router";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SocketProvider } from '../src/context/SocketContext';
 
-SplashScreen.preventAutoHideAsync(); //prevent the splash screen from hiding automatically
+SplashScreen.preventAutoHideAsync();
 
 const client = new QueryClient();
 
 const RootLayout = () => {
-
-
-  const user = useUserStore((state) => state.user); //check if user is logged in. if not, show welcome screen, else show home screen
-  const isLoggedIn = useUserStore((state) => state.isLoggedIn); //for now only basic login check. will be updated later to include token check and refreshing if needed
+  const user = useUserStore((state) => state.user);
+  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const [loading, setLoading] = useState(true);
 
   const [loadedFonts, error] = useFonts({
@@ -27,33 +25,11 @@ const RootLayout = () => {
     DancingScript_700Bold
   });
 
-  // comment this out if you want to test the index screen
-  // this will route to home screen if user is logged in
-  // useEffect(()=>
-  // {
-  //   if(!loadedFonts || loading) return;
-  //   if(!user) return;
-  //   if(error) return;
-
-  //   if(loadedFonts)
-  //   {
-  //     SplashScreen.hideAsync();
-  //     setLoading(false);
-  //   }
-
-  //   isLoggedIn ? router.replace("/home") : router.replace("/"); //index.jsx will contain welcome screen
-
-  // }, [loadedFonts, error, loading, user, isLoggedIn]);
-
-
   useEffect(() => {
-    if(loadedFonts)
-    {
+    if(loadedFonts) {
       SplashScreen.hideAsync();
       setLoading(false);
-    }
-    else if(error)
-    {
+    } else if(error) {
       console.log(error);
     }
   }, [loadedFonts, error]);
@@ -64,22 +40,38 @@ const RootLayout = () => {
   return (
     <>
       <QueryClientProvider client={client}>
-        <GestureHandlerRootView style={{flex: 1}}>
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="user" options={{ headerShown: false }} />
-            <Stack.Screen name="location" options={{ headerShown: false }} />
-            <Stack.Screen name="settings" options={{ headerShown: false }} />
-            <Stack.Screen name="review" options={{ headerShown: false }} />
-            <Stack.Screen name="business" options={{ headerShown: false }} />
-          </Stack>
-          {/* for further configuration check docs */}
-          <Toast/> 
-        </GestureHandlerRootView>
-        <StatusBar translucent backgroundColor="transparent" />
+        <SocketProvider>
+          <GestureHandlerRootView style={{flex: 1}}>
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="post/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="user" options={{ headerShown: false }} />
+              <Stack.Screen name="location" options={{ headerShown: false }} />
+              <Stack.Screen name="settings" options={{ headerShown: false }} />
+              <Stack.Screen name="review" options={{ headerShown: false }} />
+              <Stack.Screen name="business" options={{ headerShown: false }} />
+              <Stack.Screen 
+                name="chat" 
+                options={{ 
+                  headerShown: false,
+                  presentation: 'modal',
+                  animation: 'slide_from_bottom'
+                }} 
+              />
+              <Stack.Screen 
+                name="chat/[id]" 
+                options={{ 
+                  headerShown: false,
+                  animation: 'slide_from_right'
+                }} 
+              />
+            </Stack>
+            <Toast />
+          </GestureHandlerRootView>
+          <StatusBar translucent backgroundColor="transparent" />
+        </SocketProvider>
       </QueryClientProvider>
     </>
   );
