@@ -77,6 +77,11 @@ export const createBooking = async (req, res) =>
             paymentDetails,
             requiresApproval
         );
+
+        if (paymentStatus === 'failed') 
+        {
+            return res.status(400).json({ message: "Payment processing failed. Booking cancelled." });
+        }
         
         // 8. Create the booking object
         const bookingData = {
@@ -172,87 +177,129 @@ const handlePayment = async (service, pricing, paymentMethod, paymentDetails, re
     const paymentSettings = service.paymentSettings;
     let paymentStatus = 'pending';
     let transactions = [];
+    let remainingBalance = pricing.totalAmount;
     
-    // Case 1: Online payment not accepted (cash on site)
-    if (!paymentSettings.acceptOnlinePayment) return { paymentStatus, transactions };
+    // Case 1: Cash on site (online payment not accepted)
+    if (!paymentSettings.acceptOnlinePayment) return { paymentStatus, transactions, remainingBalance };
     
-    // Case 2: Online payment accepted but no payment details provided
-    if (paymentSettings.acceptOnlinePayment && (!paymentMethod || !paymentDetails))
-    {
-        if (requiresApproval) 
-        {
-            // For approval required, payment can happen after approval
-            return { paymentStatus, transactions };
-        } 
-        else 
-        {
-            // For instant booking, payment is required
-            throw new Error("Payment details are required for instant booking with online payment");
-        }
-    }
+    // Validate payment details for online payments
+    if (!paymentMethod || !paymentDetails) throw new Error("Payment method and details are required for online payment");
 
-    
-    // Case 4: Handle different payment scenarios
-    if (paymentSettings.acceptOnlinePayment && paymentMethod && paymentDetails) 
+    try 
     {
-        // Scenario A: Instant booking with full payment
-        if (!requiresApproval && !paymentSettings.deposit.enabled) 
+        // Case 2: Booking requires approval (no immediate payment unless deposit)
+        if (requiresApproval)
         {
-            // Process full payment
-            const paymentSuccess = await processPayment(
-                paymentMethod, 
-                paymentDetails, 
-                pricing.totalAmount
-            );
-            
-            if (paymentSuccess)
+            // Case 2a: Deposit is enabled with approval
+            if (paymentSettings.deposit.enabled && pricing.depositAmount > 0) 
             {
-                paymentStatus = 'fully_paid';
-                transactions.push({
-                    type: 'full_payment',
-                    amount: pricing.totalAmount,
-                    date: new Date(),
-                    status: 'completed',
-                    paymentMethod: paymentMethod,
-                    transactionId: generateTransactionId()
-                });
+                const depositSuccess = await processPayment(
+                    paymentMethod, 
+                    paymentDetails, 
+                    pricing.depositAmount
+                );
+                
+                if (depositSuccess) 
+                {
+                    paymentStatus = 'deposit_paid';
+                    transactions.push({
+                        type: 'deposit',
+                        amount: pricing.depositAmount,
+                        date: new Date(),
+                        status: 'completed',
+                        paymentMethod: paymentMethod,
+                        transactionId: generateTransactionId()
+                    });
+                    remainingBalance = pricing.totalAmount - pricing.depositAmount;
+                } 
+                else
+                {
+                    paymentStatus = 'failed';
+                    transactions.push({
+                        type: 'deposit',
+                        amount: pricing.depositAmount,
+                        date: new Date(),
+                        status: 'failed',
+                        paymentMethod: paymentMethod
+                    });
+                }
+            }
+            // Case 2b: No deposit, payment after approval
+            // Default behavior: return pending status
+        }
+        // Case 3: Instant booking (no approval required)
+        else {
+            // Case 3a: Deposit payment for instant booking
+            if (paymentSettings.deposit.enabled && pricing.depositAmount > 0) 
+            {
+                const depositSuccess = await processPayment(
+                    paymentMethod, 
+                    paymentDetails, 
+                    pricing.depositAmount
+                );
+                
+                if (depositSuccess) 
+                {
+                    paymentStatus = 'deposit_paid';
+                    transactions.push({
+                        type: 'deposit',
+                        amount: pricing.depositAmount,
+                        date: new Date(),
+                        status: 'completed',
+                        paymentMethod: paymentMethod,
+                        transactionId: generateTransactionId()
+                    });
+                    remainingBalance = pricing.totalAmount - pricing.depositAmount;
+                } 
+                else
+                {
+                    throw new Error("Deposit payment processing failed");
+                }
             } 
+            // Case 3b: Full payment for instant booking (no deposit)
             else 
             {
-                throw new Error("Full payment processing failed");
+                const paymentSuccess = await processPayment(
+                    paymentMethod, 
+                    paymentDetails, 
+                    pricing.totalAmount
+                );
+                
+                if (paymentSuccess) 
+                {
+                    paymentStatus = 'fully_paid';
+                    transactions.push({
+                        type: 'full_payment',
+                        amount: pricing.totalAmount,
+                        date: new Date(),
+                        status: 'completed',
+                        paymentMethod: paymentMethod,
+                        transactionId: generateTransactionId()
+                    });
+                    remainingBalance = 0;
+                } 
+                else 
+                {
+                    throw new Error("Full payment processing failed");
+                }
             }
         }
-        
-        // Scenario B: Deposit payment (with or without approval)
-        else if (paymentSettings.deposit.enabled && pricing.depositAmount > 0) 
-        {
-            // Process deposit payment
-            const depositPaymentSuccess = await processPayment(
-                paymentMethod, 
-                paymentDetails, 
-                pricing.depositAmount
-            );
-            
-            if (depositPaymentSuccess)
-            {
-                paymentStatus = 'deposit_paid';
-                transactions.push({
-                    type: 'deposit',
-                    amount: pricing.depositAmount,
-                    date: new Date(),
-                    status: 'completed',
-                    paymentMethod: paymentMethod,
-                    transactionId: generateTransactionId()
-                });
-            } 
-            else
-            {
-                throw new Error("Deposit payment processing failed");
-            }
-        }
+    } 
+    catch (error) 
+    {
+        // Log the error but don't throw it
+        console.error("Payment processing error:", error);
+        paymentStatus = 'failed';
+        transactions.push({
+            type: 'error',
+            date: new Date(),
+            status: 'failed',
+            error: error.message,
+            paymentMethod: paymentMethod
+        });
     }
     
-    return { paymentStatus, transactions };
+    return { paymentStatus, transactions, remainingBalance };
 };
 
 // Helper function to calculate booking price
