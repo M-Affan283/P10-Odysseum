@@ -53,7 +53,7 @@ const RootLayout = () => {
               <Stack.Screen name="review" options={{ headerShown: false }} />
               <Stack.Screen name="business" options={{ headerShown: false }} />
               <Stack.Screen 
-                name="chat" 
+                name="chat/index" 
                 options={{ 
                   headerShown: false,
                   presentation: 'modal',

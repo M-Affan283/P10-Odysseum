@@ -22,9 +22,14 @@ export const setupSocket = (server) => {
     const io = new Server(server, {
         cors: {
             origin: '*',
-            methods: ['GET', 'POST']
+            methods: ['GET', 'POST'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
+            credentials: true
         },
-        pingTimeout: 60000
+        allowEIO3: true,
+        pingTimeout: 60000,
+        pingInterval: 25000,
+        transports: ['websocket', 'polling']
     });
 
     // Socket authentication middleware

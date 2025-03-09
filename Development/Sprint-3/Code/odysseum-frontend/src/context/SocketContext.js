@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { getAccessToken } from '../utils/tokenUtils';
 import useUserStore from './userStore';
+import { Platform } from 'react-native';
+import axiosInstance from '../utils/axios';
 
 const SocketContext = createContext();
 
@@ -33,20 +35,30 @@ export const SocketProvider = ({ children }) => {
     const initializeSocket = async () => {
         try {
             const token = await getAccessToken();
-
-            socketRef.current = io(`${process.env.API_URL}`, {
+            
+            // Use the same base URL as your axios instance
+            const socketUrl = axiosInstance.defaults.baseURL.replace('/api', '');
+            
+            socketRef.current = io(socketUrl, {
                 auth: { token },
+                transports: ['websocket', 'polling'],
                 reconnection: true,
                 reconnectionAttempts: 5,
-                reconnectionDelay: 1000
+                reconnectionDelay: 1000,
+                timeout: 10000,
+                forceNew: true
             });
 
             socketRef.current.on('connect', () => {
-                console.log('Socket connected');
+                console.log('Socket connected successfully');
             });
 
             socketRef.current.on('connect_error', (error) => {
-                console.error('Socket connection error:', error);
+                console.error('Socket connection error:', error.message);
+                // Try to reconnect with polling if websocket fails
+                if (error.message === 'websocket error') {
+                    socketRef.current.io.opts.transports = ['polling', 'websocket'];
+                }
             });
 
             socketRef.current.on('disconnect', (reason) => {
@@ -59,8 +71,10 @@ export const SocketProvider = ({ children }) => {
     };
 
     const sendMessage = (messageData) => {
-        if (socketRef.current) {
+        if (socketRef.current?.connected) {
             socketRef.current.emit('send_message', messageData);
+        } else {
+            console.error('Socket not connected');
         }
     };
 
@@ -77,7 +91,7 @@ export const SocketProvider = ({ children }) => {
     };
 
     const emitTyping = (receiverId, isTyping) => {
-        if (socketRef.current) {
+        if (socketRef.current?.connected) {
             socketRef.current.emit(
                 isTyping ? 'typing_start' : 'typing_end',
                 { receiverId }

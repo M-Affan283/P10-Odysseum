@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSocket } from '../context/SocketContext';
-import axiosInstance from '../utils/axios';
-import { validateMessage } from '../utils/chatUtils';
+import { useSocket } from '../src/context/SocketContext';
+import axiosInstance from '../src/utils/axios';
+import { validateMessage } from '../src/utils/chatUtils';
 
 export const useChat = (chatId) => {
     const [messages, setMessages] = useState([]);

@@ -1,17 +1,19 @@
-const ENV = {
-    development: {
-        SOCKET_URL: 'http://192.168.100.25:8000', // Your local IP when testing
-        API_URL: 'http://192.168.100.25:8000/api'
-    },
-    production: {
-        SOCKET_URL: 'https://your-production-server.com',
-        API_URL: 'https://your-production-server.com/api'
-    }
+import { Platform } from 'react-native';
+
+const LOCAL_IP = '192.168.100.29'; // Replace with your local IP address
+const PORT = '8000';
+
+const config = {
+    SOCKET_URL: Platform.select({
+        ios: `http://${LOCAL_IP}:${PORT}`,
+        android: `http://${LOCAL_IP}:${PORT}`,
+        default: `http://localhost:${PORT}`
+    }),
+    API_URL: Platform.select({
+        ios: `http://${LOCAL_IP}:${PORT}/api`,
+        android: `http://${LOCAL_IP}:${PORT}/api`,
+        default: `http://localhost:${PORT}/api`
+    })
 };
 
-// Use __DEV__ to determine the environment
-const getEnvVars = () => {
-    return __DEV__ ? ENV.development : ENV.production;
-};
-
-export default getEnvVars();
+export default config;

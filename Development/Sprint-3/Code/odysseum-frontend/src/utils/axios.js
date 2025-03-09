@@ -13,7 +13,8 @@ import axios from "axios";
 import { getAccessToken, setAccessToken } from "./tokenUtils.js";
 // Base URL of the backend server
 
-const API_BASE_URL = `http://192.168.100.25:8000/api`;
+// const API_BASE_URL = `https://p10-odysseum.onrender.com/api`;
+const API_BASE_URL = `http://192.168.100.29:8000/api`;
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -24,24 +25,24 @@ const axiosInstance = axios.create({
 });
 
 // Add a request interceptor to add the access token to the request headers
-// axiosInstance.interceptors.request.use(
-//     async (config) => {
-//         const token = await getAccessToken();
+axiosInstance.interceptors.request.use(
+    async (config) => {
+        const token = await getAccessToken();
         
-//         if (token) {
-//             config.headers.Authorization = `Bearer ${token}`;
-//         }
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
 
-//         // Debug log
-//         console.log('Making request to:', config.baseURL + config.url);
-//         console.log('With headers:', config.headers);
+        // Debug log
+        console.log('Making request to:', config.baseURL + config.url);
+        console.log('With headers:', config.headers);
         
-//         return config;
-//     },
-//     (error) => {
-//         return Promise.reject(error);
-//     }
-// );
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 // Interceptor for failed (status 401) requests to refresh the access token and retry the request
 //later

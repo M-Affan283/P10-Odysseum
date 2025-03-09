@@ -6,7 +6,7 @@ import ChatHeader from '../components/ChatHeader';
 import MessageInput from '../components/MessageInput';
 import ChatLoading from '../components/ChatLoading';
 import MessageBubble from '../components/MessageBubble';
-import useChat from '../hooks/useChat';
+import useChat from '../../hooks/useChat';
 import Toast from 'react-native-toast-message';
 
 const ChatScreen = ({ chatId }) => {
