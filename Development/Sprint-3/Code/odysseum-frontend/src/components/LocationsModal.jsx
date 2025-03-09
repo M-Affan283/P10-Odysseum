@@ -5,7 +5,7 @@ import axiosInstance from "../utils/axios";
 import ActionSheet from "react-native-actions-sheet";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import tempLocations from "../screens/tempfiles/templocations";
-import { MagnifyingGlassIcon, XMarkIcon } from "react-native-heroicons/outline";
+import { MagnifyingGlassIcon, XMarkIcon, MapPinIcon, ChevronRightIcon } from "react-native-heroicons/outline";
 import { ActivityIndicator } from "react-native";
 
 const getQueryLocations = async ({ pageParam = 1, searchQuery }) => 
@@ -159,12 +159,19 @@ const LocationsModal = ({ visible, setVisible, setForm }) => {
           }}
 
           renderItem={({item}) => (
-            <TouchableOpacity className="flex-row items-center justify-between p-5" onPress={() => selectLocation(item)}>
-                <Text className="text-lg text-white">{item.name}</Text>
+            <TouchableOpacity 
+              className="flex-row items-center p-4 mx-3 my-1 rounded-xl bg-slate-800 active:bg-slate-700"
+              onPress={() => selectLocation(item)}
+            >
+              <View className="bg-purple-600 p-2 rounded-full mr-3">
+                <MapPinIcon size={18} color="white" />
+              </View>
+              
+              <Text className="flex-1 text-lg font-medium text-white">{item.name}</Text>
+              
+              <ChevronRightIcon size={20} color="#a78bfa" />
             </TouchableOpacity>
           )}
-          ItemSeparatorComponent={() => (<View className="bg-gray-200 h-0.5 w-3/4 mx-auto" />)}
-        
         />
 
       </ActionSheet>
