@@ -11,7 +11,7 @@ import icons from "../../assets/icons/icons";
 import images from "../../assets/images/images";
 
 
-const getQueryCategoryBusinesses = async ({pageParam = 1, locationId, searchParam}) =>
+const getQueryBusinesses = async ({pageParam = 1, locationId, searchParam}) =>
 {
   try
   {
@@ -32,8 +32,8 @@ const BusinessViewAllScreen = ({ locationId, locationName }) => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState();
 
   const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
-    queryKey: ["categoryBusinesses", locationId, category, debouncedSearchQuery],
-    queryFn: ({ pageParam = 1 }) => getQueryCategoryBusinesses({ pageParam, locationId, category, searchParam: debouncedSearchQuery }),
+    queryKey: ["viewAllBusinesses", locationId, debouncedSearchQuery],
+    queryFn: ({ pageParam = 1 }) => getQueryBusinesses({ pageParam, locationId, searchParam: debouncedSearchQuery }),
     getNextPageParam: (lastPage) => {
       const { currentPage, totalPages } = lastPage;
       return currentPage < totalPages ? currentPage + 1 : undefined;
@@ -74,7 +74,7 @@ const BusinessViewAllScreen = ({ locationId, locationName }) => {
           </TouchableOpacity>
 
           <View className="flex-col">
-            <Text className="font-dsbold text-white text-2xl">{category}</Text>
+            <Text className="font-dsbold text-white text-2xl">All Businesses</Text>
             <Text className="font-dsbold text-white text-lg">{locationName}</Text>
           </View>
 
