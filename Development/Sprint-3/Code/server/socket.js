@@ -209,6 +209,7 @@ export const setupSocket = (server) => {
                 onlineUsers.delete(userId);
             } else {
                 userConnections.set(userId, currentConnections - 1);
+            }
             
             // Broadcast user's offline status
             io.emit('user_status', {
