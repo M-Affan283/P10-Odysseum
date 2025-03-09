@@ -96,7 +96,41 @@ const getBusinessByLocation = async (req, res) =>
 /**
  * Get all businesses by category (also includes by search query)
  */
-const getBusinessByCategory = async (req, res) => {};
+const getBusinessByCategory = async (req, res) =>
+{
+  const { searchParam="", page=1, category } = req.query;
+
+  if(!category) return res.status(400).json({ error: "Please provide a category" });
+  if(!categories.includes(category)) return res.status(400).json({ error: "Invalid category" });
+
+  let limit = 10;
+
+  try
+  {
+    let skip = (page - 1) * limit;
+
+    const businesses = await Business.find({ category: category, name: { $regex: searchParam, $options: 'i' } })
+                                     .sort({ heatmapScore: -1 })
+                                     .skip(skip)
+                                     .limit(limit)
+                                     .populate('locationId', 'name')
+                                     .select('_id name category mediaUrls averageRating address');
+    
+    const totalBusinesses = await Business.countDocuments({ category: category, name: { $regex: searchParam, $options: 'i' } });
+
+    return res.status(200).json({
+      message: "Businesses found",
+      businesses: businesses,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalBusinesses / limit),
+    });
+  }
+  catch(error)
+  {
+    console.log(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
 
 /**
  * Get business by search query
@@ -116,7 +150,7 @@ const getBusinessBySearchQuery = async (req, res) =>
                                      .skip(skip)
                                      .limit(limit)
                                      .populate('locationId', 'name')
-                                     .select('_id name category');
+                                     .select('_id name category')
                                      
     
     const totalBusinesses = await Business.countDocuments({ name: { $regex: searchParam, $options: 'i' }});
@@ -195,6 +229,7 @@ const getBusinessByCategoryAndLocation = async (req, res) =>
 
     let skip = (page - 1) * limit;
     const businesses = await Business.find({ locationId: locationId, category: category, name: { $regex: searchParam, $options: 'i' } })
+                                     .sort({ heatmapScore: -1 })
                                      .skip(skip)
                                      .limit(limit)
                                      .select('_id name category mediaUrls averageRating address');
@@ -231,7 +266,7 @@ const getBusinessByHeatmapScoreAndLocation = async (req, res) =>
     const location = await Location.findById(locationId);
     if(!location) return res.status(404).json({ error: "Location not found" });
 
-    const businesses = await Business.find({ locationId: locationId }).sort({ heatmapScore: -1 }).limit(5).select('_id name category mediaUrls averageRating address');
+    const businesses = await Business.find({ locationId: locationId }).sort({ heatmapScore: -1 }).limit(5).select('_id name category mediaUrls averageRating address heatmapScore');
     return res.status(200).json(businesses);
   }
   catch(error)
@@ -256,6 +291,40 @@ const getBusinessNearUser = async (req, res) => {};
  */
 const getBusinessAnalytics = async (req, res) => {};
 
+/**
+ * Get business data for mapview
+ */
+const getBusinessMapData = async (req, res) =>
+{
+  const { locationId } = req.query;
+
+  if(!locationId) return res.status(400).json({ error: "Please provide a location ID" });
+
+  try
+  {
+    const location = await Location.findById(locationId);
+    if(!location) return res.status(404).json({ error: "Location not found" });
+
+    const businesses = await Business.find({ locationId: locationId }).select('_id name averageRating coordinates heatmapScore');
+    
+    const retBusinesses = businesses.map(business => ({
+      ...business._doc,
+      // heatmapScore: business.heatmapScore / 100,
+      coordinates: business.coordinates.coordinates,
+    }));
+    
+    return res.status(200).json({
+      locationCoords: location.coordinates.coordinates,
+      businesses: retBusinesses,
+    });
+  }
+  catch(error)
+  {
+    console.log(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
 export {
   getBusinessById,
   getBusinessByLocation,
@@ -267,4 +336,5 @@ export {
   getAllBusinesses,
   getBusinessNearUser,
   getBusinessAnalytics,
+  getBusinessMapData,
 };
