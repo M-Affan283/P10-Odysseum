@@ -14,8 +14,8 @@ import { User } from "../../models/User.js";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../utils/constants.js";
 
 export const reportUser = async (req, res) => {
-    const { reportedUserId, reason } = req.body;
-    const reportingUserId = req.user._id; // From auth middleware
+    const { reportedUserId, reason, reportingUserId } = req.body;
+    // const reportingUserId = req.user._id; // From auth middleware
 
     if (!reportedUserId || !reason) 
         return res.status(400).json({

@@ -14,8 +14,8 @@ import { Post } from "../../models/Post.js";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../utils/constants.js";
 
 export const reportPost = async (req, res) => {
-    const { reportedPostId, reason } = req.body;
-    const reportingUserId = req.user._id; 
+    const { reportedPostId, reason, reportingUserId } = req.body;
+    // const reportingUserId = req.user._id; 
 
     if (!reportedPostId || !reason) 
         return res.status(400).json({
