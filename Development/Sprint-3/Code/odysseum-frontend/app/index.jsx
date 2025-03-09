@@ -20,6 +20,11 @@ import SettingsScreen from "../src/screens/SettingsScreen";
 import AboutScreen from "../src/screens/AboutScreen";
 import SecurityScreen from "../src/screens/SecurityScreen";
 import PrivacyScreen from "../src/screens/PrivacyScreen";
+import ServiceCreateScreen from "../src/screens/ServiceCreateScreen";
+import BusinessManageScreen from "../src/screens/BusinessManageScreen";
+import ServiceProfileScreen from "../src/screens/ServiceProfileScreen";
+import BusinessLocationHeatmapScreen from "../src/screens/BusinessLocationHeatmapScreen";
+import SingleUserProfileScreen from "../src/screens/SingleUserProfileScreen";
 
 // Component testing
 
@@ -32,10 +37,11 @@ export default function App() {
       {/* <BookmarkScreen /> */}
       {/* <CreatePostScreen /> */}
       {/* <UserProfileScreen /> */}
-      {/* <PostDetailsScreen postId="6730787a070ca3617028ad30" /> */}
+      {/* <PostDetailsScreen postId="67307bbe0fe5cfaf17cbe7c4" /> */}
       {/* <DiscoverLocationsScreen /> */}
       {/* <UserSearchScreen /> */}
       {/* <MainSearchScreen /> */}
+      {/* <SingleUserProfileScreen userId={'67719c4bbf46669c947acedc'} /> */}
       {/* <CreateItineraryScreen /> */}
       {/* <ReviewsScreen entityId={'12345'} entityType={"Location"} entityName={"Test Entity"} /> */}
       {/* <LocationDetailsScreen locationId={'6781353badab4c338ff55148'}/> */}
@@ -48,8 +54,13 @@ export default function App() {
       {/* <BusinessLocationScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'}/> */}
       {/* <BusinessCategoryScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'} category={'Test Category'}/> */}
       {/* <BusinessProfileScreen businessId={'6781353badab4c338ff55148'}/> */}
+      {/* <BusinessLocationHeatmapScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'}/> */}
       {/* <BusinessCreateScreen /> */}
-      
+      {/* <BusinessManageScreen /> */}
+      {/* <ServiceCreateScreen /> */}
+      {/* <ServiceProfileScreen serviceId={'6781353badab4c338ff55148'}/> */}
+
+
     </>
   );
 }

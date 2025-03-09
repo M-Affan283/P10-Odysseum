@@ -75,6 +75,7 @@ const RootLayout = () => {
             <Stack.Screen name="settings" options={{ headerShown: false }} />
             <Stack.Screen name="review" options={{ headerShown: false }} />
             <Stack.Screen name="business" options={{ headerShown: false }} />
+            <Stack.Screen name="service" options={{ headerShown: false }} />
           </Stack>
           {/* for further configuration check docs */}
           <Toast/> 
