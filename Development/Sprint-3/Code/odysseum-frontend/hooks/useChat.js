@@ -10,8 +10,9 @@ export const useChat = (chatId) => {
     const [isTyping, setIsTyping] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
-    const { socket, sendMessage: socketSendMessage } = useSocket();
+    const { socket, sendMessage: socketSendMessage, subscribeToMessages, unsubscribeFromMessages, subscribeToTyping, unsubscribeFromTyping } = useSocket();
     const messagesRef = useRef(messages);
+    const initialFetchDoneRef = useRef(false);
     messagesRef.current = messages;
 
     const fetchChatDetails = useCallback(async () => {
@@ -27,7 +28,7 @@ export const useChat = (chatId) => {
     }, [chatId]);
 
     const fetchMessages = useCallback(async () => {
-        if (loading) return;
+        if (loading || !chatId) return;
 
         try {
             setLoading(true);
@@ -51,48 +52,45 @@ export const useChat = (chatId) => {
         }
     }, [chatId, loading]);
 
+    // Handle message events
+    const handleNewMessage = useCallback((data) => {
+        if (data.message?.chatId === chatId) {
+            setMessages(prev => {
+                // Check if message already exists
+                const messageExists = prev.some(msg => msg._id === data.message._id);
+                if (messageExists) return prev;
+                return [data.message, ...prev];
+            });
+        }
+    }, [chatId]);
+
+    // Initial data fetch - only once when chatId is provided
+    useEffect(() => {
+        if (chatId && !initialFetchDoneRef.current) {
+            initialFetchDoneRef.current = true;
+            fetchChatDetails();
+            fetchMessages();
+        }
+        
+        return () => {
+            // Reset the flag when component unmounts or chatId changes
+            initialFetchDoneRef.current = false;
+        };
+    }, [chatId]);
+
     // Set up socket event listeners
     useEffect(() => {
         if (!socket || !chatId) return;
 
-        const handleNewMessage = (data) => {
-            if (data.message?.chatId === chatId) {
-                setMessages(prev => {
-                    // Check if message already exists
-                    const messageExists = prev.some(msg => msg._id === data.message._id);
-                    if (messageExists) return prev;
-                    return [data.message, ...prev];
-                });
-            }
-        };
-
-        const handleMessageSent = (data) => {
-            if (data.message?.chatId === chatId) {
-                setMessages(prev => {
-                    // Check if message already exists
-                    const messageExists = prev.some(msg => msg._id === data.message._id);
-                    if (messageExists) return prev;
-                    return [data.message, ...prev];
-                });
-            }
-        };
-
-        socket.on('receive_message', handleNewMessage);
-        socket.on('message_sent', handleMessageSent);
+        // Subscribe to messages and typing events
+        subscribeToMessages(handleNewMessage);
+        subscribeToTyping(isTyping => setIsTyping(isTyping));
 
         return () => {
-            socket.off('receive_message', handleNewMessage);
-            socket.off('message_sent', handleMessageSent);
+            unsubscribeFromMessages(handleNewMessage);
+            unsubscribeFromTyping(setIsTyping);
         };
-    }, [socket, chatId]);
-
-    // Initial data fetch
-    useEffect(() => {
-        if (chatId) {
-            fetchChatDetails();
-            fetchMessages();
-        }
-    }, [chatId, fetchChatDetails, fetchMessages]);
+    }, [socket, chatId, subscribeToMessages, unsubscribeFromMessages, subscribeToTyping, unsubscribeFromTyping, handleNewMessage]);
 
     const sendMessage = useCallback((content) => {
         if (!chatDetails?.otherUser?._id || !content.trim()) return;
@@ -106,9 +104,19 @@ export const useChat = (chatId) => {
         socketSendMessage(messageData);
     }, [chatDetails?.otherUser?._id, chatId, socketSendMessage]);
 
+    const handleTyping = useCallback((isTyping) => {
+        if (socket && chatDetails?.otherUser?._id) {
+            socket.emit(
+                isTyping ? 'typing_start' : 'typing_end',
+                { receiverId: chatDetails.otherUser._id }
+            );
+        }
+    }, [socket, chatDetails?.otherUser?._id]);
+
     const refresh = useCallback(() => {
+        fetchChatDetails();
         fetchMessages();
-    }, [fetchMessages]);
+    }, [fetchChatDetails, fetchMessages]);
 
     return {
         messages,
@@ -118,6 +126,7 @@ export const useChat = (chatId) => {
         isTyping,
         hasMore,
         sendMessage,
+        handleTyping,
         refresh
     };
 };
