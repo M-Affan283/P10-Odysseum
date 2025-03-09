@@ -28,7 +28,7 @@ const RootLayout = () => {
   });
 
   // comment this out if you want to test the index screen
-  // this will route to home screen if user is logged in
+  // this will route to home screen if user is logged in 
   // useEffect(()=>
   // {
   //   if(!loadedFonts || loading) return;

@@ -32,7 +32,7 @@ export default function App() {
 
   return (
     <>
-      <WelcomeScreen />
+      <WelcomeScreen /> 
       {/* <HomeScreen /> */}
       {/* <BookmarkScreen /> */}
       {/* <CreatePostScreen /> */}
