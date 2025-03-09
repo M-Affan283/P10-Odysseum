@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message'
 import { useQuery } from '@tanstack/react-query';
 import LottieView from 'lottie-react-native'
 import { ChevronLeftIcon } from 'react-native-heroicons/solid'
+import { router } from 'expo-router'
 import themes from '../../assets/themes/themes'
 
 const getQueryHeatmapData = async ({locationId}) =>
