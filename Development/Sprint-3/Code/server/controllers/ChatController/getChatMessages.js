@@ -46,7 +46,10 @@ export const getChatMessages = async (req, res) => {
         );
 
         // Update unread count in chat
-        chat.unreadCounts.set(userId.toString(), 0);
+        if (!chat.unreadCounts) {
+            chat.unreadCounts = {};
+        }
+        chat.unreadCounts[userId.toString()] = 0;
         await chat.save();
 
         return res.status(200).json({
@@ -68,5 +71,3 @@ export const getChatMessages = async (req, res) => {
         });
     }
 };
-
-export default getChatMessages;

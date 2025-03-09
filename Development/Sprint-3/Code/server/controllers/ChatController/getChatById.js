@@ -37,7 +37,7 @@ export const getChatById = async (req, res) => {
             _id: chat._id,
             otherUser: otherParticipant,
             lastMessage: chat.lastMessage,
-            unreadCount: chat.unreadCounts.get(userId.toString()) || 0,
+            unreadCount: chat.unreadCounts?.[userId.toString()] || 0,
             createdAt: chat.createdAt,
             updatedAt: chat.updatedAt
         };
@@ -55,5 +55,3 @@ export const getChatById = async (req, res) => {
         });
     }
 };
-
-export default getChatById;

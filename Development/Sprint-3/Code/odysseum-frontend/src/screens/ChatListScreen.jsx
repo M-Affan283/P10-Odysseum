@@ -48,31 +48,13 @@ const ChatListScreen = () => {
       setFollowedUsersLoading(true);
       
       // Get users that the current user follows
-      const followingIds = user.following || [];
-      
-      if (followingIds.length === 0) {
-        setFollowedUsers([]);
-        setFollowedUsersLoading(false);
-        return;
-      }
-      
-      // Get details for each followed user
-      const usersPromises = followingIds.map(userId => 
-        axiosInstance.get(`/user/getById?userToViewId=${userId}&requestorId=${user._id}`)
-      );
-      
-      const usersResponses = await Promise.all(usersPromises);
-      const followingUsers = usersResponses
-        .filter(res => res.data && res.data.user)
-        .map(res => res.data.user);
-      
-      // Filter out users that already have a chat
-      const existingChatUserIds = chats.map(chat => chat.otherUser._id);
-      const filteredUsers = followingUsers.filter(followedUser => 
-        !existingChatUserIds.includes(followedUser._id)
-      );
-      
-      setFollowedUsers(filteredUsers);
+      axiosInstance.get(`/user/getFollowing?userId=${user._id}`)
+      .then((res)=>
+      {
+        // console.log(res.data.users)
+        setFollowedUsers(res.data.users)
+      })
+
     } catch (error) {
       console.error('Error fetching followed users:', error);
       Toast.show({
@@ -89,7 +71,9 @@ const ChatListScreen = () => {
   const handleCreateNewChat = async (otherUserId) => {
     try {
       setCreatingChat(true);
-      const response = await axiosInstance.post('/chat/createChat', {
+      // console.log('Creating chat with user:', otherUserId);
+      const response = await axiosInstance.post('/chat/create', {
+        userId: user._id, 
         otherUserId
       });
       

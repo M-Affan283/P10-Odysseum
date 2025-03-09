@@ -28,7 +28,7 @@ const SERVER_START_TIME = new Date()
 
 // Configuring middleware
 app.use((req,res,next) => { // clears console on every request to make it easier to read logs
-    console.clear();
+    // console.clear();
     next();
 })
 app.use(cors());

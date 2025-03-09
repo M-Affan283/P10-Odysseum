@@ -1,9 +1,5 @@
 import mongoose from "mongoose";
 
-/**
- * Chat Schema
- * @description Represents a chat conversation between two users
- */
 const chatSchema = new mongoose.Schema({
     participants: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -24,13 +20,11 @@ const chatSchema = new mongoose.Schema({
             default: Date.now
         }
     },
+    // Changed from Map to regular object for better handling
     unreadCounts: {
-        // Maps user IDs to their unread message counts
-        type: Map,
-        of: Number,
-        default: new Map()
+        type: Object,
+        default: {}
     },
-    // For future media support
     mediaCount: {
         type: Number,
         default: 0
@@ -48,6 +42,20 @@ chatSchema.pre('save', function(next) {
     }
     next();
 });
+
+// Helper methods for unread counts
+chatSchema.methods.getUnreadCount = function(userId) {
+    return this.unreadCounts[userId.toString()] || 0;
+};
+
+chatSchema.methods.setUnreadCount = function(userId, count) {
+    this.unreadCounts[userId.toString()] = count;
+};
+
+chatSchema.methods.incrementUnreadCount = function(userId) {
+    const userIdStr = userId.toString();
+    this.unreadCounts[userIdStr] = (this.unreadCounts[userIdStr] || 0) + 1;
+};
 
 // Index for faster queries
 chatSchema.index({ participants: 1 });

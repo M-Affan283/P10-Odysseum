@@ -163,4 +163,27 @@ const searchUser = async (req,res) =>
 
 }
 
-export { getAllUsers, getUserById, getUserByUsername, searchUser };
+const getFollowingUsers = async (req,res) =>
+{
+    const { userId } = req.query;
+
+    if(!userId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
+
+    try
+    {
+        const user = await User.findById(userId);
+
+        if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
+
+        const followingUsers = await User.find({_id: { $in: user.following }}).select('_id username profilePicture');
+
+        return res.status(200).json({message: SUCCESS_MESSAGES.USERS_FOUND, users: followingUsers});
+    }
+    catch(error)
+    {
+        console.log(error);
+        return res.status(500).json({error: ERROR_MESSAGES.SERVER_ERROR});
+    }
+}
+
+export { getAllUsers, getUserById, getUserByUsername, searchUser, getFollowingUsers };

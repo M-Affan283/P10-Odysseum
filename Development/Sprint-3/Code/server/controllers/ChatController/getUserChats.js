@@ -35,7 +35,7 @@ export const getUserChats = async (req, res) => {
                 _id: chat._id,
                 otherUser: otherParticipant,
                 lastMessage: chat.lastMessage,
-                unreadCount: chat.unreadCounts.get(userId.toString()) || 0,
+                unreadCount: chat.unreadCounts?.[userId.toString()] || 0,
                 updatedAt: chat.updatedAt
             };
         });
@@ -59,5 +59,3 @@ export const getUserChats = async (req, res) => {
         });
     }
 };
-
-export default getUserChats;

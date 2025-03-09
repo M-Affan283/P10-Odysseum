@@ -34,8 +34,8 @@ axiosInstance.interceptors.request.use(
         }
 
         // Debug log
-        console.log('Making request to:', config.baseURL + config.url);
-        console.log('With headers:', config.headers);
+        // console.log('Making request to:', config.baseURL + config.url);
+        // console.log('With headers:', config.headers);
         
         return config;
     },

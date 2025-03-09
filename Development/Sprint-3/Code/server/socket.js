@@ -1,12 +1,3 @@
-/*
-
-Filename: socket.js
-
-This file contains the socket.io server setup. It listens for incoming connections and handles messaging.
-
-Author: Shahrez
-
-*/
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { User } from './models/User.js';
@@ -16,7 +7,7 @@ import { Message } from './models/Message.js';
 // Store online users and their connection counts
 const onlineUsers = new Map();
 const userConnections = new Map();
-const MAX_CONNECTIONS_PER_USER = 5; // Adjust this value as needed
+const MAX_CONNECTIONS_PER_USER = 5;
 
 export const setupSocket = (server) => {
     const io = new Server(server, {
@@ -93,12 +84,15 @@ export const setupSocket = (server) => {
                 if (!chat) {
                     chat = await Chat.create({
                         participants: [socket.user._id, receiverId],
-                        unreadCounts: new Map([[receiverId, 1]])
+                        unreadCounts: { [receiverId]: 1 }
                     });
                 } else {
                     // Update unread count for receiver
-                    const currentCount = chat.unreadCounts.get(receiverId) || 0;
-                    chat.unreadCounts.set(receiverId, currentCount + 1);
+                    if (!chat.unreadCounts) {
+                        chat.unreadCounts = {};
+                    }
+                    const currentCount = chat.unreadCounts[receiverId] || 0;
+                    chat.unreadCounts[receiverId] = currentCount + 1;
                     await chat.save();
                 }
 
@@ -182,7 +176,10 @@ export const setupSocket = (server) => {
                 // Update unread count in chat
                 const chat = await Chat.findById(chatId);
                 if (chat) {
-                    chat.unreadCounts.set(socket.user._id.toString(), 0);
+                    if (!chat.unreadCounts) {
+                        chat.unreadCounts = {};
+                    }
+                    chat.unreadCounts[socket.user._id.toString()] = 0;
                     await chat.save();
 
                     // Notify other participant
