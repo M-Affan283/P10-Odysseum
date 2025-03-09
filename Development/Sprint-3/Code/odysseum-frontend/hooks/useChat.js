@@ -1,170 +1,125 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSocket } from '../src/context/SocketContext';
 import axiosInstance from '../src/utils/axios';
-import { validateMessage } from '../src/utils/chatUtils';
 
 export const useChat = (chatId) => {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [chatDetails, setChatDetails] = useState(null);
-  const [isTyping, setIsTyping] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [chatDetails, setChatDetails] = useState(null);
+    const [isTyping, setIsTyping] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
 
-  const initialFetchDone = useRef(false);
+    const { socket, sendMessage: socketSendMessage } = useSocket();
+    const messagesRef = useRef(messages);
+    messagesRef.current = messages;
 
-  const { 
-    socket,
-    subscribeToMessages, 
-    unsubscribeFromMessages,
-    subscribeToTyping,
-    unsubscribeFromTyping,
-    sendMessage: socketSendMessage,
-    emitTyping 
-  } = useSocket();
-
-  // Initial fetch of chat details and messages
-  useEffect(() => {
-    if (!initialFetchDone.current && chatId) {
-      fetchChatDetails();
-      fetchMessages();
-      initialFetchDone.current = true;
-    }
-    
-    return () => {
-      initialFetchDone.current = false;
-    };
-  }, [chatId]);
-
-  // Socket event handlers
-  useEffect(() => {
-    if (!socket || !chatId) return;
-
-    const handleNewMessage = (data) => {
-      if (data.message.chatId === chatId) {
-        setMessages(prev => [data.message, ...prev]);
-        socket.emit('mark_read', { chatId });
-      }
-    };
-
-    const handleMessageSent = (data) => {
-      if (data.message.chatId === chatId) {
-        setMessages(prev => [data.message, ...prev]);
-      }
-    };
-
-    const handleTypingStatus = ({ userId, status }) => {
-      if (chatDetails?.otherUser?._id === userId) {
-        setIsTyping(status);
-      }
-    };
-
-    // Subscribe to socket events
-    socket.on('receive_message', handleNewMessage);
-    socket.on('message_sent', handleMessageSent);
-    socket.on('user_typing', handleTypingStatus);
-
-    return () => {
-      socket.off('receive_message', handleNewMessage);
-      socket.off('message_sent', handleMessageSent);
-      socket.off('user_typing', handleTypingStatus);
-    };
-  }, [socket, chatId, chatDetails?.otherUser?._id]);
-
-  const fetchChatDetails = async () => {
-    try {
-      const response = await axiosInstance.get('/chat/getChatById', {
-        params: { chatId }
-      });
-      setChatDetails(response.data.chat);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch chat details');
-    }
-  };
-
-  const fetchMessages = async (pageNum = 1) => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get('/chat/getChatMessages', {
-        params: { 
-          chatId,
-          page: pageNum,
-          limit: 20
+    const fetchChatDetails = useCallback(async () => {
+        try {
+            const response = await axiosInstance.get('/chat/getChatById', {
+                params: { chatId }
+            });
+            setChatDetails(response.data.chat);
+        } catch (err) {
+            console.error('Error fetching chat details:', err);
+            setError('Failed to fetch chat details');
         }
-      });
-      
-      if (pageNum === 1) {
-        setMessages(response.data.messages);
-      } else {
-        setMessages(prev => [...prev, ...response.data.messages]);
-      }
-      
-      setHasMore(response.data.pagination.hasMore);
-      setPage(pageNum);
-      
-      if (socket?.connected) {
-        socket.emit('mark_read', { chatId });
-      }
-      
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch messages');
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, [chatId]);
 
-  const sendMessage = useCallback((content) => {
-    const validation = validateMessage(content);
-    if (!validation.isValid) {
-      setError(validation.error);
-      return;
-    }
+    const fetchMessages = useCallback(async () => {
+        if (loading) return;
 
-    if (!chatDetails?.otherUser?._id) {
-      setError('Chat not properly initialized');
-      return;
-    }
+        try {
+            setLoading(true);
+            const response = await axiosInstance.get('/chat/getChatMessages', {
+                params: {
+                    chatId,
+                    page: 1,
+                    limit: 50
+                }
+            });
 
-    const messageData = {
-      receiverId: chatDetails.otherUser._id,
-      content,
-      chatId
+            // Since FlatList is inverted, we need to reverse the messages array
+            setMessages(response.data.messages.reverse());
+            setHasMore(response.data.pagination.hasMore);
+
+        } catch (err) {
+            console.error('Error fetching messages:', err);
+            setError('Failed to fetch messages');
+        } finally {
+            setLoading(false);
+        }
+    }, [chatId, loading]);
+
+    // Set up socket event listeners
+    useEffect(() => {
+        if (!socket || !chatId) return;
+
+        const handleNewMessage = (data) => {
+            if (data.message?.chatId === chatId) {
+                setMessages(prev => {
+                    // Check if message already exists
+                    const messageExists = prev.some(msg => msg._id === data.message._id);
+                    if (messageExists) return prev;
+                    return [data.message, ...prev];
+                });
+            }
+        };
+
+        const handleMessageSent = (data) => {
+            if (data.message?.chatId === chatId) {
+                setMessages(prev => {
+                    // Check if message already exists
+                    const messageExists = prev.some(msg => msg._id === data.message._id);
+                    if (messageExists) return prev;
+                    return [data.message, ...prev];
+                });
+            }
+        };
+
+        socket.on('receive_message', handleNewMessage);
+        socket.on('message_sent', handleMessageSent);
+
+        return () => {
+            socket.off('receive_message', handleNewMessage);
+            socket.off('message_sent', handleMessageSent);
+        };
+    }, [socket, chatId]);
+
+    // Initial data fetch
+    useEffect(() => {
+        if (chatId) {
+            fetchChatDetails();
+            fetchMessages();
+        }
+    }, [chatId, fetchChatDetails, fetchMessages]);
+
+    const sendMessage = useCallback((content) => {
+        if (!chatDetails?.otherUser?._id || !content.trim()) return;
+
+        const messageData = {
+            receiverId: chatDetails.otherUser._id,
+            content: content.trim(),
+            chatId
+        };
+
+        socketSendMessage(messageData);
+    }, [chatDetails?.otherUser?._id, chatId, socketSendMessage]);
+
+    const refresh = useCallback(() => {
+        fetchMessages();
+    }, [fetchMessages]);
+
+    return {
+        messages,
+        loading,
+        error,
+        chatDetails,
+        isTyping,
+        hasMore,
+        sendMessage,
+        refresh
     };
-    
-    socketSendMessage(messageData);
-  }, [chatDetails?.otherUser?._id, chatId, socketSendMessage]);
-
-  const handleTyping = useCallback((isTyping) => {
-    if (chatDetails?.otherUser?._id && socket?.connected) {
-      emitTyping(chatDetails.otherUser._id, isTyping);
-    }
-  }, [chatDetails?.otherUser?._id, socket, emitTyping]);
-
-  const loadMore = useCallback(() => {
-    if (!loading && hasMore) {
-      fetchMessages(page + 1);
-    }
-  }, [loading, hasMore, page]);
-
-  const refresh = useCallback(() => {
-    setPage(1);
-    fetchMessages(1);
-  }, []);
-
-  return {
-    messages,
-    loading,
-    error,
-    chatDetails,
-    isTyping,
-    hasMore,
-    sendMessage,
-    handleTyping,
-    loadMore,
-    refresh,
-    setError
-  };
 };
 
 export default useChat;

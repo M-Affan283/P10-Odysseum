@@ -33,7 +33,7 @@ export const setupSocket = (server) => {
 
             const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
             const user = await User.findById(decoded.id).select('-password');
-            
+
             if (!user) {
                 return next(new Error('User not found'));
             }
@@ -46,7 +46,7 @@ export const setupSocket = (server) => {
 
             // Increment connection count
             userConnections.set(user._id.toString(), currentConnections + 1);
-            
+
             socket.user = user;
             next();
         } catch (error) {
@@ -56,10 +56,10 @@ export const setupSocket = (server) => {
 
     io.on('connection', async (socket) => {
         console.log(`User connected: ${socket.user._id}`);
-        
+
         // Add user to online users
         onlineUsers.set(socket.user._id.toString(), socket.id);
-        
+
         // Broadcast user's online status
         io.emit('user_status', {
             userId: socket.user._id,
@@ -72,8 +72,9 @@ export const setupSocket = (server) => {
         // Handle incoming messages
         socket.on('send_message', async (data) => {
             try {
-                const { receiverId, content, mediaUrl, mediaType } = data;
-                
+                const { receiverId, content } = data;
+                console.log('Received message from', socket.user._id, 'to', receiverId);
+
                 // Find or create chat
                 let chat = await Chat.findOne({
                     participants: {
@@ -87,12 +88,10 @@ export const setupSocket = (server) => {
                         unreadCounts: { [receiverId]: 1 }
                     });
                 } else {
-                    // Update unread count for receiver
                     if (!chat.unreadCounts) {
                         chat.unreadCounts = {};
                     }
-                    const currentCount = chat.unreadCounts[receiverId] || 0;
-                    chat.unreadCounts[receiverId] = currentCount + 1;
+                    chat.unreadCounts[receiverId] = (chat.unreadCounts[receiverId] || 0) + 1;
                     await chat.save();
                 }
 
@@ -102,8 +101,6 @@ export const setupSocket = (server) => {
                     sender: socket.user._id,
                     receiver: receiverId,
                     content,
-                    mediaUrl,
-                    mediaType
                 });
 
                 // Update last message in chat
@@ -114,19 +111,26 @@ export const setupSocket = (server) => {
                 };
                 await chat.save();
 
+                const populatedMessage = await Message.findById(message._id)
+                    .populate('sender', 'username profilePicture')
+                    .lean();
+
                 // Emit to receiver if online
                 const receiverSocketId = onlineUsers.get(receiverId);
                 if (receiverSocketId) {
+                    console.log('Emitting to receiver:', receiverId);
                     io.to(receiverSocketId).emit('receive_message', {
-                        message,
-                        chat
+                        message: populatedMessage
                     });
                 }
-
-                // Emit back to sender
+                
+                // Emit to sender
+                console.log('Sending message back to sender:', {
+                    messageId: populatedMessage._id,
+                    content: populatedMessage.content
+                });
                 socket.emit('message_sent', {
-                    message,
-                    chat
+                    message: populatedMessage
                 });
 
             } catch (error) {
@@ -162,7 +166,7 @@ export const setupSocket = (server) => {
         socket.on('mark_read', async (data) => {
             try {
                 const { chatId } = data;
-                
+
                 // Update messages
                 await Message.updateMany(
                     {
@@ -185,7 +189,7 @@ export const setupSocket = (server) => {
                     // Notify other participant
                     const otherParticipant = chat.participants
                         .find(p => p.toString() !== socket.user._id.toString());
-                    
+
                     const otherSocketId = onlineUsers.get(otherParticipant.toString());
                     if (otherSocketId) {
                         io.to(otherSocketId).emit('messages_read', {
@@ -202,7 +206,7 @@ export const setupSocket = (server) => {
         // Handle disconnection
         socket.on('disconnect', () => {
             console.log(`User disconnected: ${socket.user._id}`);
-            
+
             // Update connection count
             const userId = socket.user._id.toString();
             const currentConnections = userConnections.get(userId) || 1;
@@ -212,7 +216,7 @@ export const setupSocket = (server) => {
             } else {
                 userConnections.set(userId, currentConnections - 1);
             }
-            
+
             // Broadcast user's offline status
             io.emit('user_status', {
                 userId: socket.user._id,

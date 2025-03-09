@@ -72,6 +72,7 @@ export const SocketProvider = ({ children }) => {
 
     const sendMessage = (messageData) => {
         if (socketRef.current?.connected) {
+            console.log('Sending message through socket:', messageData);
             socketRef.current.emit('send_message', messageData);
         } else {
             console.error('Socket not connected');
@@ -80,13 +81,21 @@ export const SocketProvider = ({ children }) => {
 
     const subscribeToMessages = (callback) => {
         if (socketRef.current) {
-            socketRef.current.on('receive_message', callback);
+            socketRef.current.on('receive_message', (data) => {
+                console.log('Received message:', data);
+                callback(data);
+            });
+            socketRef.current.on('message_sent', (data) => {
+                console.log('Message sent confirmation:', data);
+                callback(data);
+            });
         }
     };
 
     const unsubscribeFromMessages = (callback) => {
         if (socketRef.current) {
             socketRef.current.off('receive_message', callback);
+            socketRef.current.off('message_sent', callback);
         }
     };
 

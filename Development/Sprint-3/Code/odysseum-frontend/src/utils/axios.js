@@ -14,7 +14,7 @@ import { getAccessToken, setAccessToken } from "./tokenUtils.js";
 // Base URL of the backend server
 
 // const API_BASE_URL = `https://p10-odysseum.onrender.com/api`;
-const API_BASE_URL = `http://192.168.100.29:8000/api`;
+const API_BASE_URL = `http://192.168.86.46:8000/api`;
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,

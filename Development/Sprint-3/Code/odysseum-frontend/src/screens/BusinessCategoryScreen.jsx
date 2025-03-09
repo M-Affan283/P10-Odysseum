@@ -6,7 +6,7 @@ import axiosInstance from "../utils/axios";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ChevronLeftIcon } from "react-native-heroicons/outline";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import tempBusinesses from "./tempfiles/tempbusinesses";
+// import tempBusinesses from "./tempfiles/tempbusinesses";
 import icons from "../../assets/icons/icons";
 import images from "../../assets/images/images";
 

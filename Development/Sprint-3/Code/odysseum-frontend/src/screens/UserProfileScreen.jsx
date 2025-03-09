@@ -12,7 +12,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import useUserStore from '../context/userStore'
 
 //////////////////////////////////////////
-import tempPosts from './tempfiles/homescreenposts'
+// import tempPosts from './tempfiles/homescreenposts'
 /////////////////////////////////////////
 
 const imageWidth = (Dimensions.get('window').width-20) / 2;

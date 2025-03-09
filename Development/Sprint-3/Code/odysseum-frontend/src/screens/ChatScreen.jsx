@@ -1,5 +1,5 @@
 import { View, FlatList } from 'react-native';
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useUserStore from '../context/userStore';
 import ChatHeader from '../components/ChatHeader';
@@ -12,6 +12,7 @@ import Toast from 'react-native-toast-message';
 const ChatScreen = ({ chatId }) => {
   const flatListRef = useRef(null);
   const user = useUserStore(state => state.user);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const {
     messages,
@@ -21,12 +22,11 @@ const ChatScreen = ({ chatId }) => {
     isTyping,
     sendMessage,
     handleTyping,
-    loadMore,
     refresh
   } = useChat(chatId);
 
   // Show error toast when there's an error
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       Toast.show({
         type: 'error',
@@ -36,6 +36,12 @@ const ChatScreen = ({ chatId }) => {
       });
     }
   }, [error]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refresh();
+    setIsRefreshing(false);
+  };
 
   const renderMessage = ({ item }) => (
     <MessageBubble
@@ -62,10 +68,8 @@ const ChatScreen = ({ chatId }) => {
         keyExtractor={item => item._id}
         renderItem={renderMessage}
         contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8 }}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.3}
-        refreshing={loading}
-        onRefresh={refresh}
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
       />
 
       <MessageInput 
