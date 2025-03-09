@@ -40,7 +40,7 @@ const calculateHeatmapScore = (activityCount, avgRating, lastInteraction) => {
     const RECENCY_WEIGHT = 0.3;
     
     // Activity score (logarithmic scale to prevent domination by very active locations)
-    const normalizedActivity = Math.log10(activityCount + 1) / Math.log10(100); // Assumes 100 is a high activity count
+    const normalizedActivity = Math.log10(activityCount /*+ 1*/) / Math.log10(100); // Assumes 100 is a high activity count
     const activityScore = Math.min(1, normalizedActivity);
     
     // Rating score (normalized to 0-1 range)
@@ -123,11 +123,9 @@ export const entityMetricUpdator = async (entityType, entityId, interactionType,
         // Update average rating if a rating is provided and interaction type is "review"
         if(interactionType === InteractionTypes.REVIEW && rating !== null)
         {
-            const avgRating = await Review.aggregate([
-                { $match: { entityId: entityId } },
-                { $group: { _id: null, avgRating: { $avg: "$rating" } } }
-            ])//.session(session);
-            newAvgRating = avgRating[0]?.avgRating || rating;
+            const entityReviews = await Review.find({ entityId: entityId });
+            const avgRating = entityReviews.reduce((acc, review) => acc + review.rating, 0) / entityReviews.length;
+            newAvgRating = avgRating;
         }
     
         // Calculate new heatmap score
@@ -156,7 +154,7 @@ export const entityMetricUpdator = async (entityType, entityId, interactionType,
             // }, { new: true, runValidators: true, session });
         }
 
-        await session.commitTransaction();
+        // await session.commitTransaction();
         
         return updatedEntity;
     }
