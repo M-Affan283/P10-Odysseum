@@ -1,18 +1,20 @@
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axiosInstance from '../utils/axios';
 import { router } from 'expo-router';
 import useUserStore from '../context/userStore';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
-import { BookmarkIcon, ChevronDoubleUpIcon, BriefcaseIcon, PencilSquareIcon, ArrowPathIcon } from 'react-native-heroicons/solid';
+import { BookmarkIcon, ChevronDoubleUpIcon, BriefcaseIcon, PencilSquareIcon, ArrowPathIcon, MapPinIcon } from 'react-native-heroicons/solid';
 import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import * as Animatable from 'react-native-animatable';
 import Animated, { Extrapolation, interpolate, interpolateColor, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
 import { useQuery } from '@tanstack/react-query';
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import LottieView from 'lottie-react-native';
 import images from '../../assets/images/images';
+import themes from '../../assets/themes/themes';
 
 const tempLocation = {
   _id: "67310369aa977e99fcc2c31e",
@@ -163,6 +165,18 @@ const LocationDetailsComponent = ({location}) => {
 
   const animatedIndex = useSharedValue(0);
   const snapPoints = useMemo(() => ['20%', '80%'], []);
+
+  const mapRef = useRef(null);
+
+  const focusOnLocation = () => 
+  { 
+    mapRef.current?.animateToRegion({
+      latitude: location?.coordinates?.coordinates[1],
+      longitude: location?.coordinates?.coordinates[0],
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.042
+    });
+  }
   
   const contentStyle = useAnimatedStyle(() => ({
     transform: [
@@ -263,7 +277,8 @@ const LocationDetailsComponent = ({location}) => {
       <BottomSheetScrollView
         style={{marginTop: 8, marginBottom: 18}}
         showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}>
+        showsHorizontalScrollIndicator={false}
+      >
         <Animated.View style={contentStyle}>
 
 
@@ -286,9 +301,44 @@ const LocationDetailsComponent = ({location}) => {
           </View>
 
 
-          <Text className="text-lg mx-4 font-semibold text-white mt-6">About</Text>
-          <View className="flex-1 mx-4 mt-2">
+          <View className="flex-1 bg-gray-800 rounded-xl p-4 mt-4 w-[95%] mx-auto">
+            <Text className="text-lg font-semibold text-white">About</Text>
             <Text className="text-white">{location?.description}</Text>
+          </View>
+
+          <View className="bg-gray-800 rounded-xl p-4 mt-4 mx-auto w-[95%]">
+
+            <Text className="text-lg font-semibold text-white">Location</Text>
+
+            <View className="flex-1 mt-5 justify-center items-center">
+                
+                <TouchableOpacity className="flex-row bg-[#ff6b6b] rounded-full py-2 px-2" onPress={focusOnLocation}>
+                  <MapPinIcon size={25} color="white" />
+                  <Text className="text-white text-base">Refocus</Text>
+                </TouchableOpacity>
+
+                <MapView
+                  ref={mapRef}
+                  className="mt-3"
+                  provider={PROVIDER_GOOGLE}
+                  style={{ width: 330, height: 250 }}
+                  customMapStyle={themes.dark}
+                  initialRegion={{
+                    latitude: location?.coordinates?.coordinates[1] || 0,
+                    longitude: location?.coordinates?.coordinates[0] || 0,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.042
+                  }}
+                >
+                  <Marker
+                    coordinate={{
+                      latitude: location?.coordinates?.coordinates[1] || 0,
+                      longitude: location?.coordinates?.coordinates[0] || 0
+                    }}
+                    title={location?.name}
+                  />
+                </MapView>
+              </View>
           </View>
 
 
