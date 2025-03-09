@@ -68,6 +68,16 @@ const ERROR_MESSAGES = { //add more error messages as needed
     INVALID_ITINERARY: "Invalid itinerary",
     USER_NOT_FOUND: "User not found",
     CANNOT_REPORT_SELF: "You cannot report yourself",
+    CHAT_NOT_FOUND: "Chat not found",
+    MESSAGE_NOT_FOUND: "Message not found",
+    INVALID_CHAT_PARTICIPANTS: "Invalid chat participants",
+    INVALID_MESSAGE_CONTENT: "Message content cannot be empty",
+    UNAUTHORIZED_CHAT_ACCESS: "You are not authorized to access this chat",
+    MESSAGE_SEND_FAILED: "Failed to send message",
+    SOCKET_AUTH_FAILED: "Socket authentication failed",
+    SOCKET_CONNECTION_LIMIT: "Maximum connection limit reached",
+    INVALID_MEDIA_TYPE: "Invalid media type",
+    MEDIA_UPLOAD_FAILED: "Failed to upload media",
 }
 
 /**

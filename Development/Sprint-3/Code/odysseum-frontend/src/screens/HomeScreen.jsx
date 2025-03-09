@@ -82,7 +82,7 @@ const HomeScreen = () => {
               </View>
 
               <View className="absolute right-0 flex-row">
-                <TouchableOpacity className="bg-[#11092f] mr-4 rounded-full">
+                <TouchableOpacity className="bg-[#11092f] mr-4 rounded-full" onPress={()=>router.push("/chat")}>
                   <ChatBubbleLeftRightIcon size={30} color="white" />
                 </TouchableOpacity>
               </View>
