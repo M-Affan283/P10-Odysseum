@@ -67,7 +67,8 @@ const UserProfileScreen = () => {
         console.log("Logging out user: ", user.username);
         logout();
         // router.dismissAll();
-        router.replace('/sign-in')
+        if (router.canDismiss()) router.dismissAll()
+        router.replace('/')
     }
 
 
