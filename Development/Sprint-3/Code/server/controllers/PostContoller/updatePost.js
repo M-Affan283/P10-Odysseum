@@ -57,22 +57,27 @@ const likePost = async (req, res) =>
 
     try
     {
-        const user = await User.findById(userId);
-        if(!user) return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
+        const [user, post] = await Promise.all([
+            User.findById(userId),
+            Post.findById(postId)
+        ]);
 
-        const post = await Post.findById(postId);
-        if(!post) return res.status(404).json({ message: ERROR_MESSAGES.POST_NOT_FOUND });
+        if (!user) return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
+        if (!post) return res.status(404).json({ message: ERROR_MESSAGES.POST_NOT_FOUND })
 
-        if(post.likes.includes(userId))
+        const isLiked = post.likes.includes(userId);
+
+        // Use MongoDB's atomic operations to add/remove likes
+        if (isLiked) 
         {
-            post.likes = post.likes.filter(like => like.toString() !== userId);
-            await post.save();
+            // Remove like using $pull
+            await Post.findByIdAndUpdate(postId, { $pull: { likes: userId } });
             return res.status(200).json({ message: "Unliked" });
-        }
-        else
+        } 
+        else 
         {
-            post.likes.push(userId);
-            await post.save();
+            // Add like using $addToSet to avoid duplicates
+            await Post.findByIdAndUpdate(postId, { $addToSet: { likes: userId } });
             return res.status(200).json({ message: "Liked" });
         }
 

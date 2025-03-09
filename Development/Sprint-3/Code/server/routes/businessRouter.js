@@ -16,6 +16,7 @@ import {
   getBusinessByHeatmapScoreAndLocation,
   getBusinessByLocation,
   getBusinessByUser,
+  getBusinessMapData
 } from "../controllers/BusinessController/getBusiness.js";
 import { updateBusiness, likeBusiness, bookmarBusiness } from "../controllers/BusinessController/updateBusiness.js";
 import upload from "../middleware/multerMiddleware.js";
@@ -33,6 +34,7 @@ businessRouter.get("/getByLocation", getBusinessByLocation);
 businessRouter.get("/getByUser", getBusinessByUser);
 businessRouter.get("/getNearUser", getBusinessNearUser);
 businessRouter.get("/getAnalytics", getBusinessAnalytics);
+businessRouter.get("/getMapData", getBusinessMapData);
 businessRouter.post("/update", updateBusiness);
 businessRouter.post("/like", likeBusiness);
 businessRouter.post("/bookmark", bookmarBusiness);

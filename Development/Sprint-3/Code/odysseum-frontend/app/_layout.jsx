@@ -25,6 +25,27 @@ const RootLayout = () => {
     DancingScript_700Bold
   });
 
+
+  // comment this out if you want to test the index screen
+  // this will route to home screen if user is logged in 
+  // useEffect(()=>
+  // {
+  //   if(!loadedFonts || loading) return;
+  //   if(!user) return;
+  //   if(error) return;
+
+  //   if(loadedFonts)
+  //   {
+  //     SplashScreen.hideAsync();
+  //     setLoading(false);
+  //   }
+
+  //   isLoggedIn ? router.replace("/home") : router.replace("/"); //index.jsx will contain welcome screen
+
+  // }, [loadedFonts, error, loading, user, isLoggedIn]);
+
+
+ 
   useEffect(() => {
     if(loadedFonts) {
       SplashScreen.hideAsync();
@@ -52,6 +73,7 @@ const RootLayout = () => {
               <Stack.Screen name="settings" options={{ headerShown: false }} />
               <Stack.Screen name="review" options={{ headerShown: false }} />
               <Stack.Screen name="business" options={{ headerShown: false }} />
+              <Stack.Screen name="service" options={{ headerShown: false }} />
               <Stack.Screen 
                 name="chat/index" 
                 options={{ 

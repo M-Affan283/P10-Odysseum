@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Image } from "react-native";
 import React, {useEffect, useState} from "react";
 import { router } from "expo-router";
-import { ChevronLeftIcon } from "react-native-heroicons/solid";
+import { ChevronLeftIcon, BriefcaseIcon, MapIcon } from "react-native-heroicons/solid";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axiosInstance from "../utils/axios";
 // import tempBusinesses from "./tempfiles/tempbusinesses";
@@ -95,7 +95,7 @@ const BusinessLocationScreen = ({ locationId, locationName }) => {
     <View className="flex-1 bg-primary">
     
       <View>
-        <View className="py-10 bg-[#28154e] w-full rounded-b-3xl">
+        <View className="py-9 bg-[#28154e] w-full rounded-b-3xl">
           <View className="px-4 flex-row ">
 
             <TouchableOpacity onPress={() => router.back()} className="mr-4 py-4">
@@ -110,18 +110,23 @@ const BusinessLocationScreen = ({ locationId, locationName }) => {
             
           </View>
 
-          <View className="flex-row mx-auto mt-6 items-center bg-neutral-200 rounded-full pl-6 w-[90%] h-[50px]">
-            <MaterialIcons name="search" size={20} color="black" />
-              <TextInput
-                placeholder="Search businesses"
-                placeholderTextColor="gray"
-                value={searchQuery}
-                clearButtonMode="always"
-                autoCapitalize="none"
-                autoCorrect={false}
-                className="flex-1 text-base mb-1 pl-1 tracking-wider"
-                onChangeText={(text) => setSearchQuery(text)}
-              />
+          <View className="flex-row mt-6 justify-center items-center gap-x-6">
+            {/* two buttons here. one to view all business location regardless of category and one for a heatmapview */}
+
+            <TouchableOpacity className="bg-pink-800 p-2 rounded-xl" activeOpacity={0.7} onPress={() => router.push({pathname: `/business/location/${locationId}/all`, params: {name: locationName}})}>
+              <View className="flex-row items-center">
+                <BriefcaseIcon size={24} color="white" />
+                <Text className="text-white font-dsbold text-lg ml-2">View All</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity className="bg-sky-900 p-2 rounded-xl ml-4" activeOpacity={0.7} onPress={() => router.push({pathname: `/business/location/${locationId}/heatmap`, params: {name: locationName}})}>
+              <View className="flex-row items-center">
+                <MapIcon size={24} color="white" />
+                <Text className="text-white font-dsbold text-lg ml-2">Heatmap</Text>
+              </View>
+            </TouchableOpacity>
+
           </View> 
         </View>
         

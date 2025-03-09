@@ -7,7 +7,7 @@ import { useEffect } from "react";
 const TabsLayout = () => {
   return (
     <Tabs tabBar={(props) => <TabBar {...props} />}>
-      <Tabs.Screen name="home" options={{ title: "Home", headerShown: false}} />
+      <Tabs.Screen name="home"   options={{ title: "Home", headerShown: false}} />
       <Tabs.Screen name="search" options={{ title: "Search", headerShown: false}} />
       <Tabs.Screen name="create" options={{title:"Create", headerShown: false}} />
       <Tabs.Screen name="bookmark" options={{title:"Bookmark", headerShown: false}} />
@@ -20,7 +20,7 @@ const TabBar = ({ state, descriptors ,navigation }) => {
 
 
   return (
-    <View style={{position:'absolute', bottom:1, flexDirection:'row', justifyContent:'space-between', alignItems:'center', backgroundColor:'black', paddingVertical: 10, borderRadius: 25, borderCurve:'continuous'}}>
+    <View style={{position:'absolute', bottom:0, flexDirection:'row', justifyContent:'space-between', alignItems:'center', backgroundColor:'black', paddingVertical: 10, borderTopLeftRadius: 25, borderTopRightRadius: 25, borderCurve:'continuous'}}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =

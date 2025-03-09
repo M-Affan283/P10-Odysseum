@@ -1,5 +1,5 @@
 import { View, Text, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Image } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useUserStore from "../context/userStore";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -7,6 +7,8 @@ import axiosInstance from "../utils/axios";
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "react-native-heroicons/outline";
 import images from "../../assets/images/images";
 import { SafeAreaView } from "react-native-safe-area-context";
+import BusinessManageModal from "../components/BusinessManageModal";
+import LocationsModal from "../components/LocationsModal";
 
 const getQueryUserBusinesses = async ({ pageParam = 1, userId, searchQuery }) =>
 {
@@ -28,6 +30,15 @@ const getQueryUserBusinesses = async ({ pageParam = 1, userId, searchQuery }) =>
 const BusinessManageScreen = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
+
+  const selectBusiness = (business) =>
+  {
+    //set business id to state and open modal
+    setSelectedBusiness(business);
+    setModalVisible(true);
+  }
 
   const user = useUserStore((state) => state.user);
   // console.log("User: ", user);
@@ -111,7 +122,7 @@ const BusinessManageScreen = () => {
             }}
             renderItem={({item}) => (
               <View>
-                <TouchableOpacity className="flex-row items-center ml-5 mt-5" onPress={() => router.push(`/business/profile/${item._id}`)}>
+                <TouchableOpacity className="flex-row items-center ml-5 mt-5" onPress={() => selectBusiness(item)}>
                   <Image source={item.mediaUrls.length > 0 ? {uri: item.mediaUrls[0]} : images.BusinessSearchImg} style={{ width: 60, height: 60, borderRadius: 5 }} />
     
                   <View className="px-3">
@@ -130,8 +141,11 @@ const BusinessManageScreen = () => {
             )}
             ItemSeparatorComponent={() => (<View className="bg-gray-600 h-0.5 w-[90%] mx-auto mt-4" />)}
           />
+
+          <BusinessManageModal business={selectedBusiness} visible={modalVisible} setVisible={setModalVisible} />
         </SafeAreaView>
   );
 };
+
 
 export default BusinessManageScreen;

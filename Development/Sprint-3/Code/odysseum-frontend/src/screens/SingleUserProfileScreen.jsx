@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import useUserStore from '../context/userStore'
 import { router } from 'expo-router'
 import axiosInstance from '../utils/axios'
+import ReportModal from '../components/ReportModal'
 import Foundation from '@expo/vector-icons/Foundation';
 import LottieView from 'lottie-react-native'
 import { ChevronLeftIcon, ExclamationCircleIcon, UserPlusIcon } from 'react-native-heroicons/solid'
@@ -53,8 +54,6 @@ const SingleUserProfileScreen = ({ userId }) => {
     const [following, setFollowing] = useState(false); //to update follow button
 
     const [showReportModal, setShowReportModal] = useState(false);
-    const [reportReason, setReportReason] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { data: userData, isFetching: isFetchingUser, error: userError, refetch: refetchUser } = useQuery({
         queryKey: ['user', userId],
@@ -111,47 +110,6 @@ const SingleUserProfileScreen = ({ userId }) => {
         }
     }, [userError])
 
-    const handleReportSubmit = async () => {
-        if (!reportReason.trim()) {
-            Toast.show({
-                type: 'error',
-                position: 'bottom',
-                text1: 'Please provide a reason for reporting',
-                visibilityTime: 3000,
-            });
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            const response = await axiosInstance.post('/user/report', {
-                reportedUserId: userId,
-                reason: reportReason
-            });
-
-            if (response.data.success) {
-                Toast.show({
-                    type: 'success',
-                    position: 'bottom',
-                    text1: 'Report submitted successfully',
-                    visibilityTime: 3000,
-                });
-                setShowReportModal(false);
-                setReportReason('');
-            }
-        } catch (error) {
-            console.log('Error submitting report:', error.response?.data || error);
-            Toast.show({
-                type: 'error',
-                position: 'bottom',
-                text1: 'Failed to submit report',
-                text2: error.response?.data?.message || error.message,
-                visibilityTime: 3000,
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
 
     //will follow or unfollow the user
     const followUser = async () => {
@@ -173,8 +131,8 @@ const SingleUserProfileScreen = ({ userId }) => {
                 setUser({ ...user, following: [...user.following, userId] });
             }
 
-            console.log(user)
-            console.log(response.data.message);
+            // console.log(user)
+            // console.log(response.data.message);
         }
         catch (err) {
             console.log("Error following user:", err.response.data.message);
@@ -346,49 +304,7 @@ const SingleUserProfileScreen = ({ userId }) => {
             />
 
             {/* Add Report Modal */}
-            <Modal visible={showReportModal} animationType='slide' transparent={true}>
-                <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-                    <View className="bg-slate-800 p-6 rounded-lg w-80">
-                        <Text className="text-xl font-semibold mb-4 text-white">Report User</Text>
-
-                        <View className="mb-4">
-                            <Text className="text-base font-medium mb-2 text-white">
-                                Reason for reporting
-                            </Text>
-                            <TextInput
-                                value={reportReason}
-                                onChangeText={setReportReason}
-                                placeholder="Please provide details about why you're reporting this user"
-                                placeholderTextColor="gray"
-                                multiline={true}
-                                numberOfLines={4}
-                                className="border-2 border-gray-600 p-3 rounded-lg bg-slate-700 text-white"
-                                style={{ textAlignVertical: 'top' }}
-                            />
-                        </View>
-
-                        <TouchableOpacity
-                            onPress={handleReportSubmit}
-                            disabled={isSubmitting}
-                            className="bg-red-500 p-3 rounded-lg items-center"
-                        >
-                            <Text className="text-white font-semibold">
-                                {isSubmitting ? "Submitting..." : "Submit Report"}
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                setShowReportModal(false);
-                                setReportReason('');
-                            }}
-                            className="mt-4 items-center"
-                        >
-                            <Text className="text-gray-400">Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
+            <ReportModal entityId={userId} reportType="User" visible={showReportModal} setVisible={setShowReportModal}/>
         </SafeAreaView>
     );
 }

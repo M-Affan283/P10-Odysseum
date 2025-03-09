@@ -2,7 +2,7 @@
 // by this we mean there will be a different screeens. 
 // like one will be for name and category, then user presses next button and then it goes to the next screen where user enters the location and then the next screen where user enters the contact info
 
-import { View, Text, FlatList, Platform, TouchableOpacity, Dimensions, TextInput, Image, ScrollView } from 'react-native';
+import { View, Text, FlatList, Platform, TouchableOpacity, Dimensions, TextInput, Image, ScrollView, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
@@ -12,8 +12,11 @@ import Toast from 'react-native-toast-message';
 import { Dropdown } from 'react-native-element-dropdown';
 import LocationsModal from '../components/LocationsModal';
 import LottieView from "lottie-react-native";
-import { MapIcon, ArrowLeftIcon, ArrowRightIcon, XMarkIcon, TrashIcon } from 'react-native-heroicons/solid';
+import { MapIcon, ArrowLeftIcon, ArrowRightIcon, XMarkIcon, TrashIcon, ClockIcon, PlusIcon, MapPinIcon, PlusCircleIcon } from 'react-native-heroicons/solid';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import images from '../../assets/images/images';
+import * as Location from 'expo-location';
 
 const { width } = Dimensions.get('window');
 
@@ -46,6 +49,16 @@ const BusinessCreateScreen = () => {
 
     const FormData = global.FormData;
     const user = useUserStore(state => state.user);
+    const [focusedInput, setFocusedInput] = useState(null);
+    const [visible, setVisible] = useState(false);
+    const [region, setRegion] = useState(null);
+    const [userLocation, setUserLocation] = useState(null);
+    const [locationLoading, setLocationLoading] = useState(true);
+    const [selectedDay, setSelectedDay] = useState(null);
+    const [isStartTimePickerVisible, setStartTimePickerVisible] = useState(false);
+    const [isEndTimePickerVisible, setEndTimePickerVisible] = useState(false);
+    const [tempTimeRange, setTempTimeRange] = useState({ start: null, end: null });
+    const mapRef = React.useRef(null);
     const [form, setForm] = useState({
         // ownerId: user._id,
         name: '',
@@ -72,7 +85,11 @@ const BusinessCreateScreen = () => {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
 
-    
+    // debug function to print entire form object entirely along with all objects
+    const printForm = () =>
+    {
+        console.log(JSON.stringify(form, null, 2));
+    }
 
     const createBusiness = async () =>
     {
@@ -144,524 +161,71 @@ const BusinessCreateScreen = () => {
 
     };
 
-    // Screen to begin business creation
-    const startScreen = () => {
-        return (
-            //move to screen center
-            <View className="flex-1 items-center justify-center">
-                <Image source={images.CreateBusinessImg} style={{ width: '95%', height: 250 }} className="rounded-full" resizeMode='cover' />
-
-                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Create Business</Text>
-
-                <Text className="text-gray-400 text-lg p-5 text-center">Welcome to the business creation hub. Let's get started by adding some basic information about your business.</Text>
-
-                <View className="flex-row gap-x-10 py-5">
-                    <TouchableOpacity onPress={ () => router.back()} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                        <ArrowLeftIcon size={40} color="black" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                        <ArrowRightIcon size={40} color="black" />
-                    </TouchableOpacity>
-                </View>
-            
-            </View>
-        );
-    };
+    
 
     // Screen to add business name, location, category, description
-    const [focusedInput, setFocusedInput] = useState(null);
-    const [visible, setVisible] = useState(false);
+    
 
-    const businessInfoScreen = () => {
+    useEffect(() => {
 
-        const categories = ["","Restaurant", "Hotel", "Shopping", "Fitness", "Health", "Beauty", "Education", "Entertainment", "Services", "Other"]
-            
-        const validateScreen = () => {
-            if (form.name === '' || form.category === '' || form.address === '' || form.description === '') 
+        const setupMap = async () =>
+        {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') 
+            {
+                setLocationError('Permission to access location was denied');
+                return;
+            }
+        
+            try 
+            {
+                let location = await Location.getCurrentPositionAsync({
+                    accuracy: Location.Accuracy.Balanced,
+                });
+                
+                const newRegion = {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                };
+                
+                setRegion(newRegion);
+                setUserLocation(newRegion);
+                
+                // If form doesn't have coordinates yet, set initial coordinates
+                if (!form.latitude && !form.longitude)
+                {
+                    setForm({
+                        ...form,
+                        latitude: location.coords.latitude.toString(),
+                        longitude: location.coords.longitude.toString(),
+                    });
+                }
+
+                setLocationLoading(false);
+            } 
+            catch (error) 
             {
                 Toast.show({
                     type: 'error',
                     position: 'bottom',
                     text1: 'Error',
-                    text2: 'Please fill in all required fields',
+                    text2: 'Failed to get location',
                     visibilityTime: 2000,
                 });
-            } 
-            else onNextPress();
+            }
         }
 
-        return (
-            <View className="flex-1">
-                <TouchableOpacity onPress={() => router.replace('/settings')} className="p-3">
-                    <XMarkIcon size={30} color="white" />
-                </TouchableOpacity>
-                
-                
-                <ScrollView className="p-2 mx-auto">
-                    <Image source={images.Business2Img} style={{ width: 400, height: 250 }} resizeMode='contain' />
-                    <Text className="text-gray-300 text-3xl p-5 font-dsbold text-center">Business Information</Text>
-
-                    <View className="p-2">
-                        <TextInput
-                            value={form.name}
-                            onChangeText={(text) => setForm({ ...form, name: text })}
-                            placeholder="Business Name"
-                            placeholderTextColor="gray"
-                            maxLength={30}
-                            onFocus={() => setFocusedInput('name')}
-                            onBlur={() => setFocusedInput(null)}
-                            className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mb-5 ${focusedInput === 'name' ? 'border-purple-600' : 'border-gray-500'}`}
-                        />
-
-                        <Dropdown
-                            data={categories}
-                            value={form.category}
-                            selectedTextStyle={{ color: 'white' }}
-                            placeholder= {form.category === '' ? 'Select a category' : form.category}
-                            placeholderStyle={{ color: 'gray', fontSize: 18 }}
-                            onChange={(item) => setForm({ ...form, category: item })}
-                            maxHeight={250}
-                            onFocus={() => setFocusedInput('category')}
-                            onBlur={() => setFocusedInput(null)}
-                            style={{ width: '90%', height: 50, borderBottomWidth: 2, borderRadius: 12, padding: 12, borderColor: focusedInput === 'category' ? '#9333ea' : '#6b7280' }}
-                            containerStyle={{ backgroundColor: '#070f1b', borderRadius: 8 }}
-                            renderItem={(item) => (
-                                <View className="p-3">
-                                    <Text className="text-lg text-white">{item}</Text>
-                                </View>
-                            )}
-                        />
-
-                        <TextInput
-                            value={form.address}
-                            onChangeText={(text) => setForm({ ...form, address: text })}
-                            placeholder="Address"
-                            placeholderTextColor="gray"
-                            onFocus={() => setFocusedInput('address')}
-                            onBlur={() => setFocusedInput(null)}
-                            className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mt-5 ${focusedInput === 'address' ? 'border-purple-600' : 'border-gray-500'}`}
-                        />
-
-                        <TextInput
-                            value={form.description}
-                            onChangeText={(text) => setForm({ ...form, description: text })}
-                            placeholder="Description"
-                            placeholderTextColor="gray"
-                            maxLength={250}
-                            multiline={true}
-                            onFocus={() => setFocusedInput('description')}
-                            onBlur={() => setFocusedInput(null)}
-                            className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mt-5 ${focusedInput === 'description' ? 'border-purple-600' : 'border-gray-500'}`}
-                        />
-
-                        {/* <TouchableOpacity className="flex-row mt-7 border-b-2 rounded-xl border-gray-500 w-[90%] " onPress={() => setVisible(true)}>
-                            <MapIcon size={40} color="#fff" />
-                            <Text className="text-gray-500 ml-2 text-lg p-1">Add location</Text>
-                        </TouchableOpacity> */}
-
-                        {
-                            form.location === null ? (
-                                <TouchableOpacity className="flex-row mt-7 border-b-2 rounded-xl border-gray-500 w-[90%] " onPress={() => setVisible(true)}>
-                                <MapIcon size={40} color="gray" />
-                                <Text className="text-gray-500 ml-2 text-lg p-1">Add location</Text>
-                                </TouchableOpacity>
-                            )
-                            :
-                            (
-                                <View className="flex-row mt-2 p-3">
-                                <MapIcon size={40} color="gray" />
-                                <Text className="text-white ml-2 text-lg p-1">{form.location?.name}</Text>
-
-                                <TouchableOpacity onPress={() => setForm({ ...form, location: null })} className="my-auto ml-10">
-                                    <TrashIcon size={25} color="red" />
-                                </TouchableOpacity>
-                                </View>
-                            )
-                        }
-
-                        <View className="flex-row mt-5 w-[90%] ">
-                            <TextInput
-                                value={form.longitude} 
-                                onChangeText={(text) => setForm({ ...form, longitude: text })}
-                                placeholder="Longitude"
-                                placeholderTextColor="gray"
-                                onFocus={() => setFocusedInput('longitude')}
-                                onBlur={() => setFocusedInput(null)}
-                                className={`text-white text-lg w-[45%] border-b-2 p-3 rounded-xl ${focusedInput === 'longitude' ? 'border-purple-600' : 'border-gray-500'}`}
-                            />
-
-                            <TextInput
-                                value={form.latitude}
-                                onChangeText={(text) => setForm({ ...form, latitude: text })}
-                                placeholder="Latitude"
-                                placeholderTextColor="gray"
-                                onFocus={() => setFocusedInput('latitude')}
-                                onBlur={() => setFocusedInput(null)}
-                                className={`text-white text-lg w-[45%] border-b-2 p-3 rounded-xl ${focusedInput === 'latitude' ? 'border-purple-600' : 'border-gray-500'}`}
-                            />
-                        </View>
-
-                    </View>
-
-                    <View className="flex-row gap-5 py-5 justify-center">
-                        <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                            <ArrowLeftIcon size={40} color="black" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={validateScreen} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                            <ArrowRightIcon size={40} color="black" />
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-
-                <LocationsModal visible={visible} setVisible={setVisible} setForm={setForm} />
-
-            </View>
-        );
-    };
-
-    // Screen to add images
-    const imageScreen = () => {
-        return (
-            <View className="flex-1 items-center mt-4">
-                <Image source={images.CameraImg} style={{ width: 100, height: 100 }} className="rounded-full" resizeMode='cover' />
-
-                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Add some images</Text>
-
-                <Text className="text-gray-400 text-lg p-5 text-center">Add some images to showcase your business. You can add up to 5 images. Feel free to skip this step if you want.</Text>
-
-                
-                {/* Expo image picker here */}
-
-
-
-                <View className="flex-row gap-x-10 py-5">
-                    <TouchableOpacity onPress={ () => router.back()} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                        <ArrowLeftIcon size={40} color="black" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                        <ArrowRightIcon size={40} color="black" />
-                    </TouchableOpacity>
-                </View>
-            
-            </View>
-        );
-    };
-
-    // Screen to add contact info
-    const contactScreen = () => {
-        return (
-            <View className="flex-1 mt-4">
-
-                <ScrollView className="p-2 w-[90%] mx-auto" contentContainerStyle={{ alignItems: 'center' }}>
-
-                    <Image source={images.ContactImg} style={{ width: 200, height: 200 }} className="rounded-full" resizeMode='cover' />
-
-                    <Text className="text-gray-300 text-4xl p-5 font-dsbold text-center">Provide Contact Information</Text>
-
-                    <Text className="text-gray-400 text-lg p-5 text-center">Add your contact information so that customers can reach out to you.</Text>
-                    
-                    <TextInput
-                        value={form.phone}
-                        onChangeText={(text) => setForm({ ...form, phone: text })}
-                        placeholder="Phone Number"
-                        placeholderTextColor="gray"
-                        keyboardType="phone-pad"
-                        onFocus={() => setFocusedInput('phone')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mb-5 ${focusedInput === 'phone' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-
-                    <TextInput
-                        value={form.email}
-                        onChangeText={(text) => setForm({ ...form, email: text })}
-                        placeholder="Email Address"
-                        placeholderTextColor="gray"
-                        keyboardType="email-address"
-                        autoCapitalize='none'
-                        onFocus={() => setFocusedInput('email')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mb-5 ${focusedInput === 'email' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-
-                    <TextInput
-                        value={form.website}
-                        onChangeText={(text) => setForm({ ...form, website: text })}
-                        placeholder="Website"
-                        placeholderTextColor="gray"
-                        autoCapitalize='none'
-                        onFocus={() => setFocusedInput('website')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mb-5 ${focusedInput === 'website' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-
-                    <View className="flex-row gap-x-10">
-                        <TouchableOpacity onPress={ () => router.back()} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                            <ArrowLeftIcon size={40} color="black" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                            <ArrowRightIcon size={40} color="black" />
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-
-            </View>
-        );
-    };
-
-    // Screen to add operating hours
-    const operatingHoursScreen = () => {
-
-        return (
-            <View className="flex-1 items-center justify-center">
-                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Operating Hours</Text>
-
-                <Text className="text-gray-400 text-lg p-5 text-center">Add your operating hours so that customers know when you are open. Leave fields empty if you are closed on that day.</Text>
-
-                <ScrollView className="p-2 w-[90%] mx-auto" contentContainerStyle={{ alignItems: 'center' }}>
-
-                    <TextInput
-                        value={form.operatingHours.monday}
-                        onChangeText={(text) => setForm({ ...form, operatingHours: { ...form.operatingHours, monday: text } })}
-                        placeholder="Monday"
-                        placeholderTextColor="gray"
-                        onFocus={() => setFocusedInput('monday')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[50%] border-b-2 p-3 rounded-xl ${focusedInput === 'monday' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-                    <TextInput
-                        value={form.operatingHours.tuesday}
-                        onChangeText={(text) => setForm({ ...form, operatingHours: { ...form.operatingHours, tuesday: text } })}
-                        placeholder="Tuesday"
-                        placeholderTextColor="gray"
-                        onFocus={() => setFocusedInput('tuesday')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[50%] border-b-2 p-3 rounded-xl ${focusedInput === 'tuesday' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-                    <TextInput
-                        value={form.operatingHours.wednesday}
-                        onChangeText={(text) => setForm({ ...form, operatingHours: { ...form.operatingHours, wednesday: text } })}
-                        placeholder="Wednesday"
-                        placeholderTextColor="gray"
-                        onFocus={() => setFocusedInput('wednesday')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[50%] border-b-2 p-3 rounded-xl ${focusedInput === 'wednesday' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-                    <TextInput
-                        value={form.operatingHours.thursday}
-                        onChangeText={(text) => setForm({ ...form, operatingHours: { ...form.operatingHours, thursday: text } })}
-                        placeholder="Thursday"
-                        placeholderTextColor="gray"
-                        onFocus={() => setFocusedInput('thursday')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[50%] border-b-2 p-3 rounded-xl ${focusedInput === 'thursday' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-                    <TextInput
-                        value={form.operatingHours.friday}
-                        onChangeText={(text) => setForm({ ...form, operatingHours: { ...form.operatingHours, friday: text } })}
-                        placeholder="Friday"
-                        placeholderTextColor="gray"
-                        onFocus={() => setFocusedInput('friday')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[50%] border-b-2 p-3 rounded-xl ${focusedInput === 'friday' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-                    <TextInput
-                        value={form.operatingHours.saturday}
-                        onChangeText={(text) => setForm({ ...form, operatingHours: { ...form.operatingHours, saturday: text } })}
-                        placeholder="Saturday"
-                        placeholderTextColor="gray"
-                        onFocus={() => setFocusedInput('saturday')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[50%] border-b-2 p-3 rounded-xl ${focusedInput === 'saturday' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-                    <TextInput
-                        value={form.operatingHours.sunday}
-                        onChangeText={(text) => setForm({ ...form, operatingHours: { ...form.operatingHours, sunday: text } })}
-                        placeholder="Sunday"
-                        placeholderTextColor="gray"
-                        onFocus={() => setFocusedInput('sunday')}
-                        onBlur={() => setFocusedInput(null)}
-                        className={`text-white text-lg w-[50%] border-b-2 p-3 rounded-xl ${focusedInput === 'sunday' ? 'border-purple-600' : 'border-gray-500'}`}
-                    />
-
-
-                </ScrollView>
-
-                <View className="flex-row gap-x-10 mb-10">
-                    <TouchableOpacity onPress={ () => router.back()} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                        <ArrowLeftIcon size={40} color="black" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                        <ArrowRightIcon size={40} color="black" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-        );
-    };
-
-    // Screen to review and submit
-    const reviewScreen = () => {
-        return (
-            <View className="flex-1 items-center justify-center">
-
-                <ScrollView className="p-2 w-[90%] mx-auto" contentContainerStyle={{ alignItems: 'center' }}>
-                    <Image source={images.ReviewImg} style={{ width: '95%', height: 250 }} className="rounded-full" resizeMode='cover' />
-
-                    <Text className="text-gray-300 text-4xl p-5 font-dsbold">Review and Submit</Text>
-
-                    <Text className="text-gray-400 text-lg p-5 text-center">Please review the information you have provided and submit.</Text>
-                
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Name:</Text>
-                        <Text className="text-white text-lg">{form.name}</Text>
-                    </View>
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Category:</Text>
-                        <Text className="text-white text-lg">{form.category}</Text>
-                    </View>
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Address:</Text>
-                        <Text className="text-white text-lg">{form.address}</Text>
-                    </View>
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Description:</Text>
-                        <Text className="text-white text-lg">{form.description}</Text>
-                    </View>
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Phone:</Text>
-                        <Text className="text-white text-lg">{form.phone}</Text>
-                    </View>
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Email:</Text>
-                        <Text className="text-white text-lg">{form.email}</Text>
-                    </View>
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Website:</Text>
-                        <Text className="text-white text-lg">{form.website}</Text>
-                    </View>
-                    <View className="gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Operating Hours:</Text>
-                        {
-                            Object.keys(form.operatingHours).map((key) => (
-                                <Text key={key} className="text-gray-400 text-lg">{`${key.charAt(0).toUpperCase() + key.slice(1)}: ${form.operatingHours[key]}`}</Text>
-                            ))
-                        }
-                    </View>
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Location:</Text>
-                        <Text className="text-white text-lg flex-1">{form.location ? form.location.name : 'N/A'}</Text>
-                    </View>
-                    <View className="flex-row gap-5 w-[90%] mt-5">
-                        <Text className="text-gray-400 text-lg">Coordinates:</Text>
-                        <Text className="text-white text-lg">{`Long: ${form.longitude} \nLat: ${form.latitude}`}</Text>
-                    </View>
-
-                    <View className="flex-row gap-x-10 py-5">
-                        <TouchableOpacity onPress={ () => router.back()} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                            <ArrowLeftIcon size={40} color="black" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={()=> { onNextPress(); createBusiness()}} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                            <ArrowRightIcon size={40} color="black" />
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-
-            
-            </View>
-        );
-    };
-
-    // Screen to show success message
-    const successScreen = () => {
-        return (
-
-            uploading ? (
-                <View className="flex-1 items-center justify-center">
-                    <LottieView
-                        source={require('../../assets/animations/Creating.json')}
-                        autoPlay
-                        loop={true}
-                        style={{ width: 400, height: 400 }}
-                    />
-
-                    <Text className="text-gray-300 text-4xl p-5 font-dsbold">Building your business...</Text>
-
-                    <Text className="text-gray-400 text-lg p-5 text-center">Please wait while we create your business. This may take a few seconds.</Text>
-                
-                </View>
-            )
-            :
-            error ? (
-                <View className="flex-1 items-center justify-center">
-                    <LottieView
-                        source={require('../../assets/animations/Error.json')}
-                        autoPlay
-                        loop={true}
-                        style={{ width: 400, height: 400 }}
-                    />
-
-                    <Text className="text-gray-300 text-4xl p-5 font-dsbold">Error creating business</Text>
-
-                    <Text className="text-gray-400 text-lg p-5 text-center">An error occurred while creating your business. Please try again later.</Text>
-                    <Text className="text-gray-400 text-lg p-5 text-center">Error: {error}</Text>
-
-                    <View className="flex-row gap-x-10 mb-3">
-                        <TouchableOpacity onPress={() => router.replace('/settings')} className="bg-purple-500 p-3 rounded-full mt-10">
-                            <Text className="text-white text-lg">Back to Settings</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                
-                </View> 
-            )
-            :
-            (
-                <View className="flex-1 items-center justify-center">
-                    <LottieView
-                        source={require('../../assets/animations/Success.json')}
-                        autoPlay
-                        loop={false}
-                        style={{ width: 300, height: 300 }}
-                    />
-
-                    <Text className="text-gray-300 text-4xl p-5 font-dsbold">Business Request Submitted!!</Text>
-
-                    <Text className="text-gray-400 text-lg p-5 text-center">Congratulations! Your business has been successfully sent for review. You will be notified once it is approved.</Text>
-
-                    <View className="flex-row gap-x-10 py-5">
-
-                        <TouchableOpacity onPress={() => router.replace('/settings')} className="bg-purple-500 p-3 rounded-full mt-10">
-                            <Text className="text-white text-lg">Complete</Text>
-                        </TouchableOpacity>
-                    </View>
-                
-                </View>
-            )
-            
-
-        );
-    };
-
-    const screens = [
-        startScreen,
-        businessInfoScreen,
-        imageScreen,
-        contactScreen,
-        operatingHoursScreen,
-        reviewScreen,
-        successScreen,
-    ];
+        setupMap();
+    }, []);
 
     const flatListRef = React.useRef();
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // Handle Next button click
-    const onNextPress = () => {
+    const onNextPress = () => 
+    {
         if (currentIndex < screens.length - 1) {
             setCurrentIndex(currentIndex + 1);
             // Move to next screen in FlatList
@@ -670,13 +234,27 @@ const BusinessCreateScreen = () => {
     };
 
     // Handle Back button click
-    const onBackPress = () => {
+    const onBackPress = () => 
+    {
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1);
             // Move to previous screen in FlatList
             flatListRef.current.scrollToIndex({ index: currentIndex - 1, animated: true });
         }
     };
+    
+
+    const screens = [
+        {screen: startScreen, params: {onNextPress}},
+        {screen: businessInfoScreen, params: {focusedInput, setFocusedInput, form, setForm, userLocation, setUserLocation, locationLoading, setLocationLoading, setRegion, region, mapRef, visible, setVisible, onNextPress, onBackPress}},
+        {screen: contactScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
+        {screen: imageScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
+        {screen: operatingHoursScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress, selectedDay, setSelectedDay, isStartTimePickerVisible, setStartTimePickerVisible, isEndTimePickerVisible, setEndTimePickerVisible, tempTimeRange, setTempTimeRange}},
+        {screen: reviewScreen, params: {form, createBusiness, onNextPress, onBackPress, printForm}},
+        {screen: successScreen, params: {uploading, error}}
+    ];
+
+    
 
 
   return (
@@ -693,13 +271,740 @@ const BusinessCreateScreen = () => {
             keyExtractor={(item, index) => (index).toString()}
             renderItem={({ item }) => (
                 <View style={{ width: width }}>
-                    {item()}
+                    {item.screen(item.params)}
                 </View>
-            ) }
+            )}
         />
 
     </SafeAreaView>
   )
 }
+
+// Screen to begin business creation
+const startScreen = ({ onNextPress }) => {
+    return (
+        //move to screen center
+        <View className="flex-1 items-center justify-center">
+            <Image source={images.CreateBusinessImg} style={{ width: '95%', height: 250 }} className="rounded-full" resizeMode='cover' />
+
+            <Text className="text-gray-300 text-4xl p-5 font-dsbold">Create Business</Text>
+
+            <Text className="text-gray-400 text-lg p-5 text-center">Welcome to the business creation hub. Let's get started by adding some basic information about your business.</Text>
+
+            <View className="flex-row gap-x-10 py-5">
+                <TouchableOpacity onPress={ () => router.back()} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                    <ArrowLeftIcon size={40} color="black" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                    <ArrowRightIcon size={40} color="black" />
+                </TouchableOpacity>
+            </View>
+        
+        </View>
+    );
+};
+
+const businessInfoScreen = ({focusedInput, setFocusedInput, form, setForm, userLocation, setUserLocation, locationLoading, setLocationLoading, setRegion, region, mapRef, visible, setVisible, onNextPress, onBackPress}) => {
+
+    const categories = ["","Restaurant", "Hotel", "Shopping", "Fitness", "Health", "Beauty", "Education", "Entertainment", "Services", "Other"]
+     
+    const handleMapPress = (event) => 
+    {
+        const { coordinate } = event.nativeEvent;
+        
+        // Update form with new coordinates
+        setForm({
+            ...form,
+            latitude: coordinate.latitude.toString(),
+            longitude: coordinate.longitude.toString(),
+        });
+    };
+      
+      // Center map on current location
+    const centerOnUserLocation = async () => 
+    {
+        try 
+        {   
+            setRegion(userLocation);
+
+            mapRef.current.animateToRegion({
+                latitude: userLocation.latitude,
+                longitude: userLocation.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            });
+        } 
+        catch (error)
+        {
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error',
+                text2: 'Failed to get location',
+                visibilityTime: 2000,
+            })
+        }
+    };
+
+    const validateScreen = () => 
+    {
+        if (form.name === '' || form.category === '' || form.address === '' || form.description === '' || form.location === null || form.longitude === '' || form.latitude === '') 
+        {
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error',
+                text2: 'Please fill in all required fields',
+                visibilityTime: 2000,
+            });
+            return
+        } 
+        
+        onNextPress();
+    }
+
+    return (
+        <View className="flex-1">
+            <TouchableOpacity onPress={() => router.replace('/settings')} className="p-3">
+                <XMarkIcon size={30} color="white" />
+            </TouchableOpacity>
+            
+            
+            <ScrollView className="p-2 mx-auto">
+                <Image source={images.Business2Img} style={{ width: 400, height: 250 }} resizeMode='contain' />
+                <Text className="text-gray-300 text-3xl p-5 font-dsbold text-center">Business Information</Text>
+
+                <View className="p-2">
+                    <TextInput
+                        value={form.name}
+                        onChangeText={(text) => setForm({ ...form, name: text })}
+                        placeholder="Business Name"
+                        placeholderTextColor="gray"
+                        maxLength={30}
+                        onFocus={() => setFocusedInput('name')}
+                        onBlur={() => setFocusedInput(null)}
+                        className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mb-5 ${focusedInput === 'name' ? 'border-purple-600' : 'border-gray-500'}`}
+                    />
+
+                    <Dropdown
+                        data={categories}
+                        value={form.category}
+                        selectedTextStyle={{ color: 'white' }}
+                        placeholder= {form.category === '' ? 'Select a category' : form.category}
+                        placeholderStyle={{ color: 'gray', fontSize: 18 }}
+                        onChange={(item) => setForm({ ...form, category: item })}
+                        maxHeight={250}
+                        onFocus={() => setFocusedInput('category')}
+                        onBlur={() => setFocusedInput(null)}
+                        style={{ width: '90%', height: 50, borderBottomWidth: 2, borderRadius: 12, padding: 12, borderColor: focusedInput === 'category' ? '#9333ea' : '#6b7280' }}
+                        containerStyle={{ backgroundColor: '#070f1b', borderRadius: 8 }}
+                        renderItem={(item) => (
+                            <View className="p-3">
+                                <Text className="text-lg text-white">{item}</Text>
+                            </View>
+                        )}
+                    />
+
+                    <TextInput
+                        value={form.address}
+                        onChangeText={(text) => setForm({ ...form, address: text })}
+                        placeholder="Address"
+                        placeholderTextColor="gray"
+                        onFocus={() => setFocusedInput('address')}
+                        onBlur={() => setFocusedInput(null)}
+                        className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mt-5 ${focusedInput === 'address' ? 'border-purple-600' : 'border-gray-500'}`}
+                    />
+
+                    <TextInput
+                        value={form.description}
+                        onChangeText={(text) => setForm({ ...form, description: text })}
+                        placeholder="Description"
+                        placeholderTextColor="gray"
+                        maxLength={250}
+                        multiline={true}
+                        onFocus={() => setFocusedInput('description')}
+                        onBlur={() => setFocusedInput(null)}
+                        className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mt-5 ${focusedInput === 'description' ? 'border-purple-600' : 'border-gray-500'}`}
+                    />
+
+                    {form.location === null ? (
+                        <TouchableOpacity 
+                            className="flex-row items-center mt-5 p-4 bg-slate-800 rounded-xl border border-slate-700 w-[90%]" 
+                            onPress={() => setVisible(true)}
+                        >
+                            <View className="bg-purple-600 bg-opacity-20 p-3 rounded-full">
+                                <MapPinIcon size={24} color="#a78bfa" />
+                            </View>
+                            <Text className="text-gray-400 ml-3 text-lg font-medium">Add location</Text>
+                            <View className="ml-auto">
+                                <PlusCircleIcon size={24} color="#a78bfa" />
+                            </View>
+                        </TouchableOpacity>
+                    )
+                    :
+                    (
+                        <TouchableOpacity 
+                            className="flex-row items-center justify-between mt-5 p-4 bg-slate-800 rounded-xl border border-slate-700 w-[90%]"
+                            onPress={() => setVisible(true)}
+                        >
+                            <View className="flex-row items-center flex-1">
+                            <View className="bg-purple-600 p-3 rounded-full">
+                                <MapPinIcon size={24} color="white" />
+                            </View>
+                            <View className="ml-3 flex-1">
+                                <Text className="text-gray-400 text-sm">Location</Text>
+                                <Text className="text-white text-lg font-medium">{form.location?.name}</Text>
+                            </View>
+                            </View>
+                            
+                            <TouchableOpacity 
+                            onPress={() => setForm({ ...form, location: null })} 
+                            className="ml-2 p-2 bg-red-500 bg-opacity-20 rounded-full"
+                            >
+                            <TrashIcon size={20} color="#f87171" />
+                            </TouchableOpacity>
+                        </TouchableOpacity>
+                    )}
+
+                    <View className="mt-5 ">
+                    
+                        <Text className="text-gray-300 text-lg">Location on Map</Text>
+
+                        <TouchableOpacity className="flex-row bg-[#ff6b6b] w-[45%] h-10 items-center justify-center rounded-lg px-2 mt-2"onPress={centerOnUserLocation}>
+                            <Text className="text-white font-bold">Center on My Location</Text>
+                        </TouchableOpacity>
+
+                        {
+                            locationLoading ? (
+                                <View className="flex-1 items-center justify-center mt-5">
+                                    <ActivityIndicator size="large" color="#7c3aed" />
+                                    <Text className="text-gray-300 text-lg mt-2">Loading map...</Text>
+                                </View>
+                            )
+                            :
+                            (
+                                <MapView
+                                    ref={mapRef}
+                                    provider={PROVIDER_GOOGLE}
+                                    initialRegion={region}
+                                    region={region}
+                                    style={{width: 350, height:300}}
+                                    className="mt-4"
+                                    onPress={handleMapPress}
+                                >
+                                    {form.latitude && form.longitude && (
+                                        <Marker
+                                            coordinate={{
+                                                latitude: parseFloat(form.latitude),
+                                                longitude: parseFloat(form.longitude)
+                                            }}
+                                            draggable
+                                            onDragEnd={(e) => handleMapPress(e)}
+                                        />
+                                    )}
+                                </MapView>
+                            )
+                        }
+                        
+                        <View className="flex-row space-x-5 px-2 mt-5">
+                            <Text className="text-white text-lg">Lat: {form.latitude ? parseFloat(form.latitude).toFixed(6) : ''}
+                            </Text>
+                            <Text className="text-white text-lg">Long: {form.longitude ? parseFloat(form.longitude).toFixed(6) : ''}</Text>
+                        </View>
+                        
+                        
+                    </View>
+
+                </View>
+
+                <View className="flex-row gap-5 py-5 justify-center">
+                    <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                        <ArrowLeftIcon size={40} color="black" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={validateScreen} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                        <ArrowRightIcon size={40} color="black" />
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+
+            <LocationsModal visible={visible} setVisible={setVisible} setForm={setForm} />
+
+        </View>
+    );
+};
+
+// Screen to add images
+const imageScreen = ({ focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress }) => {
+    return (
+        <View className="flex-1 items-center mt-4">
+            <Image source={images.CameraImg} style={{ width: 100, height: 100 }} className="rounded-full" resizeMode='cover' />
+
+            <Text className="text-gray-300 text-4xl p-5 font-dsbold">Add some images</Text>
+
+            <Text className="text-gray-400 text-lg p-5 text-center">Add some images to showcase your business. You can add up to 5 images. Feel free to skip this step if you want.</Text>
+
+            
+            {/* Expo image picker here */}
+
+
+
+            <View className="flex-row gap-x-10 py-5">
+                <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                    <ArrowLeftIcon size={40} color="black" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                    <ArrowRightIcon size={40} color="black" />
+                </TouchableOpacity>
+            </View>
+        
+        </View>
+    );
+};
+
+// Screen to add contact info
+const contactScreen = ({ focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress }) => {
+    return (
+        <View className="flex-1 mt-4">
+
+            <ScrollView className="p-2 w-[90%] mx-auto" contentContainerStyle={{ alignItems: 'center' }}>
+
+                <Image source={images.ContactImg} style={{ width: 200, height: 200 }} className="rounded-full" resizeMode='cover' />
+
+                <Text className="text-gray-300 text-4xl p-5 font-dsbold text-center">Provide Contact Information</Text>
+
+                <Text className="text-gray-400 text-lg p-5 text-center">Add your contact information so that customers can reach out to you.</Text>
+                
+                <TextInput
+                    value={form.phone}
+                    onChangeText={(text) => setForm({ ...form, phone: text })}
+                    placeholder="Phone Number"
+                    placeholderTextColor="gray"
+                    keyboardType="phone-pad"
+                    onFocus={() => setFocusedInput('phone')}
+                    onBlur={() => setFocusedInput(null)}
+                    className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mb-5 ${focusedInput === 'phone' ? 'border-purple-600' : 'border-gray-500'}`}
+                />
+
+                <TextInput
+                    value={form.email}
+                    onChangeText={(text) => setForm({ ...form, email: text })}
+                    placeholder="Email Address"
+                    placeholderTextColor="gray"
+                    keyboardType="email-address"
+                    autoCapitalize='none'
+                    onFocus={() => setFocusedInput('email')}
+                    onBlur={() => setFocusedInput(null)}
+                    className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mb-5 ${focusedInput === 'email' ? 'border-purple-600' : 'border-gray-500'}`}
+                />
+
+                <TextInput
+                    value={form.website}
+                    onChangeText={(text) => setForm({ ...form, website: text })}
+                    placeholder="Website"
+                    placeholderTextColor="gray"
+                    autoCapitalize='none'
+                    onFocus={() => setFocusedInput('website')}
+                    onBlur={() => setFocusedInput(null)}
+                    className={`text-white text-lg w-[90%] border-b-2 p-3 rounded-xl mb-5 ${focusedInput === 'website' ? 'border-purple-600' : 'border-gray-500'}`}
+                />
+
+                <View className="flex-row gap-x-10">
+                    <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                        <ArrowLeftIcon size={40} color="black" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                        <ArrowRightIcon size={40} color="black" />
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+
+        </View>
+    );
+};
+
+
+// Screen to add operating hours
+const operatingHoursScreen = ({ focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress, selectedDay, setSelectedDay, isStartTimePickerVisible, setStartTimePickerVisible, isEndTimePickerVisible, setEndTimePickerVisible, tempTimeRange, setTempTimeRange }) => {
+
+    const days = [
+        { label: 'Monday', value: 'monday' },
+        { label: 'Tuesday', value: 'tuesday' },
+        { label: 'Wednesday', value: 'wednesday' },
+        { label: 'Thursday', value: 'thursday' },
+        { label: 'Friday', value: 'friday' },
+        { label: 'Saturday', value: 'saturday' },
+        { label: 'Sunday', value: 'sunday' }
+    ];
+
+    const formatTime = (date) => 
+    {
+        if (!date) return '';
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const handleStartTimeConfirm = (time) => 
+    {
+        setTempTimeRange({ ...tempTimeRange, start: time });
+        setStartTimePickerVisible(false);
+    };
+
+    const handleEndTimeConfirm = (time) =>
+    {
+        setTempTimeRange({ ...tempTimeRange, end: time });
+        setEndTimePickerVisible(false);
+    };
+
+    const addTimeRange = () => 
+    {
+        if (!selectedDay) {
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error',
+                text2: 'Please select a day',
+                visibilityTime: 2000,
+            });
+            return;
+        }
+
+        if (!tempTimeRange.start || !tempTimeRange.end) 
+        {
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error',
+                text2: 'Please select both start and end times',
+                visibilityTime: 2000,
+            });
+            return;
+        }
+
+        if (tempTimeRange.start >= tempTimeRange.end) 
+        {
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error',
+                text2: 'Start time must be before end time',
+                visibilityTime: 2000,
+            });
+            return;
+        }
+
+        const startTime = formatTime(tempTimeRange.start);
+        const endTime = formatTime(tempTimeRange.end);
+        const timeRangeText = `${startTime} - ${endTime}`;
+
+        setForm({
+            ...form,
+            operatingHours: {
+                ...form.operatingHours,
+                [selectedDay]: timeRangeText
+            }
+        });
+
+        // Reset temporary values
+        setTempTimeRange({ start: null, end: null });
+        // Alert.alert("Success", `Hours for ${selectedDay} set to ${timeRangeText}`);
+    };
+
+    const clearHours = (day) => 
+    {
+        setForm({
+            ...form,
+            operatingHours: {
+                ...form.operatingHours,
+                [day]: ''
+            }
+        });
+    };
+
+    return (
+        <View className="flex-1 items-center justify-center bg-gray-900">
+            <Text className="text-gray-300 text-4xl p-5 font-bold">Operating Hours</Text>
+
+            <Text className="text-gray-400 text-lg p-5 text-center mb-2">
+                Add your operating hours so that customers know when you are open.
+                Leave fields empty if you are closed on that day.
+            </Text>
+
+            {/* Time Range Selector */}
+            <View className="w-[90%] bg-gray-800 p-4 rounded-xl mb-6">
+                <Text className="text-gray-300 text-lg mb-3">Set Hours for a Day</Text>
+                
+                <View className="mb-4">
+                    <Dropdown
+                        data={days}
+                        labelField="label"
+                        valueField="value"
+                        placeholder="Select a day"
+                        value={selectedDay}
+                        onChange={item => setSelectedDay(item.value)}
+                        className="bg-gray-700 p-3 rounded-lg text-white"
+                        placeholderStyle={{ color: 'gray' }}
+                        selectedTextStyle={{ color: 'white' }}
+                        containerStyle={{ borderRadius: 8 }}
+                        itemTextStyle={{ color: 'white' }}
+                        activeColor="#7c3aed"
+                        itemContainerStyle={{ backgroundColor: '#374151' }}
+                    />
+                </View>
+
+                <View className="flex-row justify-between mb-4">
+                    <TouchableOpacity 
+                        onPress={() => setStartTimePickerVisible(true)} 
+                        className="bg-gray-700 p-3 rounded-lg flex-row items-center w-[48%]"
+                    >
+                        <ClockIcon size={18} color="#9ca3af" />
+                        <Text className="text-gray-300 ml-2">
+                            {tempTimeRange.start ? formatTime(tempTimeRange.start) : "Start Time"}
+                        </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        onPress={() => setEndTimePickerVisible(true)} 
+                        className="bg-gray-700 p-3 rounded-lg flex-row items-center w-[48%]"
+                    >
+                        <ClockIcon size={18} color="#9ca3af" />
+                        <Text className="text-gray-300 ml-2">
+                            {tempTimeRange.end ? formatTime(tempTimeRange.end) : "End Time"}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity 
+                    onPress={addTimeRange} 
+                    className="bg-purple-600 p-3 rounded-lg flex-row justify-center items-center"
+                >
+                    <Text className="text-white">Set Hours</Text>
+                </TouchableOpacity>
+
+                <DateTimePickerModal
+                    isVisible={isStartTimePickerVisible}
+                    mode="time"
+                    onConfirm={handleStartTimeConfirm}
+                    onCancel={() => setStartTimePickerVisible(false)}
+                />
+
+                <DateTimePickerModal
+                    isVisible={isEndTimePickerVisible}
+                    mode="time"
+                    onConfirm={handleEndTimeConfirm}
+                    onCancel={() => setEndTimePickerVisible(false)}
+                />
+            </View>
+
+            {/* Schedule display */}
+            <ScrollView className="p-2 w-[90%] bg-gray-800 rounded-xl mb-6" contentContainerStyle={{ paddingVertical: 10 }}>
+                <Text className="text-gray-300 text-xl mb-4 text-center">Weekly Schedule</Text>
+                
+                {days.map((day) => (
+                    <View key={day.value} className="mb-4 border-b border-gray-700 pb-3">
+                        <View className="flex-row justify-between items-center mb-2">
+                            <Text className="text-gray-300 text-lg font-medium">{day.label}</Text>
+                            <View className="flex-row items-center">
+                                <Text className="text-gray-400 mr-2">
+                                    {form.operatingHours[day.value] ? form.operatingHours[day.value] : "Closed"}
+                                </Text>
+                                {form.operatingHours[day.value] && (
+                                    <TouchableOpacity onPress={() => clearHours(day.value)}>
+                                        <Text className="text-red-500">Clear</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        </View>
+                    </View>
+                ))}
+            </ScrollView>
+
+            <View className="flex-row gap-x-10 mb-10">
+                <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-4 items-center justify-center">
+                    <ArrowLeftIcon size={30} color="black" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-4 items-center justify-center">
+                    <ArrowRightIcon size={30} color="black" />
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+};
+
+// Screen to review and submit
+const reviewScreen = ({ form, createBusiness, onNextPress, onBackPress, printForm }) => {
+    return (
+        <View className="flex-1 items-center justify-center">
+
+            <ScrollView className="p-2 w-[90%] mx-auto" contentContainerStyle={{ alignItems: 'center' }}>
+                <Image source={images.ReviewImg} style={{ width: '95%', height: 250 }} className="rounded-full" resizeMode='cover' />
+
+                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Review and Submit</Text>
+
+                <Text className="text-gray-400 text-lg p-5 text-center">Please review the information you have provided and submit.</Text>
+
+                {/* Genral info */}
+                <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+                    <Text className="text-white text-xl font-dsbold mb-3">General Information</Text>
+                    <View className="space-y-4">
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Name:</Text>
+                            <Text className="text-white">{form.name}</Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Category:</Text>
+                            <Text className="text-white">{form.category}</Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Address:</Text>
+                            <Text className="text-white">{form.address}</Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Description:</Text>
+                            <Text className="text-white">{form.description}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Contact Info */}
+                <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+                    <Text className="text-white text-xl font-dsbold mb-3">Contact Information</Text>
+                    <View className="space-y-4">
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Phone:</Text>
+                            <Text className="text-white">{form.phone}</Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Email:</Text>
+                            <Text className="text-white">{form.email}</Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Website:</Text>
+                            <Text className="text-white">{form.website}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Operating hours */}
+                <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+                    <Text className="text-white text-xl font-dsbold mb-3">Operating Hours</Text>
+                    <View className="space-y-2">
+                        {Object.keys(form.operatingHours).map((key) => (
+                            <View key={key} className="flex-row justify-between">
+                                <Text className="text-gray-400">{`${key.charAt(0).toUpperCase() + key.slice(1)}:`}</Text>
+                                <Text className="text-white">{form.operatingHours[key]}</Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Location Info */}
+                <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+                    <Text className="text-white text-xl font-dsbold mb-3">Location Information</Text>
+                    <View className="space-y-4">
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Location:</Text>
+                            <Text className="text-white flex-1">{form.location ? form.location.name : 'N/A'}</Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-400">Coordinates:</Text>
+                            <Text className="text-white">{`Long: ${form.longitude} \nLat: ${form.latitude}`}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View className="flex-row gap-x-10 py-5">
+                    <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                        <ArrowLeftIcon size={40} color="black" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={()=> { onNextPress(); createBusiness()}} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                        <ArrowRightIcon size={40} color="black" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={printForm} className="bg-purple-500  h-14 p-2 rounded-full mt-10">
+                        <Text className="text-white text-lg font-dsbold">Debug</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+
+        
+        </View>
+    );
+};
+
+// Screen to show success message
+const successScreen = ({ uploading, error }) => {
+    return (
+
+        uploading ? (
+            <View className="flex-1 items-center justify-center">
+                <LottieView
+                    source={require('../../assets/animations/Creating.json')}
+                    autoPlay
+                    loop={true}
+                    style={{ width: 400, height: 400 }}
+                />
+
+                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Building your business...</Text>
+
+                <Text className="text-gray-400 text-lg p-5 text-center">Please wait while we create your business. This may take a few seconds.</Text>
+            
+            </View>
+        )
+        :
+        error ? (
+            <View className="flex-1 items-center justify-center">
+                <LottieView
+                    source={require('../../assets/animations/Error.json')}
+                    autoPlay
+                    loop={true}
+                    style={{ width: 400, height: 400 }}
+                />
+
+                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Error creating business</Text>
+
+                <Text className="text-gray-400 text-lg p-5 text-center">An error occurred while creating your business. Please try again later.</Text>
+                <Text className="text-gray-400 text-lg p-5 text-center">Error: {error}</Text>
+
+                <View className="flex-row gap-x-10 mb-3">
+                    <TouchableOpacity onPress={() => router.replace('/settings')} className="bg-purple-500 p-3 rounded-full mt-10">
+                        <Text className="text-white text-lg">Back to Settings</Text>
+                    </TouchableOpacity>
+                </View>
+
+            
+            </View> 
+        )
+        :
+        (
+            <View className="flex-1 items-center justify-center">
+                <LottieView
+                    source={require('../../assets/animations/Success.json')}
+                    autoPlay
+                    loop={false}
+                    style={{ width: 300, height: 300 }}
+                />
+
+                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Business Request Submitted!!</Text>
+
+                <Text className="text-gray-400 text-lg p-5 text-center">Congratulations! Your business has been successfully sent for review. You will be notified once it is approved.</Text>
+
+                <View className="flex-row gap-x-10 py-5">
+
+                    <TouchableOpacity onPress={() => router.replace('/settings')} className="bg-purple-500 p-3 rounded-full mt-10">
+                        <Text className="text-white text-lg">Complete</Text>
+                    </TouchableOpacity>
+                </View>
+            
+            </View>
+        )
+        
+
+    );
+};
 
 export default BusinessCreateScreen
