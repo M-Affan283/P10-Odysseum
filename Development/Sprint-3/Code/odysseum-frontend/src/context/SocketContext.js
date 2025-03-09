@@ -35,10 +35,10 @@ export const SocketProvider = ({ children }) => {
     const initializeSocket = async () => {
         try {
             const token = await getAccessToken();
-            
+
             // Use the same base URL as your axios instance
             const socketUrl = axiosInstance.defaults.baseURL.replace('/api', '');
-            
+
             socketRef.current = io(socketUrl, {
                 auth: { token },
                 transports: ['websocket', 'polling'],
@@ -120,6 +120,24 @@ export const SocketProvider = ({ children }) => {
         }
     };
 
+    const markMessagesAsRead = (chatId) => {
+        if (socketRef.current?.connected) {
+            socketRef.current.emit('mark_read', { chatId });
+        }
+    };
+
+    const subscribeToMessagesRead = (callback) => {
+        if (socketRef.current) {
+            socketRef.current.on('messages_read', callback);
+        }
+    };
+
+    const unsubscribeFromMessagesRead = (callback) => {
+        if (socketRef.current) {
+            socketRef.current.off('messages_read', callback);
+        }
+    };
+
     const value = {
         socket: socketRef.current,
         sendMessage,
@@ -127,7 +145,10 @@ export const SocketProvider = ({ children }) => {
         unsubscribeFromMessages,
         emitTyping,
         subscribeToTyping,
-        unsubscribeFromTyping
+        unsubscribeFromTyping,
+        markMessagesAsRead,
+        subscribeToMessagesRead,
+        unsubscribeFromMessagesRead
     };
 
     return (

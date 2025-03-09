@@ -123,7 +123,7 @@ export const setupSocket = (server) => {
                         message: populatedMessage
                     });
                 }
-                
+
                 // Emit to sender
                 console.log('Sending message back to sender:', {
                     messageId: populatedMessage._id,
@@ -162,6 +162,7 @@ export const setupSocket = (server) => {
             }
         });
 
+        // Handle message read status
         // Handle message read status
         socket.on('mark_read', async (data) => {
             try {
