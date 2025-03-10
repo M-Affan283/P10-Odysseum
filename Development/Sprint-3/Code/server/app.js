@@ -54,6 +54,8 @@ app.get('/health', async (req,res)=>
 })
 
 //Applying token verification middleware globally (barring the whitelisted routes)
+app.use('/api/itinerary', itineraryRouter);
+
 app.use(verifyToken);
 
 app.use('/api/user', userRouter);
@@ -62,6 +64,5 @@ app.use("/api/location", locationRouter);
 app.use('/api/comment', commentRouter);
 app.use('/api/review', reviewRouter);
 app.use('/api/business', businessRouter);
-app.use('/api/itinerary', itineraryRouter);
 
 export default app;
