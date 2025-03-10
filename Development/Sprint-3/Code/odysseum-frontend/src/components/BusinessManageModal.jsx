@@ -8,8 +8,11 @@ const BusinessManageModal = ({ business, visible, setVisible }) =>
 { 
     const actionSheetRef = React.useRef();
 
+    console.log("Business: ", business);
+
     const onClose = () => {
         setVisible(false);
+
     };
 
     
@@ -22,16 +25,16 @@ const BusinessManageModal = ({ business, visible, setVisible }) =>
     const options = [
         {
             title: "View Profile",
-            routeUrl: `/business/profile/${business._id}`,
+            routeUrl: `/business/profile/${business?._id}`,
         },
         {
             title: "Manage Services",
-            routeUrl: `/settings/service/manage/${business._id}`,
+            routeUrl: `/settings/service/manage/${business?._id}`,
         },
         {
             title: "Create Service",
             icon: "create-service",
-            routeUrl: `/settings/service/create/${business._id}`, //settnigs/service/create/[createId] to create a new service for the business
+            routeUrl: `/settings/service/create/${business?._id}`, //settnigs/service/create/[createId] to create a new service for the business
         }
         //make one for editing business and deleting business later
     ];
@@ -49,7 +52,7 @@ const BusinessManageModal = ({ business, visible, setVisible }) =>
       >
 
         <View className="flex-row items-center justify-between gap-x-3">
-            <Text className="text-white text-3xl font-dsbold p-4 mt-2">Business Actions: {business.name}</Text>
+            <Text className="text-white text-3xl font-dsbold p-4 mt-2">Business Actions: {business?.name}</Text>
             <TouchableOpacity onPress={onClose} className="p-3">
             <XMarkIcon size={30} color="white" />
             </TouchableOpacity>

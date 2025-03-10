@@ -43,13 +43,13 @@ const BusinessManageScreen = () => {
   const user = useUserStore((state) => state.user);
   // console.log("User: ", user);
   const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
-    queryKey: ["businessManage", user._id],
-    queryFn: ({ pageParam = 1 }) => getQueryUserBusinesses({ pageParam, userId: user._id,searchQuery: searchQuery }),
+    queryKey: ["businessManage", user?._id],
+    queryFn: ({ pageParam = 1 }) => getQueryUserBusinesses({ pageParam, userId: user?._id,searchQuery: searchQuery }),
     getNextPageParam: (lastPage) => {
       const { currentPage, totalPages } = lastPage;
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
-    enabled: !!user._id, //only work if user id is present
+    enabled: !!user?._id, //only work if user id is present
   });
 
   let businesses = data?.pages.flatMap((page)=> page.businesses) || [];
