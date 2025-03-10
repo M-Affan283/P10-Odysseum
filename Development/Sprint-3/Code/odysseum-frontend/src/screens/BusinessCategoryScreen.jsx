@@ -6,10 +6,9 @@ import axiosInstance from "../utils/axios";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ChevronLeftIcon } from "react-native-heroicons/outline";
 import { useInfiniteQuery } from "@tanstack/react-query";
+// import tempBusinesses from "./tempfiles/tempbusinesses";
 import icons from "../../assets/icons/icons";
 import images from "../../assets/images/images";
-
-// import tempBusinesses from "./tempfiles/tempbusinesses";
 
 const getQueryCategoryBusinesses = async ({pageParam = 1, locationId, category, searchParam}) =>
 {
@@ -115,7 +114,7 @@ const BusinessCategoryScreen = ({locationId, locationName, category}) => {
             return (
               <View className="flex-1 mt-5 justify-center items-center">
                 <ActivityIndicator size="large" color="black" />
-                <Text className="mt-3 text-gray-500">Loading users...</Text>
+                <Text className="mt-3 text-gray-500">Loading businesses...</Text>
               </View>
             );
           }
@@ -123,7 +122,7 @@ const BusinessCategoryScreen = ({locationId, locationName, category}) => {
           {
             return (
               <View className="flex-1 mt-5 justify-center items-center">
-                <Text className="text-lg text-red-500">Failed to fetch users.</Text>
+                <Text className="text-lg text-red-500">Failed to fetch businesses.</Text>
                 <TouchableOpacity
                   className="mt-3 bg-blue-500 py-2 px-4 rounded-full"
                   onPress={refetch}
@@ -166,7 +165,7 @@ const BusinessCard = ({business}) =>
     // bg-[#221242]
     <View className="justify-center items-center">
     <TouchableOpacity className="flex-row p-1 bg-[#221242] rounded-xl w-[95%]" activeOpacity={0.7} onPress={() => router.push(`/business/profile/${business?._id}`)}>
-      <Image source={business?.imageUrls?.length > 0 ? { uri: business?.imageUrls[0] } : images.BusinessSearchImg} style={{width:150, height:150}} className="rounded-xl" resizeMode="cover"/>
+      <Image source={business?.mediaUrls?.length > 0 ? { uri: business?.mediaUrls[0] } : images.BusinessSearchImg} style={{width:150, height:150}} className="rounded-xl" resizeMode="cover"/>
     
       <View className="mt-3 ml-1 flex-1">
 

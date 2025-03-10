@@ -1,5 +1,5 @@
-import { View, Text, Image, ScrollView, Modal, TextInput } from 'react-native'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { View, Text, Image, ScrollView } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axiosInstance from '../utils/axios';
 import Toast from 'react-native-toast-message';
@@ -7,10 +7,9 @@ import useUserStore from '../context/userStore';
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
 import { HeartIcon, ChatBubbleLeftEllipsisIcon, ChevronLeftIcon, FlagIcon } from "react-native-heroicons/outline";
-import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 import LottieView from 'lottie-react-native';
+import ReportModal from '../components/ReportModal';
 import CommentModal from '../components/CommentsModal';
-import { TouchableOpacity as RNTouchableOpacity } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
 import { calculateDuration } from '../utils/dateTimCalc';
@@ -36,12 +35,11 @@ const tempPost = {
 const PostDetailsScreen = ({ postId }) => {
 
     const [post, setPost] = useState(null); //post details will be fetched from backend
+    const [liked, setLiked] = useState(false);
     const [loading, setLoading] = useState(false);
     const [commentModalVisibile, setCommentModalVisible] = useState(false);
 
     const [showReportModal, setShowReportModal] = useState(false);
-    const [reportReason, setReportReason] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const user = useUserStore((state) => state.user);
 
@@ -66,6 +64,7 @@ const PostDetailsScreen = ({ postId }) => {
                 .then((res) => {
                     // console.log(res.data.post);
                     setPost(res.data.post);
+                    if(res.data.post.liked) setLiked(true);
                     setLoading(false);
                 })
                 .catch((error) => {
@@ -92,59 +91,24 @@ const PostDetailsScreen = ({ postId }) => {
         }
     }
 
-    
-    const handleReportSubmit = async () => {
-        if (!reportReason.trim()) {
+    const likePost = async () =>
+    {
+        axiosInstance.post('/post/like', {postId: postId, userId: user._id})
+        .then((res) => {
+            console.log(res.data.message);
+            setLiked(!liked);
+        })
+        .catch((error) => {
+            console.log(error);
             Toast.show({
                 type: 'error',
                 position: 'bottom',
-                text1: 'Please provide a reason for reporting',
-                visibilityTime: 3000,
+                text1: 'Error',
+                text2: error.response.data.error
             });
-            return;
-        }
+        });
+    }
 
-        if (reportReason.length > 300) {
-            Toast.show({
-                type: 'error',
-                position: 'bottom',
-                text1: 'Report reason too long',
-                text2: 'Please keep your report under 300 characters',
-                visibilityTime: 3000,
-            });
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            const response = await axiosInstance.post('/post/report', {
-                reportedPostId: postId,
-                reason: reportReason
-            });
-
-            if (response.data.success) {
-                Toast.show({
-                    type: 'success',
-                    position: 'bottom',
-                    text1: 'Report submitted successfully',
-                    visibilityTime: 3000,
-                });
-                setShowReportModal(false);
-                setReportReason('');
-            }
-        } catch (error) {
-            console.log('Error submitting report:', error.response?.data || error);
-            Toast.show({
-                type: 'error',
-                position: 'bottom',
-                text1: 'Failed to submit report',
-                text2: error.response?.data?.message || error.message,
-                visibilityTime: 3000,
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
 
     useEffect(() => {
         getPost();
@@ -243,8 +207,8 @@ const PostDetailsScreen = ({ postId }) => {
 
                     {/* heart icon on left end and likes on right end */}
                     <View className="flex-row my-5 gap-x-5">
-                        <TouchableOpacity>
-                            <HeartIcon size={30} color="white" />
+                        <TouchableOpacity onPress={likePost} activeOpacity={0.4}>
+                            <HeartIcon size={30} color={`${liked ? 'red' : 'white'}`} />
                         </TouchableOpacity>
 
                         <TouchableOpacity activeOpacity={0.6} onPress={() => setCommentModalVisible(true)}>
@@ -271,52 +235,7 @@ const PostDetailsScreen = ({ postId }) => {
                 <CommentModal postId={postId} visible={commentModalVisibile} setVisible={setCommentModalVisible} />
 
                 {/* Report Post Modal */}
-                <Modal visible={showReportModal} animationType='slide' transparent={true}>
-                    <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-                        <View className="bg-slate-800 p-6 rounded-lg w-80">
-                            <Text className="text-xl font-semibold mb-4 text-white">Report Post</Text>
-
-                            <View className="mb-4">
-                                <Text className="text-base font-medium mb-2 text-white">
-                                    Reason for reporting
-                                </Text>
-                                <TextInput
-                                    value={reportReason}
-                                    onChangeText={setReportReason}
-                                    placeholder="Please provide details about why you're reporting this post"
-                                    placeholderTextColor="gray"
-                                    multiline={true}
-                                    numberOfLines={4}
-                                    maxLength={300}
-                                    className="border-2 border-gray-600 p-3 rounded-lg bg-slate-700 text-white"
-                                    style={{ textAlignVertical: 'top' }}
-                                />
-                                <Text className="text-gray-400 text-right mt-1">
-                                    {reportReason.length}/300
-                                </Text>
-                            </View>
-                            <RNTouchableOpacity
-                                onPress={handleReportSubmit}
-                                disabled={isSubmitting}
-                                className="bg-red-500 p-3 rounded-lg items-center"
-                            >
-                                <Text className="text-white font-semibold">
-                                    {isSubmitting ? "Submitting..." : "Submit Report"}
-                                </Text>
-                            </RNTouchableOpacity>
-
-                            <RNTouchableOpacity
-                                onPress={() => {
-                                    setShowReportModal(false);
-                                    setReportReason('');
-                                }}
-                                className="mt-4 items-center"
-                            >
-                                <Text className="text-gray-400">Cancel</Text>
-                            </RNTouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>
+                <ReportModal entityId={postId} reportType="Post" visible={showReportModal} setVisible={setShowReportModal} />
 
             </SafeAreaView>
         )

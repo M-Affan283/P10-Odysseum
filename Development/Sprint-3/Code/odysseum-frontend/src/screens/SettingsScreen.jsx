@@ -35,7 +35,7 @@ const SettingsScreen = () => {
         {
             title: 'Profile',
             icon: <UserIcon size={20} color="white" />,
-            routeUrl: ''
+            routeUrl: '/settings/profile'
         },
         {
             title: 'Businesses',
@@ -95,34 +95,6 @@ const SettingsScreen = () => {
             setModalVisible(false);
         }
     };
-
-    const handleUpdatePassword = async () => {
-        setLoading(true);
-        try {
-            const response = await axiosInstance.post('/user/updateUserPassword', {
-                userId: user._id,
-                oldPassword: oldPassword,
-                newPassword: newPassword,
-            });
-            if (response.status === 200) {
-                Toast.show({
-                    type: 'success',
-                    text1: 'Password updated successfully!',
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error updating password',
-            });
-        } finally {
-            setLoading(false);
-            setModalVisible(false);
-        }
-    };
-
-    const closeModal = () => setModalVisible(false);
 
     // const { colorScheme, toggleColorScheme } = useColorScheme();
 

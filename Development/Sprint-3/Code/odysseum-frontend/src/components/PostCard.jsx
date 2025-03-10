@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Text, View, TouchableOpacity, Image, Dimensions, ImageBackground } from "react-native";
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useUserStore from '../context/userStore';
 import { LinearGradient } from 'expo-linear-gradient';
+import axiosInstance from '../utils/axios';
 
 const width = Dimensions.get("window").width;
 
@@ -19,12 +20,21 @@ const PostCard = (({post}) => {
     const ref = React.useRef(null);
     const user = useUserStore(state => state.user);
 
+    console.log(post.liked)
+
+    const [liked, setLiked] = React.useState(false);
+
     const onPressPagination = (index) => {
         ref.current?.scrollTo({
         count: index - progress.value,
         animated: true
         })
     }
+
+    useEffect(()=>
+    {
+        if(post.liked) setLiked(true);
+    }, [])
 
     const PostCardFooter = () =>
     {
@@ -83,7 +93,23 @@ const PostCard = (({post}) => {
 
     const PostCardStats = () => //contains like and ppost details route button
     {
-        const handleLike = async () => {};
+        const likePost = async () =>
+        {
+            axiosInstance.post('/post/like', {postId: post._id, userId: user._id})
+            .then((res) => {
+                console.log(res.data.message);
+                setLiked(!liked);
+            })
+            .catch((error) => {
+                console.log(error);
+                Toast.show({
+                    type: 'error',
+                    position: 'bottom',
+                    text1: 'Error',
+                    text2: error.response.data.error
+                });
+            });
+        }
 
         return (
             <>
@@ -92,9 +118,9 @@ const PostCard = (({post}) => {
 
                     <View className="flex-row items-center gap-1">
                         <View style={{zIndex: 10}}>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={likePost} activeOpacity={0.4}>
                                 <View className="bg-gray-700 p-3 rounded-full flex-row items-center">
-                                    <HeartIcon size={20} color="white" style={{paddingHorizontal: 5}} />
+                                    {post.liked ? <HeartIconSolid size={20} color="red" style={{paddingHorizontal: 5}} /> : <HeartIcon size={20} color="white" style={{paddingHorizontal: 5}} />}
                                 </View>
                             </TouchableOpacity>
                         </View>
@@ -113,14 +139,17 @@ const PostCard = (({post}) => {
     }
 
     return (
-        <View className=" bg-[#2E2F40]" style={{borderRadius: 30, marginHorizontal: 10}}>
-            <PostCardImage>
-                <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
-                    <PostCardStats />
-                </View>
-            </PostCardImage>
-            <PostCardFooter />
-        </View>
+        <TouchableOpacity onPress={() => router.push(`/post/${post?._id}`)} activeOpacity={0.8}>
+
+            <View className=" bg-[#2E2F40]" style={{borderRadius: 30, marginHorizontal: 10}}>
+                <PostCardImage>
+                    <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
+                        <PostCardStats />
+                    </View>
+                </PostCardImage>
+                <PostCardFooter />
+            </View>
+        </TouchableOpacity>
     )
 })
 

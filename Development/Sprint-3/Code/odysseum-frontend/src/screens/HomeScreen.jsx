@@ -20,12 +20,12 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 //////////////////////////////////////
 
 //change this to getFollowigPosts. requires user id
-const getQueryPosts = async ({ pageParam = 1 }) => {
+const getQueryPosts = async ({ userId, pageParam = 1 }) => {
   console.log("Page param:", pageParam);
   
   try
   {
-    const res = await axiosInstance.get(`/post/getAll?page=${pageParam}`);
+    const res = await axiosInstance.get(`/post/getFollowing?requestorId=${userId}&page=${pageParam}`);
     // console.log("Res:", res.data);
     return res.data;
   }
@@ -52,7 +52,7 @@ const HomeScreen = () => {
   
     const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
       queryKey: ['posts'],
-      queryFn: ({ pageParam =1 }) => getQueryPosts({pageParam}),
+      queryFn: ({ pageParam =1 }) => getQueryPosts({userId: user._id, pageParam}),
       getNextPageParam: (lastPage) => {
         const { currentPage, totalPages } = lastPage;
         return currentPage < totalPages ? currentPage + 1 : undefined;
@@ -82,7 +82,7 @@ const HomeScreen = () => {
               </View>
 
               <View className="absolute right-0 flex-row">
-                <TouchableOpacity className="bg-[#11092f] mr-4 rounded-full">
+                <TouchableOpacity className="bg-[#11092f] mr-4 rounded-full" onPress={()=>router.push("/chat")}>
                   <ChatBubbleLeftRightIcon size={30} color="white" />
                 </TouchableOpacity>
               </View>

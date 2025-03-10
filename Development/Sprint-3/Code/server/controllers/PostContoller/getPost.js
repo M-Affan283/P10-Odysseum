@@ -101,7 +101,7 @@ const getFollowingPosts = async (req,res) => //find the posts of the users the c
         //sort by most recent
         // const posts = await Post.find({creatorId: {$in: requestor.following}, isDeactivated: false}).sort({createdAt: -1});
         let skip = (page - 1) * limit;
-        const posts = await Post.find({creatorId: {$in: requestor.following}, isDeactivated: false})
+        const posts = await Post.find({creatorId: {$in: requestor.following}})
                                 .populate('creatorId', 'username profilePicture')
                                 .sort({createdAt: -1})
                                 .skip(skip)
@@ -109,11 +109,18 @@ const getFollowingPosts = async (req,res) => //find the posts of the users the c
 
         if(!posts) return res.status(404).json({message: ERROR_MESSAGES.NO_POSTS});
 
-        const totalPosts = await Post.countDocuments({creatorId: {$in: requestor.following}, isDeactivated: false});
+        // check if requestor has liked each post and attach the liked status to each post
+        const retPosts = posts.map((post) => {
+            let liked = post.likes.includes(requestorId);
+            return {...post._doc, liked: liked};
+        });
+
+
+        const totalPosts = await Post.countDocuments({creatorId: {$in: requestor.following}});
 
         return res.status(200).json({
             message: SUCCESS_MESSAGES.POSTS_FOUND,
-            posts: posts,
+            posts: retPosts,
             currentPage: Number(page),
             totalPages: Math.ceil(totalPosts / limit)
         });
@@ -158,7 +165,7 @@ const getPostById = async (req,res) =>
         //no need to get comments for each post. only get the number of comments for each post
         const numberOfComments = await Comment.countDocuments({postId: postId});
 
-        post = {...post._doc, commentCount: numberOfComments, likeCount: post.likes.length};
+        post = {...post._doc, commentCount: numberOfComments, likeCount: post.likes.length, liked: post.likes.includes(requestorId)};
 
         return res.status(200).json({message: SUCCESS_MESSAGES.POST_FOUND, post: post});
 
