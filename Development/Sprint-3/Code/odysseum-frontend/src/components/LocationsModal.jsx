@@ -4,9 +4,10 @@ import { FlatList, TextInput } from "react-native-gesture-handler";
 import axiosInstance from "../utils/axios";
 import ActionSheet from "react-native-actions-sheet";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import tempLocations from "../screens/tempfiles/templocations";
 import { MagnifyingGlassIcon, XMarkIcon } from "react-native-heroicons/outline";
 import { ActivityIndicator } from "react-native";
+
+// import tempLocations from "../screens/tempfiles/templocations";
 
 const getQueryLocations = async ({ pageParam = 1, searchQuery }) => 
 {

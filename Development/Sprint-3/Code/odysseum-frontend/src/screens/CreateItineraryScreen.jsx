@@ -1,10 +1,29 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Keyboard, Image } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
 import axiosInstance from "../utils/axios";
 import Toast from "react-native-toast-message";
-import axios from 'axios';
+import { TemplateContext } from "../../app/itinerary/_layout";
 
 const CreateItineraryScreen = () => {
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false)
+  const [imageUri, setImageUri] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { selectedTemplate } = useContext(TemplateContext);
+  const fileReaderInstance = new FileReader();
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   // Initially displays 2 (minimum) input fields
   const [destinations, setDestinations] = useState([
@@ -30,7 +49,6 @@ const CreateItineraryScreen = () => {
 
   const handleChange = (text, index, field, type) => {
     const updatedDestinations = [...destinations];
-
     if (type === 'time') {
       updatedDestinations[index].time[field] = text;
     } else {
@@ -46,55 +64,42 @@ const CreateItineraryScreen = () => {
     }
   };
 
-  const printDestinations = () => {
-    destinations.forEach((item, index) => {
-      console.log(`Location ${index + 1}: ${item.destination} - Day: ${item.day} - Time: ${item.time.hours}:${item.time.minutes} - Description: ${item.description}`);
-    });
-  };
+  const handleSubmit = async() => {
 
-  const handleSubmit = () => {
-    console.log(JSON.stringify(destinations, null, 2))
+    setLoading(true);
+    setImageUri(null);
+    try {
+      const response = await axiosInstance.post("/itinerary/create",
+          { destinations, template_id: selectedTemplate.id },
+          { responseType: "blob" }    // Receiving data as blob
+        );
 
-    axiosInstance.post("/itinerary/create", { destinations })
-    .then((res) => {
-      if (res.data.success) {
-        console.log(res.data);
-        
-        // Pop-up message indicating successful itinerary creation
-        Toast.show({  
-          type: "success",
-          position: "top",
-          text1: "Itinerary created successfully.",
-          visibilityTime: 3000,
-        })
+      // Converting blob to base64 and reading
+      const blob = response.data;
+      fileReaderInstance.onload = () => {
+        setImageUri(fileReaderInstance.result);             
       }
-    })
-    .catch((error) => {
-      console.log(error);
-      Toast.show({
-        type: "error",
-        position: "bottom",
-        text1: "Itinerary creation failed.",
-        visibilityTime: 3000,
-      })
-    });
+      fileReaderInstance.readAsDataURL(blob); 
+
+    } catch (err) {
+      console.error("API Error:", err);
+    }
+    setLoading(false);
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <Text style={styles.header}> Create Itinerary</Text>
-
       <FlatList
         removeClippedSubviews={false}
         data={destinations}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item, index }) => (
-          <View style={styles.destinationRow}>
+          <View style={styles.infoContainer}>
             {/* Destination Input */}
             <TextInput
               style={styles.input}
               placeholder="Enter Destination"
+              placeholderTextColor={"gray"}
               value={item.destination}
               onChangeText={(text) => handleChange(text, index, "destination", "destination")}
             />
@@ -104,8 +109,9 @@ const CreateItineraryScreen = () => {
               <Text style={styles.timeLabel}>Day # :</Text>
               {/* Input for the nth day */}
               <TextInput
-                style={styles.dayInput}
+                style={styles.smallInput}
                 placeholder='1,2...'
+                placeholderTextColor={"gray"}
                 value={item.day}
                 keyboardType="numeric"
                 maxLength={2}
@@ -115,8 +121,9 @@ const CreateItineraryScreen = () => {
               <Text style={styles.timeLabel}>Time :</Text>
               {/* Input for hours */}
               <TextInput
-                style={styles.timeInput}
+                style={styles.smallInput}
                 placeholder="HH"
+                placeholderTextColor={"gray"}
                 value={item.time.hours}
                 keyboardType="numeric"
                 maxLength={2}
@@ -125,8 +132,9 @@ const CreateItineraryScreen = () => {
               <Text style={styles.timeLabel}> :</Text>
               {/* Input for minutes */}
               <TextInput
-                style={styles.timeInput}
+                style={styles.smallInput}
                 placeholder="MM"
+                placeholderTextColor={"gray"}
                 value={item.time.minutes}
                 keyboardType="numeric" 
                 maxLength={2}
@@ -134,10 +142,11 @@ const CreateItineraryScreen = () => {
               />
             </View>
             
-            <Text style={styles.timeLabel}>Description :</Text>
+            <Text style={styles.label}>Description</Text>
             <TextInput
-              style={styles.inputActivity}
+              style={styles.textArea}
               placeholder="Enter description"
+              placeholderTextColor={"gray"}
               value={item.description}
               onChangeText={(text) => handleChange(text, index, "description", "description")}
             />
@@ -151,120 +160,174 @@ const CreateItineraryScreen = () => {
           </View>
         )}
       />
+      {imageUri && (
+          <View style={styles.imageContainer}>
+              <Text style={styles.imageTitle}>Generated Itinerary:</Text>
+              <Image source={{ uri: imageUri }} style={styles.image} />
+          </View>
+      )}
 
-      {/* Print destinations button */}
-      <TouchableOpacity onPress={printDestinations} style={styles.printButton}>
-        <Text style={styles.printButtonText}>Print Destinations</Text>
-      </TouchableOpacity>
-      
-      {/* Add destination button */}
-      <TouchableOpacity style={styles.button} onPress={addDestination}>
-        <Text style={styles.buttonText}>Add Destination</Text>
-      </TouchableOpacity>
+      {!isKeyboardVisible && (
+        <>
+          {/* Add destination button */}
+          <TouchableOpacity style={styles.submitButton} onPress={addDestination}>
+            <Text style={styles.buttonText}>Add Destination</Text>
+          </TouchableOpacity>
 
-      {/* Submit itinerary button */}
-      <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-        <Text style={styles.buttonText}>Submit Itinerary</Text>
-      </TouchableOpacity>
+          {/* Submit itinerary button */}
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Submit Itinerary</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  imageContainer: { 
+    marginTop: 20, 
+    alignItems: "center" 
+  },
+
+  container: { 
+    flex: 1, 
+    backgroundColor: "#070f1b", 
+    paddingHorizontal: 16, 
+    paddingVertical: 20 
+  },
   header: {
-    marginTop: 20,
     fontSize: 24,
     fontWeight: "bold",
+    color: "white",
     textAlign: "center",
+    marginBottom: 20,
+  },
+  infoContainer: {
+    backgroundColor: "purple",
+    padding: 15,
     marginBottom: 10,
+    borderRadius: 20,
   },
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#f5f5f5"
-  },
-  button: {
+  label: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "white",
     marginTop: 10,
-    backgroundColor: "#4CAF50", // Green color for submit
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold"
-  },
-  printButton: {
-    marginTop: 10,
-    backgroundColor: "#2196F3", // Blue color for print button
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  printButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold"
-  },
-  destinationRow: {
-    padding: 10,
-    backgroundColor: "#e0f7fa",
-    borderRadius: 5,
-    marginBottom: 10
-  },
-  dayInput:  {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 5,
-    borderRadius: 5,
-    backgroundColor: "#fff",
-    width: 40, 
-    marginRight: 10,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#fff"
+    backgroundColor: "#1f2a3b",
+    fontWeight: "bold",
+    color: "white",
+    paddingLeft: 5,
+    borderRadius: 8,
+    fontSize: 12,
+    marginBottom: 10,
   },
-  inputActivity : {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#fff"
+  textArea: {
+    backgroundColor: "#1f2a3b",
+    color: "white",
+    borderRadius: 8,
+    fontSize: 12,
+    paddingLeft: 5,
   },
   timeContainer: {
     flexDirection: 'row',
     alignItems: 'center', 
-    marginTop: 10, 
   },
   timeLabel: {
-    fontSize: 16, 
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 12, 
     marginRight: 10,
   },
-  timeInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 5,
-    borderRadius: 5,
-    backgroundColor: "#fff",
-    width: 40, 
+  smallInput: {
+    backgroundColor: "#1f2a3b",
+    color: "white",
+    fontWeight: 'bold',
+    borderRadius: 8,
+    width: 50,
+    textAlign: "center",
+    marginRight: 5,
   },
   deleteButton: {
-    backgroundColor: "#FF5722", // Red color for delete
+    backgroundColor: "#FF3B30",
     padding: 10,
-    borderRadius: 5,
-    marginTop: 10
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
   },
   deleteButtonText: {
-    color: "#fff",
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  submitButton: {
+    backgroundColor: "#34C759",
+    padding: 8,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  templateContainer: {
+    backgroundColor: "#1f2a3b",
+    padding: 20,
+    marginTop: 20,
+    borderRadius: 10,
+  },
+  templateTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  dayContainer: {
+    marginBottom: 15,
+  },
+  dayTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#34C759",
+    marginBottom: 5,
+  },
+  eventText: {
     fontSize: 14,
-    fontWeight: "bold"
+    color: "white",
+    marginLeft: 10,
+  },
+
+  loaderContainer: { 
+    marginTop: 20, 
+    alignItems: "center" 
+  },
+  loadingText: { 
+    marginTop: 10, 
+    color: "#00ff00", 
+    fontSize: 16 
+  },
+
+  image: { 
+    width: "90%",   // Ensures responsive width
+    maxWidth: 350,  // Prevents it from being too large
+    height: 400, 
+    borderRadius: 10, 
+    marginBottom: 20,
+    resizeMode: "contain" // Prevents cropping issues
+  },
+
+  errorText: {
+    color: "red",
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: "center",
   },
 });
+
 
 export default CreateItineraryScreen;

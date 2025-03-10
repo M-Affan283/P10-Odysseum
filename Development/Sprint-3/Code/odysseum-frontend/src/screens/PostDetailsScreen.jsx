@@ -57,6 +57,7 @@ const PostDetailsScreen = ({ postId }) => {
 
     const getPost = async () => {
         console.log("Retrieving post details...");
+        console.log(postId);
 
         setLoading(true);
 

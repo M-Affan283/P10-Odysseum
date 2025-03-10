@@ -4,12 +4,13 @@ import { router } from "expo-router";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axiosInstance from "../utils/axios";
-import tempBusinesses from "./tempfiles/tempbusinesses";
 import { FlatList } from "react-native-gesture-handler";
 import icons from "../../assets/icons/icons";
 import Toast from "react-native-toast-message";
 import images from "../../assets/images/images";
 import LottieView from "lottie-react-native";
+
+// import tempBusinesses from "./tempfiles/tempbusinesses";
 
 const categories = [
   {
