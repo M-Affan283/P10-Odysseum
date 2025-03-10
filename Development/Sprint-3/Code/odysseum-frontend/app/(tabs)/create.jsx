@@ -1,10 +1,9 @@
-import { View, Text } from 'react-native'
 import React from 'react'
-import CreatePostScreen from '../../src/screens/CreatePostScreen'
+import MainCreateScreen from '../../src/screens/MainCreateScreen'
 
 const Create = () => {
   return (
-    <CreatePostScreen/>
+    <MainCreateScreen/>
   )
 }
 

@@ -11,7 +11,6 @@ Use this once access token implementation is done.
 
 import axios from "axios";
 import { getAccessToken, setAccessToken } from "./tokenUtils.js";
-// Base URL of the backend server
 
 // const API_BASE_URL = `https://p10-odysseum.onrender.com/api`;
 const API_BASE_URL = `http://192.168.86.46:8000/api`;

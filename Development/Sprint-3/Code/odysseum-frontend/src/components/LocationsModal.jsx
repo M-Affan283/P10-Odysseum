@@ -8,6 +8,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { MagnifyingGlassIcon, XMarkIcon, MapPinIcon, ChevronRightIcon } from "react-native-heroicons/outline";
 import { ActivityIndicator } from "react-native";
 
+// import tempLocations from "../screens/tempfiles/templocations";
+
 const getQueryLocations = async ({ pageParam = 1, searchQuery }) => 
 {
   console.log("Search query: ", searchQuery);
