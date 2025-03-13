@@ -1,9 +1,5 @@
 /*
-
-Filename: Post.js
-
-This file contains the schema for the Post and Comment model. It defines the structure of the post and comment document in the MongoDB database.
-
+    Author: Affan
 */
 
 import mongoose from "mongoose";
@@ -22,10 +18,11 @@ import mongoose from "mongoose";
 const postSchema = new mongoose.Schema({
     creatorId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, 'Please provide a creator ID']
+        required: [true, 'Please provide a creator ID'],
+        ref: 'User'
     },
 
-    caption: {//not required
+    caption: {
         type: String,
         trim: true,
         maxlength: [1000, 'Caption cannot be more than 1000 characters']
@@ -42,10 +39,11 @@ const postSchema = new mongoose.Schema({
         ref: 'User'
     }],
 
-    location: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Location'
-    }
+    // uncomment later once location schema is created and populated
+    // location: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Location'
+    // }
 
 }, { timestamps: true });
 
@@ -67,7 +65,8 @@ const commentSchema = new mongoose.Schema({
 
     creatorId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, 'Please provide a creator ID']
+        required: [true, 'Please provide a creator ID'],
+        ref: 'User'
     },
 
     text: {

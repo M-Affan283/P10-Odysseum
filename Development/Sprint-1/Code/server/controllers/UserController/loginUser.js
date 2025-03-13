@@ -1,10 +1,6 @@
 /*
-
-Filename: loginUser.js
-
-This file contains the controller function for logging in a user. It checks if the email and password provided by the user match an existing user in the database.
-
-Author: Affan
+    Filename: loginUser.js
+    Author: Affan
 */
 
 
@@ -17,8 +13,8 @@ export const loginUser = async (req, res) =>
 {
     //user can login with either email or username
     const { identifier, password } = req.body;
-
-    if(!identifier || !password) return res.status(400).json({success:false, message: ERROR_MESSAGES.INVALID_IDENTIFIER});
+    // console.log(req.body)
+    if(!identifier || !password) return res.status(400).json({success:false, message: ERROR_MESSAGES.MISSING_FIELDS});
 
     try
     {
@@ -41,6 +37,14 @@ export const loginUser = async (req, res) =>
         user.newUser = false;
         await user.save();
 
+        //populate bookmark with location details
+        await user.populate({
+            path: 'bookmarks',  // Directly populate the bookmarks field (it's now an array of ObjectIds)
+            model: 'Location',  // Specify the model to populate from
+            select: '_id name imageUrl'
+        });
+
+
         return res.status(200).json({
                 success: true,
                 message: SUCCESS_MESSAGES.USER_LOGGED_IN,
@@ -53,14 +57,17 @@ export const loginUser = async (req, res) =>
                     profilePicture: user.profilePicture,
                     bio: user.bio,
                     role: user.role,
-                    newUser: newuser
+                    newUser: newuser,
+                    following: user.following,
+                    followers: user.followers,
+                    bookmarks: user.bookmarks
                 },
-                accessToken: accessToken //send access token in response. store in react native secure store
+                // accessToken: accessToken //send access token in response. store in react native secure store
             })
     }
     catch(error)
     {
-        console.log("Error logging in user",error);
+        console.log("Error logging in user: ",error);
         res.status(500).json({success:false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR});
     }
 }

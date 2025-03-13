@@ -1,17 +1,8 @@
-/*
-
-Filename: User.js
-
-This file contains the schema for the User model. It defines the structure of the user document in the MongoDB database.
-
-Author: Affan
-
-
+/*  
+    Author/s: Affan & Haroon
 */
 
 import mongoose from "mongoose";
-
-
 /**
  * User Schema
  * @param {String} firstName - The first name of the user
@@ -37,6 +28,7 @@ import mongoose from "mongoose";
  * @param {Timestamp} createdAt - The timestamp when the user was created
  * @param {Timestamp} updatedAt - The timestamp when the user was last updated
  */
+
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -78,7 +70,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide a password'],
         minlength: [6, 'Password cannot be less than 6 characters'],
-        select: false // exclude password from query results
     },
     
     profilePicture: {
@@ -99,27 +90,16 @@ const userSchema = new mongoose.Schema({
     },
     
     followers: [{
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        createdAt: {
-            type: Date,
-            default: Date.now
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }],
     
     following: [{
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        createdAt: {
-            type: Date,
-            default: Date.now
-        }
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }],
     
+
     emailVerified: {
         type: Boolean,
         default: false
@@ -130,17 +110,15 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin', 'businessOwner'],
         default: 'user'
     },
-
-    resetPasswordToken: String, // for password reset
-    resetPasswordExpire: Date, 
     
-    verificationToken: String, // for email verification (if we want to add email verification)
-    verificationExpire: Date,
+    // verificationToken: String, // for email verification (if we want to add email verification)
+    // verificationExpire: Date,
     
     twoFactorEnabled: {
         type: Boolean,
         default: false
     },
+
     twoFactorSecret: String,// for two factor authentication
     
     refreshToken: {
@@ -151,7 +129,13 @@ const userSchema = new mongoose.Schema({
     isDeactivated: {
         type: Boolean,
         default: false
-    }
+    },
+
+    //array of location ids that the user has bookmarked
+    bookmarks: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Location'
+    }]
 
 }, {timestamps: true});
 
