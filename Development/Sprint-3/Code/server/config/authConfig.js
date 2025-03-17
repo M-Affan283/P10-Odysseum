@@ -9,6 +9,8 @@ export const authConfig = {
         { path: '/api/user/login', method: 'POST' },
         { path: '/api/user/register', method: 'POST' },
         { path: '/api/user/refresh-token', method: 'POST' },
+        { path: '/api/admin/login', method: 'POST' },
+        { path: '/api/admin/refresh-token', method: 'POST' },
         { path: '/health', method: 'GET' },
         { path: '/', method: 'GET' }
     ],
