@@ -21,6 +21,7 @@ import businessRouter from "./routes/businessRouter.js";
 import itineraryRouter from "./routes/itineraryRouter.js";
 import serviceRouter from "./routes/serviceRouter.js";
 import bookingRouter from "./routes/bookingRouter.js";
+import adminRouter from "./routes/adminRouter.js";
 
 // Initializing express app
 const app = express();
@@ -77,5 +78,6 @@ app.use('/api/itinerary', itineraryRouter);
 app.use('/api/chat', chatRouter);
 app.use("/api/service", serviceRouter);
 app.use("/api/booking", bookingRouter);
+app.use("/api/admin", adminRouter);
 
 export default app;
