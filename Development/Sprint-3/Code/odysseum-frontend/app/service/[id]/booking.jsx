@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 import { useLocalSearchParams } from 'expo-router'
-import ServiceBookingScreen from '../../../src/screens/ServiceBookingScreen';
+import BookingCreateScreen from '../../../src/screens/BookingCreateScreen';
 
 const ServiceBooking = () => {
 
@@ -10,7 +10,7 @@ const ServiceBooking = () => {
     console.log("ServiceBookingScreen id: ", id);
 
   return (
-    <ServiceBookingScreen serviceId={id} />
+    <BookingCreateScreen serviceId={id} />
   )
 }
 

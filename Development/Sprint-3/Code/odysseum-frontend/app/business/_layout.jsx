@@ -2,7 +2,7 @@ import React from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-const LocationLayout = () => {
+const BusinessLayout = () => {
   return (
     <>
       <Stack>
@@ -19,4 +19,4 @@ const LocationLayout = () => {
   );
 };
 
-export default LocationLayout;
+export default BusinessLayout;
