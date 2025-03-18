@@ -1,5 +1,4 @@
-import { Message } from '../../models/Message.js';
-import { Chat } from '../../models/Chat.js';
+import { Chat, Message } from '../../models/Chat.js';
 import { ERROR_MESSAGES } from '../../utils/constants.js';
 
 export const searchMessages = async (req, res) => {

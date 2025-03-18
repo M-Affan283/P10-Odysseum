@@ -28,7 +28,7 @@ const ChatListScreen = () => {
   const fetchChats = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get('/chat/getUserChats');
+      const response = await axiosInstance.get(`/chat/getUserChats?userId=${user._id}`);
       setChats(response.data.chats || []);
     } catch (error) {
       console.error('Error fetching chats:', error);

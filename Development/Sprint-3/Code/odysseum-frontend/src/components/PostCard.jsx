@@ -20,7 +20,7 @@ const PostCard = (({post}) => {
     const ref = React.useRef(null);
     const user = useUserStore(state => state.user);
 
-    console.log(post.liked)
+    // console.log(post.liked)
 
     const [liked, setLiked] = React.useState(false);
 

@@ -2,20 +2,16 @@ import { Chat } from '../../models/Chat.js';
 import { ERROR_MESSAGES } from '../../utils/constants.js';
 
 export const getChatById = async (req, res) => {
-    try {
-        const userId = req.user._id;
-        const { chatId } = req.query;
+    const { userId, chatId } = req.query;
 
-        if (!chatId) {
-            return res.status(400).json({
-                success: false,
-                message: 'Chat ID is required'
-            });
-        }
-
+    if (!chatId) return res.status(400).json({ success: false, message: 'Chat ID is required' });
+    
+    try 
+    {
+        // const userId = req.user._id;
         const chat = await Chat.findOne({
             _id: chatId,
-            participants: userId,
+            // participants: userId,
             isActive: true
         })
         .populate('participants', 'username profilePicture bio')
@@ -47,11 +43,10 @@ export const getChatById = async (req, res) => {
             chat: formattedChat
         });
 
-    } catch (error) {
+    } 
+    catch (error) 
+    {
         console.error('Get chat by ID error:', error);
-        return res.status(500).json({
-            success: false,
-            message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        });
+        return res.status(500).json({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };

@@ -1,10 +1,9 @@
-import { Message } from '../../models/Message.js';
-import { Chat } from '../../models/Chat.js';
+import { Chat, Message } from '../../models/Chat.js';
 import { ERROR_MESSAGES } from '../../utils/constants.js';
 
 export const getChatMessages = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const { userId } = req.query;
         const { chatId } = req.query;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 50;
@@ -13,7 +12,7 @@ export const getChatMessages = async (req, res) => {
         // Verify chat exists and user is a participant
         const chat = await Chat.findOne({
             _id: chatId,
-            participants: userId,
+            // participants: userId,
             isActive: true
         });
 

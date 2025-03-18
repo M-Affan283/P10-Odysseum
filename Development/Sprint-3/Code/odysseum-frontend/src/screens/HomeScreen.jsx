@@ -11,120 +11,134 @@ import { BellIcon, ChatBubbleLeftRightIcon, ExclamationCircleIcon } from "react-
 import { LightBulbIcon } from "react-native-heroicons/outline";
 import useUserStore from "../context/userStore";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { LinearGradient } from "expo-linear-gradient";
 
-// import tempPosts from "./tempfiles/homescreenposts";
-
-
-///////////////////////////////////////
-// import tempPosts from "/tempfiles/homescreenposts";
-//////////////////////////////////////
-
-//change this to getFollowigPosts. requires user id
 const getQueryPosts = async ({ userId, pageParam = 1 }) => {
   console.log("Page param:", pageParam);
   
-  try
-  {
+  try {
     const res = await axiosInstance.get(`/post/getFollowing?requestorId=${userId}&page=${pageParam}`);
-    // console.log("Res:", res.data);
     return res.data;
-  }
-  catch(error)
-  {
+  } catch(error) {
     console.log(error);
     throw error;
   }
-
 }
 
 const HomeScreen = () => {
-
-    // UI RENDERING TEST
-    // let isFetching = true;
-    // const error = null;
-    // const [posts, setPosts] = React.useState([]);
-    // setTimeout(() => {
-    //   setPosts(tempPosts);
-    //   isFetching = false;
-    // }, 3000);
-    
     const user = useUserStore((state) => state.user);
   
     const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
       queryKey: ['posts'],
-      queryFn: ({ pageParam =1 }) => getQueryPosts({userId: user._id, pageParam}),
+      queryFn: ({ pageParam = 1 }) => getQueryPosts({userId: user._id, pageParam}),
       getNextPageParam: (lastPage) => {
         const { currentPage, totalPages } = lastPage;
         return currentPage < totalPages ? currentPage + 1 : undefined;
       },
-      // enabled: !!user,
-    })
+    });
 
-    // const posts = tempPosts; // use for ui testing
-    const posts = data?.pages.flatMap((page) => page.posts) || []; //main posts array
+    const posts = data?.pages.flatMap((page) => page.posts) || [];
 
     const renderItem = useCallback(({item}) => <PostCard post={item} />, []);
 
     const ListHeaderComponent = useMemo(() => {
-    
         return (
-            <View className="flex-row items-center justify-center" style={{marginBottom: 5, marginHorizontal:20}}>
-
+          <LinearGradient 
+            colors={['rgba(17, 9, 47, 0.9)', 'rgba(7, 15, 27, 0.5)']} 
+            start={{ x: 0, y: 0 }} 
+            end={{ x: 1, y: 1 }}
+            className="p-4 rounded-3xl mb-2 mx-4"
+          >
+            <View className="flex-row items-center justify-center" style={{paddingVertical: 10}}>
               <View style={{ alignItems: "center" }}>
-                <Text style={{ color: "white", fontSize: 30}} className="font-dsbold">Odysseum</Text>
-                <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 15 }}>Hello @{user.username}</Text>
+                <Text style={{ 
+                  color: "#ffffff",
+                  fontSize: 34,
+                  textShadowColor: 'rgba(123, 97, 255, 0.6)',
+                  textShadowOffset: { width: 0, height: 2 },
+                  textShadowRadius: 4
+                }} className="font-dsbold">Odysseum</Text>
+                <Text style={{ 
+                  color: "rgba(255,255,255,0.7)", 
+                  fontSize: 16,
+                  fontWeight: '500',
+                  letterSpacing: 0.5
+                }}>Hello @{user.username}</Text>
               </View>
 
               <View className="absolute left-0 flex-row">
-                <TouchableOpacity className="bg-[#11092f] mr-4 rounded-full">
-                    <BellIcon size={30} color="white" />
+                <TouchableOpacity 
+                  className="bg-[#211655] mr-4 rounded-full p-2"
+                  style={{
+                    shadowColor: "#7b61ff",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 4
+                  }}
+                >
+                  <BellIcon size={30} color="#f8f8ff" />
                 </TouchableOpacity>
               </View>
 
               <View className="absolute right-0 flex-row">
-                <TouchableOpacity className="bg-[#11092f] mr-4 rounded-full" onPress={()=>router.push("/chat")}>
-                  <ChatBubbleLeftRightIcon size={30} color="white" />
+                <TouchableOpacity 
+                  className="bg-[#211655] mr-4 rounded-full p-2" 
+                  onPress={() => router.push("/chat")}
+                  style={{
+                    shadowColor: "#7b61ff",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 4
+                  }}
+                >
+                  <ChatBubbleLeftRightIcon size={30} color="#f8f8ff" />
                 </TouchableOpacity>
               </View>
-          </View>
+            </View>
+          </LinearGradient>
         )
-    }, []);
+    }, [user]);
 
     const ListEmptyComponent = useMemo(() => {
       return (
-        <SafeAreaView className="flex-1 items-center justify-center">
+        <SafeAreaView className="flex-1 items-center justify-center" style={{paddingTop: 80}}>
           { isFetching ? (
               <LottieView
                 source={require('../../assets/animations/Loading2.json')}
                 style={{
-                  width: 100,
-                  height: 100,
+                  width: 120,
+                  height: 120,
                 }}
                 autoPlay
                 loop
               />
             )
-            :
-            error ? (
-                <>
-                  <ExclamationCircleIcon size={40} color="white" />
-                  <Text className="text-white text-lg">Failed to fetch posts</Text>
-                  <TouchableOpacity onPress={handleRefresh} activeOpacity={0.6}>
-                    <Text className="text-blue-600 text-xl">Retry</Text>
-                  </TouchableOpacity>
-                </>
+            : error ? (
+              <View className="items-center p-6 bg-[#191b2a] rounded-3xl">
+                <ExclamationCircleIcon size={40} color="#ff5c75" />
+                <Text className="text-white text-lg font-semibold mt-3">Failed to fetch posts</Text>
+                <TouchableOpacity 
+                  onPress={handleRefresh} 
+                  activeOpacity={0.6} 
+                  className="mt-4 bg-[#3d2a84] px-5 py-3 rounded-full"
+                >
+                  <Text className="text-white font-bold text-base">Retry</Text>
+                </TouchableOpacity>
+              </View>
             )
-            :
-            (
-              <>
-                <LightBulbIcon size={30} color="white" />
-                <Text className="text-white text-lg">No posts found</Text>
-              </>
+            : (
+              <View className="items-center p-6 bg-[#191b2a] rounded-3xl">
+                <LightBulbIcon size={40} color="#ffd454" />
+                <Text className="text-white text-lg font-semibold mt-3">No posts found</Text>
+                <Text className="text-gray-400 text-base mt-1 text-center">Start following users to see their posts</Text>
+              </View>
             )
           }
         </SafeAreaView>
       )
-    }, [isFetching, error, posts]);
+    }, [isFetching, error]);
 
     const loadMorePosts = () => {
       if(hasNextPage) fetchNextPage();
@@ -134,10 +148,8 @@ const HomeScreen = () => {
       await refetch();
     }
 
-
     useEffect(() => {
-      if(error)
-      {
+      if(error) {
         Toast.show({
           type: "error",
           position: "bottom",
@@ -149,34 +161,33 @@ const HomeScreen = () => {
     }, [error]);
 
     return (
-        
-        //consider bg-[#121212]
-        <SafeAreaView className="flex-1 bg-[#070f1b]">   
-
-          {/* consider checking out flashlist for better performance */}
-
-          <FlatList 
-            removeClippedSubviews={true}
-            data={posts}
-            contentContainerStyle={{ paddingBottom: 70, gap: 20 }}
-            keyExtractor={(item) => item._id}
-            stickyHeaderHiddenOnScroll={true}
-            // stickyHeaderIndices={[0]}
-            onEndReached={loadMorePosts}
-            onEndReachedThreshold={0.5}
-            refreshing={isFetching && !isFetchingNextPage}
-            onRefresh={handleRefresh} 
-            ListHeaderComponent={ListHeaderComponent}
-            renderItem={renderItem}
-            ListEmptyComponent={ListEmptyComponent}
-            getItemLayout={(data, index) => ({
-              length: 500,  // Estimated height of each item
-              offset: 500 * index,  // Position of the item in the list
-              index
-            })}
-          />
-
+        <SafeAreaView className="flex-1" style={{backgroundColor: '#070f1b'}}>   
+          <LinearGradient
+            colors={['rgba(17, 9, 47, 0.5)', 'rgba(7, 15, 27, 0.9)']}
+            style={{ flex: 1 }}
+          >
+            <FlatList 
+              removeClippedSubviews={true}
+              data={posts}
+              contentContainerStyle={{ paddingBottom: 90, gap: 20 }}
+              keyExtractor={(item) => item._id}
+              stickyHeaderHiddenOnScroll={true}
+              onEndReached={loadMorePosts}
+              onEndReachedThreshold={0.5}
+              refreshing={isFetching && !isFetchingNextPage}
+              onRefresh={handleRefresh} 
+              ListHeaderComponent={ListHeaderComponent}
+              renderItem={renderItem}
+              ListEmptyComponent={ListEmptyComponent}
+              getItemLayout={(data, index) => ({
+                length: 500,  // Estimated height of each item
+                offset: 500 * index,
+                index
+              })}
+            />
+          </LinearGradient>
         </SafeAreaView>
     )
 }
+
 export default HomeScreen;

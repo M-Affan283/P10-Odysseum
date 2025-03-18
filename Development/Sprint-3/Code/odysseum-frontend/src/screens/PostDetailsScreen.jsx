@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView } from 'react-native'
+import { View, Text, Image, ScrollView, Dimensions } from 'react-native'
 import { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axiosInstance from '../utils/axios';
@@ -6,39 +6,23 @@ import Toast from 'react-native-toast-message';
 import useUserStore from '../context/userStore';
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
-import { HeartIcon, ChatBubbleLeftEllipsisIcon, ChevronLeftIcon, FlagIcon } from "react-native-heroicons/outline";
+import { HeartIcon, ChatBubbleLeftEllipsisIcon, ChevronLeftIcon, FlagIcon, MapPinIcon } from "react-native-heroicons/outline";
+import { HeartIcon as HeartIconSolid } from "react-native-heroicons/solid";
 import LottieView from 'lottie-react-native';
 import ReportModal from '../components/ReportModal';
 import CommentModal from '../components/CommentsModal';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
 import { calculateDuration } from '../utils/dateTimCalc';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const tempPost = {
-    "_id": "6730787a070ca3617028ad30",
-    "creatorId": {
-        "_id": "672f358fb3e56fac046d76a5",
-        "username": "affantest",
-        "profilePicture": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-    },
-    "caption": "Hi this is a caption",
-    "mediaUrls": [
-        "https://firebasestorage.googleapis.com/v0/b/odysseumstorage.appspot.com/o/672f358fb3e56fac046d76a5%2F5a4c5f16-b526-48e9-a8b8-56150d33febc_43784.jpg?alt=media&token=e8d4c066-06db-4a62-8d5a-de9703f61433"
-    ],
-    "likes": 0,
-    "createdAt": "2024-11-10T09:10:18.147Z",
-    "updatedAt": "2024-11-10T09:10:18.147Z",
-    "__v": 0,
-    "commentCount": 2
-};
+const { width: screenWidth } = Dimensions.get('window');
 
 const PostDetailsScreen = ({ postId }) => {
-
-    const [post, setPost] = useState(null); //post details will be fetched from backend
+    const [post, setPost] = useState(null);
     const [liked, setLiked] = useState(false);
     const [loading, setLoading] = useState(false);
     const [commentModalVisibile, setCommentModalVisible] = useState(false);
-
     const [showReportModal, setShowReportModal] = useState(false);
 
     const user = useUserStore((state) => state.user);
@@ -60,9 +44,8 @@ const PostDetailsScreen = ({ postId }) => {
         setLoading(true);
 
         try {
-            axiosInstance.get(`/post/getById?postId=${postId}&requestorId=${user._id}`) //, {params: {requestorId: user._id, postId: postId}})
+            axiosInstance.get(`/post/getById?postId=${postId}&requestorId=${user._id}`)
                 .then((res) => {
-                    // console.log(res.data.post);
                     setPost(res.data.post);
                     if(res.data.post.liked) setLiked(true);
                     setLoading(false);
@@ -77,7 +60,6 @@ const PostDetailsScreen = ({ postId }) => {
                     });
                     setLoading(false);
                 });
-
         }
         catch (error) {
             console.log(error);
@@ -91,8 +73,7 @@ const PostDetailsScreen = ({ postId }) => {
         }
     }
 
-    const likePost = async () =>
-    {
+    const likePost = async () => {
         axiosInstance.post('/post/like', {postId: postId, userId: user._id})
         .then((res) => {
             console.log(res.data.message);
@@ -109,71 +90,114 @@ const PostDetailsScreen = ({ postId }) => {
         });
     }
 
-
     useEffect(() => {
         getPost();
     }, [])
 
+    if (loading) {
+        return (
+            <SafeAreaView className="flex-1" style={{backgroundColor: '#070f1b'}}>
+                <LinearGradient
+                    colors={['rgba(17, 9, 47, 0.8)', 'rgba(7, 15, 27, 0.95)']}
+                    style={{ flex: 1 }}
+                >
+                    <TouchableOpacity 
+                        onPress={() => router.back()} 
+                        className="items-start justify-start mt-5 ml-5"
+                        style={{
+                            shadowColor: "#7b61ff",
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.2,
+                            shadowRadius: 3,
+                        }}
+                    >
+                        <ChevronLeftIcon size={30} strokeWidth={3} color="#f8f8ff" />
+                    </TouchableOpacity>
+                    <View className="flex-1 items-center justify-center h-full">
+                        <LottieView
+                            source={require('../../assets/animations/Loading2.json')}
+                            style={{
+                                width: 180,
+                                height: 180,
+                            }}
+                            autoPlay
+                            loop
+                        />
+                    </View>
+                </LinearGradient>
+            </SafeAreaView>
+        );
+    }
 
-    return loading ? (
-        <SafeAreaView className="bg-primary h-full">
-
-            <TouchableOpacity onPress={() => router.back()} className="items-start justify-start mt-5 ml-3">
-                <ChevronLeftIcon size={30} strokeWidth={4} color="white" />
-            </TouchableOpacity>
-            <View className="flex-1 items-center justify-center h-full">
-
-                <LottieView
-                    source={require('../../assets/animations/Loading2.json')}
-                    style={{
-                        width: 200,
-                        height: 150,
-
-                        // backgroundColor: '#eee',
-                    }}
-                    autoPlay
-                    loop
-                />
-            </View>
-        </SafeAreaView>
-    )
-        :
-        (
-            <SafeAreaView className="bg-primary h-full">
-                <ScrollView className="px-4 my-6" showsVerticalScrollIndicator={false}>
-                    <View className="flex flex-row justify-between items-center">
-                        <TouchableOpacity onPress={() => router.back()} className="py-4">
-                            <ChevronLeftIcon size={30} strokeWidth={4} color="white" />
+    return (
+        <SafeAreaView className="flex-1" style={{backgroundColor: '#070f1b'}}>
+            <LinearGradient
+                colors={['rgba(17, 9, 47, 0.8)', 'rgba(7, 15, 27, 0.95)']}
+                style={{ flex: 1 }}
+            >
+                <ScrollView className="px-4" showsVerticalScrollIndicator={false}>
+                    <View className="flex flex-row justify-between items-center my-4">
+                        <TouchableOpacity 
+                            onPress={() => router.back()} 
+                            className="p-2 bg-[#191b2a] rounded-full"
+                            style={{
+                                shadowColor: "#7b61ff",
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 3,
+                            }}
+                        >
+                            <ChevronLeftIcon size={26} strokeWidth={2.5} color="#f8f8ff" />
                         </TouchableOpacity>
 
-                        {/* Report button */}
                         <TouchableOpacity
                             onPress={() => setShowReportModal(true)}
-                            className="py-4 px-2"
+                            className="p-2 bg-[#291b2a] rounded-full"
+                            style={{
+                                shadowColor: "#ff6b81",
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 3,
+                            }}
                         >
-                            <FlagIcon size={24} color="red" />
+                            <FlagIcon size={22} color="#ff6b81" />
                         </TouchableOpacity>
                     </View>
 
-                    {/* user data first */}
-                    <View className="flex flex-row justify-start gap-4 py-5">
-                        <Image source={{ uri: post?.creatorId?.profilePicture }} className="w-16 h-16 rounded-full" />
-                        <View className="gap-y-1">
-                            <Text className="text-lg text-white">{post?.creatorId?.username || "Username"}</Text>
-                            <Text className="text-gray-500">{calculateDuration(post?.createdAt)}</Text>
+                    {/* User profile section */}
+                    <TouchableOpacity onPress={() => router.push(`/user/${post?.creatorId?._id}`)} activeOpacity={0.7}>
+                        <View className="flex flex-row items-center py-4 px-2">
+                            <View className="rounded-full p-1 bg-gradient-to-br from-purple-500 to-blue-500">
+                                <Image 
+                                    source={{ uri: post?.creatorId?.profilePicture }} 
+                                    className="w-14 h-14 rounded-full border-[2px] border-[#070f1b]" 
+                                />
+                            </View>
+                            <View className="ml-4">
+                                <Text className="text-lg font-bold text-white">{post?.creatorId?.username || "Username"}</Text>
+                                <View className="flex-row items-center mt-1">
+                                    {post?.location && (
+                                        <>
+                                            <MapPinIcon size={14} color="#a0aec0" />
+                                            <Text className="text-[#a0aec0] text-xs ml-1">{post?.location}</Text>
+                                            <Text className="text-[#a0aec0] mx-2">•</Text>
+                                        </>
+                                    )}
+                                    <Text className="text-[#a0aec0] text-xs">{calculateDuration(post?.createdAt)}</Text>
+                                </View>
+                            </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
 
-                    {/* post media in carousel*/}
-                    <View className="flex-1 items-center justify-center mt-5">
-
+                    {/* Media carousel */}
+                    <View className="mt-4 mb-6">
                         <Carousel
-                            data={post?.mediaUrls}
+                            data={post?.mediaUrls || []}
                             loop={false}
                             ref={carouselRef}
-                            width={350}
-                            height={400}
-                            scrollAnimationDuration={100}
+                            width={screenWidth - 32}
+                            height={screenWidth}
+                            scrollAnimationDuration={300}
                             style={{ alignItems: 'center', justifyContent: 'center' }}
                             onProgressChange={progress}
                             onConfigurePanGesture={(panGesture) => {
@@ -184,62 +208,104 @@ const PostDetailsScreen = ({ postId }) => {
                                 <View className="items-center">
                                     <Image
                                         source={{ uri: item }}
-                                        style={{ width: 350, height: 400, borderRadius: 5 }}
+                                        style={{ 
+                                            width: screenWidth - 40, 
+                                            height: screenWidth,
+                                            borderRadius: 16,
+                                        }}
                                         resizeMode="cover"
                                     />
                                 </View>
                             )}
                         />
-                        {post?.mediaUrls && post?.mediaUrls.length > 0 && (
+                        {post?.mediaUrls && post?.mediaUrls.length > 1 && (
                             <Pagination.Basic
                                 progress={progress}
                                 data={post?.mediaUrls}
                                 onPress={onPressPagination}
-                                size={10}
-                                dotStyle={{ backgroundColor: 'gray', borderRadius: 100 }}
-                                activeDotStyle={{ backgroundColor: 'white', overflow: 'hidden', aspectRatio: 1, borderRadius: 15 }}
-                                containerStyle={{ gap: 5, marginTop: 20 }}
+                                size={8}
+                                dotStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.4)', borderRadius: 4 }}
+                                activeDotStyle={{ 
+                                    backgroundColor: 'white', 
+                                    borderRadius: 4,
+                                    width: 20,
+                                }}
+                                containerStyle={{ gap: 6, marginTop: 16 }}
                                 horizontal
                             />
                         )}
                     </View>
 
+                    {/* Actions section */}
+                    <LinearGradient
+                        colors={['rgba(41, 27, 62, 0.8)', 'rgba(25, 27, 42, 0.8)']}
+                        className="rounded-2xl p-4 mb-6"
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
+                        <View className="flex-row items-center justify-between mb-4">
+                            <View className="flex-row space-x-4">
+                                <TouchableOpacity 
+                                    onPress={likePost} 
+                                    activeOpacity={0.7}
+                                    className="bg-[#221e33] p-3 rounded-full"
+                                    style={{
+                                        shadowColor: liked ? "#ff6b81" : "#7b61ff",
+                                        shadowOffset: { width: 0, height: 3 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 5,
+                                    }}
+                                >
+                                    {liked ? (
+                                        <HeartIconSolid size={24} color="#ff6b81" />
+                                    ) : (
+                                        <HeartIcon size={24} color="white" />
+                                    )}
+                                </TouchableOpacity>
 
-                    {/* heart icon on left end and likes on right end */}
-                    <View className="flex-row my-5 gap-x-5">
-                        <TouchableOpacity onPress={likePost} activeOpacity={0.4}>
-                            <HeartIcon size={30} color={`${liked ? 'red' : 'white'}`} />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity activeOpacity={0.6} onPress={() => setCommentModalVisible(true)}>
-                            <ChatBubbleLeftEllipsisIcon size={30} color="white" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* post username in bold then caption */}
-
-                    <View className="flex flex-row justify-start gap-2">
-                        <Text className="font-bold text-white">{post?.creatorId?.username || "Username"}</Text>
-                        <Text className="text-white">{post?.caption || "  Some random caption"}</Text>
-                    </View>
-
-                    {/* show comments count at right end make clickable to open comments modal etc. no touchableopacity*/}
-                    <View className="flex py-6 gap-y-2">
-                        <Text className="text-gray-500">{post?.commentCount || 0} comments</Text>
-                        <Text className="text-gray-500">{post?.likeCount || 0} likes</Text>
-                    </View>
-
+                                <TouchableOpacity 
+                                    activeOpacity={0.7} 
+                                    onPress={() => setCommentModalVisible(true)}
+                                    className="bg-[#221e33] p-3 rounded-full"
+                                    style={{
+                                        shadowColor: "#7b61ff",
+                                        shadowOffset: { width: 0, height: 3 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 5,
+                                    }}
+                                >
+                                    <ChatBubbleLeftEllipsisIcon size={24} color="white" />
+                                </TouchableOpacity>
+                            </View>
+                            
+                            <View className="flex-row space-x-4">
+                                <View className="items-center">
+                                    <Text className="text-white font-semibold text-base">{post?.likeCount || 0}</Text>
+                                    <Text className="text-[#a0aec0] text-xs">likes</Text>
+                                </View>
+                                
+                                <TouchableOpacity onPress={() => setCommentModalVisible(true)}>
+                                    <View className="items-center">
+                                        <Text className="text-white font-semibold text-base">{post?.commentCount || 0}</Text>
+                                        <Text className="text-[#a0aec0] text-xs">comments</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        
+                        {/* Caption */}
+                        <View className="px-1 py-2">
+                            <Text className="text-white font-bold text-base mb-1">{post?.creatorId?.username || "Username"}</Text>
+                            <Text className="text-white text-base leading-6">{post?.caption || "Caption"}</Text>
+                        </View>
+                    </LinearGradient>
                 </ScrollView>
 
-                {/* <View className="bg-gray-500"> */}
                 <CommentModal postId={postId} visible={commentModalVisibile} setVisible={setCommentModalVisible} />
-
-                {/* Report Post Modal */}
                 <ReportModal entityId={postId} reportType="Post" visible={showReportModal} setVisible={setShowReportModal} />
-
-            </SafeAreaView>
-        )
+            </LinearGradient>
+        </SafeAreaView>
+    );
 }
 
-
-export default PostDetailsScreen
+export default PostDetailsScreen;

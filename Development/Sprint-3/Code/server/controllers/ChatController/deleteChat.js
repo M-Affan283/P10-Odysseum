@@ -1,5 +1,4 @@
-import { Chat } from '../../models/Chat.js';
-import { Message } from '../../models/Message.js';
+import { Chat, Message } from '../../models/Chat.js';
 import { ERROR_MESSAGES } from '../../utils/constants.js';
 
 export const deleteChat = async (req, res) => {
