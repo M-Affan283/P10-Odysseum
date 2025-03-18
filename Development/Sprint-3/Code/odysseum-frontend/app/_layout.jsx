@@ -7,7 +7,6 @@ import { StatusBar } from "expo-status-bar";
 import useUserStore from "../src/context/userStore";
 import { router } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SocketProvider } from '../src/context/SocketContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -61,7 +60,6 @@ const RootLayout = () => {
   return (
     <>
       <QueryClientProvider client={client}>
-        <SocketProvider>
           <GestureHandlerRootView style={{flex: 1}}>
             <Stack>
               <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -75,26 +73,11 @@ const RootLayout = () => {
               <Stack.Screen name="review" options={{ headerShown: false }} />
               <Stack.Screen name="business" options={{ headerShown: false }} />
               <Stack.Screen name="service" options={{ headerShown: false }} />
-              <Stack.Screen 
-                name="chat/index" 
-                options={{ 
-                  headerShown: false,
-                  presentation: 'modal',
-                  animation: 'slide_from_bottom'
-                }} 
-              />
-              <Stack.Screen 
-                name="chat/[id]" 
-                options={{ 
-                  headerShown: false,
-                  animation: 'slide_from_right'
-                }} 
-              />
+              <Stack.Screen name="chat" options={{ headerShown: false }} />
             </Stack>
             <Toast />
           </GestureHandlerRootView>
           <StatusBar translucent backgroundColor="transparent" />
-        </SocketProvider>
       </QueryClientProvider>
     </>
   );

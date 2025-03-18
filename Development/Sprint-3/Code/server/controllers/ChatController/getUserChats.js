@@ -3,7 +3,7 @@ import { ERROR_MESSAGES } from '../../utils/constants.js';
 
 export const getUserChats = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const { userId } = req.query;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;

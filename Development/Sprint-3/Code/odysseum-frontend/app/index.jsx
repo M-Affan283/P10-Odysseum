@@ -25,6 +25,9 @@ import BusinessManageScreen from "../src/screens/BusinessManageScreen";
 import ServiceProfileScreen from "../src/screens/ServiceProfileScreen";
 import BusinessLocationHeatmapScreen from "../src/screens/BusinessLocationHeatmapScreen";
 import SingleUserProfileScreen from "../src/screens/SingleUserProfileScreen";
+import ChatListScreen from "../src/screens/ChatListScreen";
+import LoginScreen from "../src/screens/LoginScreen";
+import BookingCreateScreen from "../src/screens/BookingCreateScreen";
 
 // Component testing
 
@@ -34,6 +37,7 @@ export default function App() {
     <>
       <WelcomeScreen /> 
       {/* <HomeScreen /> */}
+      {/* <LoginScreen /> */}
       {/* <BookmarkScreen /> */}
       {/* <CreatePostScreen /> */}
       {/* <UserProfileScreen /> */}
@@ -59,6 +63,8 @@ export default function App() {
       {/* <BusinessManageScreen /> */}
       {/* <ServiceCreateScreen /> */}
       {/* <ServiceProfileScreen serviceId={'6781353badab4c338ff55148'}/> */}
+      {/* <BookingCreateScreen serviceId={'6781353badab4c338ff55148'}/> */}
+      {/* <ChatListScreen /> */}
 
 
     </>
