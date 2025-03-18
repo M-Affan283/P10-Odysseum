@@ -1,0 +1,3 @@
+This folder will contain all files that are classified as components. Components can be reused in different files.
+
+Examples: Button, TextInput, Card, Header, Footer, Modal, ListItem, Avatar, Icon
