@@ -79,7 +79,7 @@ const useUserStore = create(
     (set) => ({
       // Initial state
       user: tempUser || null, // user is an object with properties: _id, firstName, lastName, email, username, role
-      isLoggedIn: false,
+      isLoggedIn: true, //cange to false
 
       // Actions
       setUser: (user) => set({ user: user, isLoggedIn: true }),

@@ -1,36 +1,32 @@
-import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import { FlatList } from 'react-native-gesture-handler';
-import { PaperAirplaneIcon } from 'react-native-heroicons/outline';
+import { PaperAirplaneIcon, ExclamationCircleIcon } from 'react-native-heroicons/outline';
 import { ChatBubbleBottomCenterTextIcon } from 'react-native-heroicons/solid';
 import ActionSheet from 'react-native-actions-sheet';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
 import LottieView from 'lottie-react-native';
-// import tempComments from '../screens/tempfiles/tempcomment';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { LinearGradient } from 'expo-linear-gradient';
+import { calculateDuration } from '../utils/dateTimCalc';
 
 const getQueryComments = async ({pageParam = 1, postId }) => {
-
     console.log("Page param:", pageParam);
 
-    try
-    {
+    try {
         const res = await axiosInstance.get(`/comment/getByPostId?page=${pageParam}&postId=${postId}`);
         return res.data;
-    }
-    catch(error)
-    {
+    } catch(error) {
         console.log(error);
         throw error;
     }
 }
 
-//will open when user clicks on comments count
-const CommentModal = ({postId, visible, setVisible}) =>
-{
+const CommentModal = ({postId, visible, setVisible}) => {
     const [comments, setComments] = useState([]);
     const [commentInput, setCommentInput] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const user = useUserStore((state) => state.user);
 
@@ -41,87 +37,77 @@ const CommentModal = ({postId, visible, setVisible}) =>
         queryKey: ['comments', postId],
         queryFn: ({pageParam=1}) => getQueryComments({pageParam, postId: postId}),
         getNextPageParam: (lastPage) => {
-            // console.log("Last page:" , JSON.stringify(lastPage,null,2));
             const { currentPage, totalPages } = lastPage;
             return currentPage < totalPages ? currentPage + 1 : undefined;
         },
-        //disable query until visible
         enabled: visible,
     });
 
-
-    useEffect(()=>
-    {
-        if(visible)
-        {
-            console.log(postId)
+    useEffect(() => {
+        if(visible) {
             actionSheetRef.current?.setModalVisible(true);
             inputRef.current?.focus();
-            // getComments();
+        } else {
+            actionSheetRef.current?.setModalVisible(false);
         }
-        else actionSheetRef.current?.setModalVisible(false);
+    }, [visible]);
 
-    }, [visible])
-
-    useEffect(()=>
-    {
-        if(data)
-        {
-            console.log(data.pages);
+    useEffect(() => {
+        if(data) {
             const commentsList = data?.pages.flatMap((page) => page.comments) || [];
             setComments(commentsList);
         }
-    }, [data])
+    }, [data]);
 
-    const addComment = async (text) =>
-    {
-        console.log(text)
-        // do axios call later. for now just add comment to comments array to check if flatlist renders them properly
+    const addComment = async (text) => {
+        if (!text.trim()) return;
+        
+        setIsSubmitting(true);
         const tempId = Math.random().toString();
 
-        //blur method
-        setComments((prevComments) => [...prevComments, { _id: tempId,
-                                                        postId: postId,
-                                                        creatorId: { _id: user?._id, username: user?.username, profilePicture: user?.profilePicture },
-                                                        text: text,
-                                                        blurred: true }]); 
+        setComments((prevComments) => [
+            ...prevComments, 
+            { 
+                _id: tempId,
+                postId: postId,
+                creatorId: { 
+                    _id: user?._id, 
+                    username: user?.username, 
+                    profilePicture: user?.profilePicture 
+                },
+                text: text,
+                blurred: true,
+                createdAt: new Date().toISOString()
+            }
+        ]); 
         
         axiosInstance.post('/comment/addTopComment', {postId: postId, creatorId: user._id, text: text})
-        .then((res)=>
-        {
-            console.log(res.data);
-            // getComments(); might do this or use the blur method
-
-            //blur method: find the comment with tempId, update id to res.data.comment._id and set blurred to false
-            setComments((prevComments) => prevComments.map((comment) => {
-                if(comment._id === tempId) return {
-                    ...comment,
-                    _id: res.data.comment._id,
-                    blurred: false
-                }
-                
-                return comment;
-            }))
-
-        })
-        .catch((error)=>
-        {
-            console.log(error);
-            Toast.show({
-                type: 'error',
-                position: 'bottom',
-                text1: 'Error',
-                text2: error.response.data.error
-            });
-            //remove the comment with tempId from comments array
-            setComments((prevComments) => prevComments.filter((comment) => comment._id !== tempId));
-        });    
+            .then((res) => {
+                setComments((prevComments) => prevComments.map((comment) => {
+                    if(comment._id === tempId) return {
+                        ...comment,
+                        _id: res.data.comment._id,
+                        blurred: false
+                    }
+                    
+                    return comment;
+                }));
+                setIsSubmitting(false);
+            })
+            .catch((error) => {
+                console.log(error);
+                Toast.show({
+                    type: 'error',
+                    position: 'bottom',
+                    text1: 'Error',
+                    text2: error.response.data.error
+                });
+                setComments((prevComments) => prevComments.filter((comment) => comment._id !== tempId));
+                setIsSubmitting(false);
+            });    
     }
-
     
-    
-    const handleCommentInput = (text) =>
-    {
+    const handleCommentInput = (text) => {
         addComment(text);
         setCommentInput('');
     }
@@ -131,109 +117,183 @@ const CommentModal = ({postId, visible, setVisible}) =>
     }
 
     const ListEmptyComponent = () => {
-
         return (
-            <View className="flex-1 justify-center items-center">
-                {
-                    isFetching ? (
-                        <LottieView
-                            source={require('../../assets/animations/Loading2.json')}
-                            style={{
-                                width: 100,
-                                height: 100,
-                            }}
-                            autoPlay
-                            loop
-                        />
-                    ) : error ? (
-                        <View className="flex justify-center items-center">
-                            <ExclamationCircleIcon size={24} color="white" />
-                            <Text className="text-xl text-center font-semibold text-white mt-2">
-                                "Something went wrong. Please try again later."
-                            </Text>
-                        </View>
-                    ) : (
-                        <View className="flex justify-center items-center pb-10 pt-4">
-                            <ChatBubbleBottomCenterTextIcon size={35} color="gray" />
-                            <Text className="text-xl text-center font-semibold text-gray-600 mt-2">
-                                "No comments"
-                            </Text>
-
-                        </View>
-                    )
-                }
+            <View className="flex-1 justify-center items-center py-16">
+                {isFetching ? (
+                    <LottieView
+                        source={require('../../assets/animations/Loading2.json')}
+                        style={{
+                            width: 100,
+                            height: 100,
+                        }}
+                        autoPlay
+                        loop
+                    />
+                ) : error ? (
+                    <View className="flex justify-center items-center p-6 bg-[#291b2a] rounded-3xl">
+                        <ExclamationCircleIcon size={32} color="#ff6b81" />
+                        <Text className="text-lg text-center font-semibold text-white mt-3">
+                            Something went wrong
+                        </Text>
+                        <Text className="text-sm text-center text-gray-400 mt-1">
+                            Please try again later
+                        </Text>
+                        <TouchableOpacity 
+                            onPress={() => refetch()} 
+                            className="mt-4 bg-[#3d2a84] py-2 px-6 rounded-full"
+                        >
+                            <Text className="text-white font-semibold">Retry</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <View className="flex justify-center items-center p-6 bg-[#191b2a] rounded-3xl">
+                        <ChatBubbleBottomCenterTextIcon size={40} color="#7b61ff" />
+                        <Text className="text-xl text-center font-semibold text-white mt-3">
+                            No comments yet
+                        </Text>
+                        <Text className="text-sm text-center text-gray-400 mt-1">
+                            Be the first to comment
+                        </Text>
+                    </View>
+                )}
             </View>
-        )
+        );
     }
+
+    const ListHeaderComponent = () => (
+        <View className="pb-2 pt-4 px-4">
+            <Text className="text-white text-xl font-bold">Comments</Text>
+        </View>
+    );
     
     return (
-    
         <View className="flex-1">
             <ActionSheet
                 ref={actionSheetRef}
-                containerStyle={{backgroundColor: '#161622', borderTopLeftRadius: 30, borderTopRightRadius: 30}}
-                indicatorStyle={{width: 50, marginVertical: 10, backgroundColor: '#fff'}}
+                containerStyle={{
+                    backgroundColor: '#0f111a', 
+                    borderTopLeftRadius: 24, 
+                    borderTopRightRadius: 24,
+                }}
+                indicatorStyle={{
+                    width: 60, 
+                    height: 6,
+                    marginVertical: 12, 
+                    backgroundColor: '#3d3d5c'
+                }}
                 gestureEnabled={true}
                 onClose={() => setVisible(false)}
                 statusBarTranslucent={true}
                 keyboardHandlerEnabled={true}
-        
             >
+                <LinearGradient
+                    colors={['rgba(17, 9, 47, 0.95)', 'rgba(15, 17, 26, 0.95)']}
+                    style={{ paddingBottom: 60 }}
+                >
+                    <FlatList
+                        data={comments}
+                        keyExtractor={(item) => item._id}
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={{ paddingHorizontal: 6, paddingBottom: 20 }}
+                        ListHeaderComponent={ListHeaderComponent}
+                        ListEmptyComponent={ListEmptyComponent}
+                        onEndReached={loadMoreComments}
+                        onEndReachedThreshold={0.5}
+                        renderItem={({item}) => <CommentCard comment={item} />}
+                        ListFooterComponent={isFetchingNextPage ? 
+                            <ActivityIndicator size="small" color="#7b61ff" style={{marginVertical: 20}} /> 
+                            : null
+                        }
+                    />
+                </LinearGradient>
 
-                <FlatList
-                    data={comments}
-                    keyExtractor={(item) => item._id}
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{ padding: 0, paddingBottom: 60 }}
-                    ListEmptyComponent={ListEmptyComponent}
-                    onEndReached={loadMoreComments}
-                    onEndReachedThreshold={0.5}
-                    renderItem={({item}) => <CommentCard comment={item} />}
-                />
-
-                <View className="flex-row absolute bottom-0 right-0 left-0 items-center w-full" style={{backgroundColor: '#161622', borderWidth: 1, borderTopColor: 'gray'}}>
-                    <View style={{ flex: 1, marginVertical: 5, marginHorizontal: 5 }}> 
-                        <TextInput
-                            ref={inputRef}
-                            placeholder="Add a comment..."
-                            placeholderTextColor={'gray'}
-                            value={commentInput}
-                            onChangeText={(text)=>setCommentInput(text)}
-                            keyboardType='default'
-                            style={{flex:1, width: '95%', padding: 10, backgroundColor: '#161622', color: 'white', borderRadius: 20}}
-                        />
-                    </View>
-                    <TouchableOpacity onPress={() => handleCommentInput(commentInput)} className="flex items-center justify-center" style={{marginRight: 10}}>
-                        <PaperAirplaneIcon size={30} color="white" />
-                    </TouchableOpacity>
+                <View className="absolute bottom-0 right-0 left-0">
+                    <LinearGradient
+                        colors={['rgba(25, 27, 42, 0.95)', 'rgba(33, 22, 85, 0.95)']}
+                        style={{ 
+                            borderTopWidth: 1, 
+                            borderTopColor: 'rgba(123, 97, 255, 0.3)',
+                            paddingVertical: 8,
+                            paddingHorizontal: 12,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <View className="flex-row items-center flex-1 bg-[#191b2a] rounded-full px-4 mr-2">
+                            <Image 
+                                source={{ uri: user?.profilePicture }} 
+                                style={{ width: 28, height: 28, borderRadius: 14 }}
+                                className="mr-2"
+                            />
+                            <TextInput
+                                ref={inputRef}
+                                placeholder="Add a comment..."
+                                placeholderTextColor={'#6b7280'}
+                                value={commentInput}
+                                onChangeText={(text) => setCommentInput(text)}
+                                keyboardType='default'
+                                style={{
+                                    flex: 1, 
+                                    color: 'white', 
+                                    fontSize: 14,
+                                    paddingVertical: 10,
+                                }}
+                                multiline
+                                maxLength={500}
+                            />
+                        </View>
+                        <TouchableOpacity 
+                            onPress={() => handleCommentInput(commentInput)}
+                            disabled={isSubmitting || !commentInput.trim()} 
+                            className={`p-2 rounded-full ${isSubmitting || !commentInput.trim() ? 'bg-[#21295A]' : 'bg-[#3d2a84]'}`}
+                            style={{
+                                shadowColor: "#7b61ff",
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 3,
+                            }}
+                        >
+                            {isSubmitting ? (
+                                <ActivityIndicator size="small" color="white" />
+                            ) : (
+                                <PaperAirplaneIcon size={20} color={commentInput.trim() ? "white" : "#6b7280"} />
+                            )}
+                        </TouchableOpacity>
+                    </LinearGradient>
                 </View>
-
             </ActionSheet>
         </View>
-    
-
-    )
+    );
 }
 
-const CommentCard = ({comment}) =>
-{
+const CommentCard = ({comment}) => {
     return (
-    <View className="flex-row items-center justify-between" style={[comment?.blurred ? {opacity: 0.5} : {opacity: 1}, {marginHorizontal: 10, marginVertical: 10, padding: 15, borderRadius: 20}]}>
-        
-        <View className="flex-row">
-            <Image source={{ uri: comment?.creatorId?.profilePicture }} style={{ width: 50, height: 50, borderRadius: 50 }} resizeMode='cover'/>
-            <View className="flex-1 justify-center" style={{marginHorizontal: 10}}>
-               
-                <View className="flex-col">
-                    <Text className="text-white text-xs font-bold">{comment?.creatorId?.username}</Text>
-                    <Text className="text-white">{comment?.text}</Text>
+        <View 
+            className={`mx-2 my-1 p-3 rounded-2xl ${comment?.blurred ? 'opacity-50' : 'opacity-100'}`}
+            style={{
+                backgroundColor: 'rgba(41, 27, 62, 0.4)',
+                borderWidth: 1,
+                borderColor: 'rgba(123, 97, 255, 0.15)',
+            }}
+        >
+            <View className="flex-row">
+                <Image 
+                    source={{ uri: comment?.creatorId?.profilePicture }} 
+                    style={{ width: 40, height: 40, borderRadius: 20 }}
+                    resizeMode='cover'
+                />
+                <View className="flex-1 ml-3">
+                    <View className="flex-row items-center justify-between">
+                        <Text className="text-white text-sm font-bold">{comment?.creatorId?.username}</Text>
+                        {comment?.createdAt && (
+                            <Text className="text-gray-400 text-xs">{calculateDuration(comment?.createdAt)}</Text>
+                        )}
+                    </View>
+                    <Text className="text-white text-sm mt-1 leading-5">{comment?.text}</Text>
                 </View>
-            
             </View>
         </View>
-        
-    </View>
-    )
+    );
 }
 
-export default CommentModal
+export default CommentModal;
