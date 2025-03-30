@@ -1,0 +1,6 @@
+Contains business logic and interactions with third-party services, such as sending emails or processing payments.
+│   └── Examples:
+│       ├── emailService.js (Handles sending emails)
+│       └── firebaseService.js (Handles image uploads to firebase)
+
+Might not be needed if we add api to controller folders

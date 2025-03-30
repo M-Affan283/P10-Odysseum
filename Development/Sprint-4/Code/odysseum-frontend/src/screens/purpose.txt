@@ -1,0 +1,13 @@
+This folder will contain all the main screens for the app.
+
+Examples:
+- HomeScreen
+- LoginScreen
+- SignupScreen
+- ProfileScreen
+- SettingsScreen
+- AboutScreen
+- ContactScreen
+- DashboardScreen
+- NotificationsScreen
+- SearchScreen
