@@ -66,7 +66,7 @@ const bookingSchema = new mongoose.Schema({
             default: 'pending'
         },
         transactions: [{
-            type: String,
+            transactionType: String,
             amount: Number,
             date: Date,
             status: String,
