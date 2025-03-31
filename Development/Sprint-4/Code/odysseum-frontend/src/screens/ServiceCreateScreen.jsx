@@ -1856,13 +1856,13 @@ const successScreen = ({uploading, error}) => {
                     style={{ width: 300, height: 300 }}
                 />
 
-                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Service!!</Text>
+                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Service Created!!</Text>
 
                 <Text className="text-gray-400 text-lg p-5 text-center">Congratulations! Your service has been successfully created. Now go and advertise it to the world!</Text>
 
                 <View className="flex-row gap-x-10 py-5">
 
-                    <TouchableOpacity onPress={() => router.replace('/settings')} className="bg-purple-500 p-3 rounded-full mt-10">
+                    <TouchableOpacity onPress={() => router.replace(`/service/profile/${service._id}`)} className="bg-purple-500 p-3 rounded-full mt-10">
                         <Text className="text-white text-lg">Complete</Text>
                     </TouchableOpacity>
                 </View>

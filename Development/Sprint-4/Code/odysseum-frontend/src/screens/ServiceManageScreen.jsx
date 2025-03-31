@@ -7,7 +7,7 @@ import { ArrowLeftIcon } from "react-native-heroicons/outline";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import images from "../../assets/images/images";
 import ServiceManageModal from "../components/ServiceManageModal";
-
+import { LinearGradient } from 'expo-linear-gradient';
 //screen to display business services
 const getQueryBusinessServices = async ({businessId, pageParam=1}) =>
 {
@@ -26,7 +26,7 @@ const getQueryBusinessServices = async ({businessId, pageParam=1}) =>
 // show services of a
 const ServiceManageScreen = ({ businessId }) => {
 
-  const [modalVisible, setModalVisible] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
 
   const selectService = (serviceId) =>
@@ -81,7 +81,7 @@ const ServiceManageScreen = ({ businessId }) => {
             return (
               <View className="flex-1 mt-5 justify-center items-center">
                 <ActivityIndicator size="large" color="black" />
-                <Text className="mt-3 text-gray-300">Loading businesses...</Text>
+                <Text className="mt-3 text-gray-300">Loading services...</Text>
               </View>
             );
           } 
@@ -89,7 +89,7 @@ const ServiceManageScreen = ({ businessId }) => {
           {
             return (
               <View className="flex-1 mt-5 justify-center items-center">
-                <Text className="text-lg text-red-500">Failed to fetch businesses.</Text>
+                <Text className="text-lg text-red-500">Failed to fetch services.</Text>
                 <TouchableOpacity
                   className="mt-3 bg-blue-500 py-2 px-4 rounded-full"
                   onPress={refetch}
@@ -102,18 +102,31 @@ const ServiceManageScreen = ({ businessId }) => {
           return null;
         }}
         renderItem={({item}) => (
-          <View>
-            <TouchableOpacity className="flex-row items-center ml-5 mt-5" onPress={() => selectService(item?._id)}>
-              <Image source={item?.mediaUrls.length > 0 ? {uri: item?.mediaUrls[0]} : images.ActivityImg} style={{ width: 60, height: 60, borderRadius: 5 }} />
-
-              <View className="px-3">
-                <Text className="text-sm text-neutral-500 ">{item?._id}</Text>
-                <Text className="text-lg text-neutral-200 ">{item?.name}</Text>
-                <Text className="text-sm text-neutral-500 ">{item?.category}</Text>
+          <TouchableOpacity 
+            className="mx-4 mb-4 rounded-xl overflow-hidden shadow-lg"
+            onPress={() => selectService(item?._id)}
+          >
+            <LinearGradient
+              colors={['#08293a', 'darkblue']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="p-4"
+            >
+              <View className="flex-row">
+                <Image 
+                  source={item?.mediaUrls.length > 0 ? {uri: item?.mediaUrls[0]} : images.ActivityImg} 
+                  style={{ width: 70, height: 70, borderRadius: 8 }} 
+                  className="shadow-md" 
+                />
+                
+                <View className="flex-1 px-4 justify-center">
+                  <Text className="text-xs text-blue-300 mb-1">{item?._id}</Text>
+                  <Text className="text-lg text-white font-bold">{item?.name}</Text>
+                  <Text className="text-sm text-gray-300 mt-1">{item?.category}</Text>
+                </View>
               </View>
-
-            </TouchableOpacity>
-          </View>
+            </LinearGradient>
+          </TouchableOpacity>
         )}
         ItemSeparatorComponent={() => (<View className="bg-gray-600 h-0.5 w-[90%] mx-auto mt-4" />)}
       />

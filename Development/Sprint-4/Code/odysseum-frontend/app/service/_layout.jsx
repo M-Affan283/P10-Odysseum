@@ -10,6 +10,7 @@ const ServiceLayout = () => {
         <Stack.Screen name="business/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="profile/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="[id]/booking" options={{ headerShown: false }} />
+        <Stack.Screen name="bookings/[id]" options={{ headerShown: false }} />
       </Stack>
     </>
   );

@@ -2,7 +2,9 @@ import { View, Text, TouchableOpacity, TextInput, FlatList } from "react-native"
 import React, { useState, useEffect } from "react";
 import ActionSheet from "react-native-actions-sheet";
 import { XMarkIcon } from "react-native-heroicons/outline";
+import { UserCircleIcon, WrenchScrewdriverIcon, PlusCircleIcon, PencilSquareIcon, TrashIcon } from "react-native-heroicons/solid";
 import { router } from "expo-router";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const BusinessManageModal = ({ business, visible, setVisible }) => 
 { 
@@ -12,10 +14,8 @@ const BusinessManageModal = ({ business, visible, setVisible }) =>
 
     const onClose = () => {
         setVisible(false);
-
     };
-
-    
+ 
     useEffect(()=>
     {
         if(visible) actionSheetRef.current?.setModalVisible(true);
@@ -23,21 +23,38 @@ const BusinessManageModal = ({ business, visible, setVisible }) =>
     },[visible])
 
     const options = [
-        {
-            title: "View Profile",
-            routeUrl: `/business/profile/${business?._id}`,
-        },
-        {
-            title: "Manage Services",
-            routeUrl: `/settings/service/manage/${business?._id}`,
-        },
-        {
-            title: "Create Service",
-            icon: "create-service",
-            routeUrl: `/settings/service/create/${business?._id}`, //settnigs/service/create/[createId] to create a new service for the business
-        }
-        //make one for editing business and deleting business later
+      {
+        title: "View Profile",
+        icon: <UserCircleIcon size={35} color="#60a5fa" />,
+        routeUrl: `/business/profile/${business?._id}`,
+      },
+      {
+        title: "Manage Services",
+        icon: <WrenchScrewdriverIcon size={35} color="#60a5fa" />,
+        routeUrl: `/settings/service/manage/${business?._id}`,
+      },
+      {
+        title: "Create Service",
+        icon: <PlusCircleIcon size={35} color="#60a5fa" />,
+        routeUrl: `/settings/service/create/${business?._id}`,
+      },
+      {
+        title: "Edit Business",
+        icon: <PencilSquareIcon size={35} color="#60a5fa" />,
+        routeUrl: `/settings/business/edit/${business?._id}`,
+      },
+      {
+        title: "Delete Business",
+        icon: <TrashIcon size={35} color="#ef4444" />,
+        routeUrl: `/settings/business/delete/${business?._id}`,
+        danger: true
+      }
     ];
+
+    const handleAction = (routeUrl) => {
+        onClose();
+        router.push(routeUrl);
+    };
 
   return (
     <View className="flex-1">
@@ -51,22 +68,40 @@ const BusinessManageModal = ({ business, visible, setVisible }) =>
         keyboardHandlerEnabled={true}
       >
 
-        <View className="flex-row items-center justify-between gap-x-3">
-            <Text className="text-white text-3xl font-dsbold p-4 mt-2">Business Actions: {business?.name}</Text>
-            <TouchableOpacity onPress={onClose} className="p-3">
-            <XMarkIcon size={30} color="white" />
-            </TouchableOpacity>
+        <View className="px-4 pt-4 pb-2 flex-row justify-between items-center border-b border-gray-800">
+          <View>
+            <Text className="text-xl font-bold text-white">Business Actions</Text>
+            <Text className="text-blue-400 text-sm">{business?.name}</Text>
+          </View>
+          <TouchableOpacity 
+            onPress={onClose}
+            className="p-2 bg-gray-800 rounded-full"
+          >
+            <XMarkIcon size={20} color="#60a5fa" />
+          </TouchableOpacity>
         </View>
 
         <FlatList
-            data={options}
-            keyExtractor={(item) => item.title}
-            renderItem={({item}) => (
-              <TouchableOpacity className="flex-row items-center ml-5 mt-5" onPress={() => {onClose(); router.push(item.routeUrl)}}>
-                <Text className="text-lg text-neutral-200 ">{item.title}</Text>
-              </TouchableOpacity>
-            )}
-            ItemSeparatorComponent={() => (<View className="bg-gray-600 h-0.5 w-[90%] mx-auto mt-4" />)}
+          data={options}
+          keyExtractor={(item) => item.title}
+          contentContainerStyle={{ paddingVertical: 8 }}
+          renderItem={({item}) => (
+            <TouchableOpacity
+              onPress={() => handleAction(item.routeUrl)}
+              className="flex-row items-center p-6"
+              activeOpacity={0.7}
+            >
+              <View className="mr-4">
+                {item.icon}
+              </View>
+              <Text className={`text-base ${item.danger ? 'text-red-400 font-medium' : 'text-gray-200'}`}>
+                {item.title}
+              </Text>
+            </TouchableOpacity>
+          )}
+          ItemSeparatorComponent={() => (
+            <View className="h-px bg-gray-800 mx-4" />
+          )}
         />
 
       </ActionSheet>
