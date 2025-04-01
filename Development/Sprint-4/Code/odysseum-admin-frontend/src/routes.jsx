@@ -1,5 +1,5 @@
 import { Route, Routes as RouterRoutes, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import LoginPage from './pages/auth/LoginPage'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import UserReportsPage from './pages/reports/UserReportsPage'
