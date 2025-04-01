@@ -1,6 +1,7 @@
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, Dimensions } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "../utils/axios";
+import llmaxiosInstance from "../utils/llm_axios";
 import useUserStore from "../context/userStore";
 import { router } from "expo-router";
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
@@ -69,6 +70,7 @@ const BusinessProfileScreen = ({ businessId }) => {
   // const [business, setBusiness] = useState(tempBusiness);
   const [bookmarked, setBookmarked] = useState(false);
   const [selectedButton, setSelectedButton] = useState('about');
+  const [llmSummary, setLlmSummary] = useState('');
   const user = useUserStore(state => state.user);
 
   const { data, isFetching, error, refetch} = useQuery({
@@ -95,6 +97,26 @@ const BusinessProfileScreen = ({ businessId }) => {
       animated: true
     })
   }
+
+  const getSummariserReviews = async () => {
+    console.log("Retrieving LLM based review summary...");
+
+    llmaxiosInstance
+      .get(`/summary/businessSummary?businessId=${businessId}`)
+      .then((res) => {
+        console.log("LLM based summary: ", res.data.summary);
+
+        setLlmSummary(res.data.summary);
+      })
+      .catch((error) => {
+        console.log(error);
+        setLlmSummary("Could not retrieve summary. Please try again later.");
+      });
+  };
+
+  useEffect(() => {
+    getSummariserReviews();
+  }, [businessId]);
 
 
   const actionButtons = [
@@ -173,6 +195,18 @@ const BusinessProfileScreen = ({ businessId }) => {
       </View>
     );
   };
+
+  const displayLLMSummary = () =>
+  {
+    return (
+      <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+        <Text className="text-white text-xl font-dsbold mb-3">LLM Summary</Text>
+        <View className="space-y-2">
+          <Text className="text-white">{llmSummary ? llmSummary : "Loading..."}</Text>
+        </View>
+      </View>
+    );
+  }
 
   const displayOperatingHours = () => 
   {
@@ -261,6 +295,11 @@ const BusinessProfileScreen = ({ businessId }) => {
       onPress: () => setSelectedButton('about')
     },
     {
+      key: 'llm',
+      title: 'LLM Summary',
+      onPress: () => setSelectedButton('llm')
+    },
+    {
       key: 'hours',
       title: 'Hours',
       onPress: () => setSelectedButton('hours')
@@ -283,6 +322,8 @@ const BusinessProfileScreen = ({ businessId }) => {
     {
       case 'about':
         return displayAbout();
+      case 'llm':
+        return displayLLMSummary();
       case 'hours':
         return displayOperatingHours();
       case 'contact':

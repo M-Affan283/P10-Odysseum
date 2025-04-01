@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint
 from waitress import serve
 import logging
 from llm_component import review_summariser
@@ -16,16 +16,18 @@ app.logger.setLevel(logging.INFO)
 # Create a logger for the application
 logger = logging.getLogger('flask.app')
 
+# Create a Blueprint for the /api/llm/ prefix
+llm_bp = Blueprint('llm', __name__, url_prefix='/api/llm/summary')
+
 # Home route
-@app.route('/')
+@llm_bp.route('/')
 def home():
     app.logger.info('Home page requested')
     review_summariser.connect_to_db()
     return jsonify({'message': 'Welcome to the LLM API!'})
 
-
 # Route to handle business summary
-@app.route('/businessSummary')
+@llm_bp.route('/businessSummary')
 def businessSummary():
     try:
         # Log the incoming request
@@ -48,7 +50,7 @@ def businessSummary():
 
 
 # Route to handle location summary
-@app.route('/locationSummary')
+@llm_bp.route('/locationSummary')
 def locationSummary():
     try:
         # Log the incoming request
@@ -71,6 +73,8 @@ def locationSummary():
         return jsonify({'error': str(e)}), 500
 
 
+# Register the Blueprint with the Flask app
+app.register_blueprint(llm_bp)
 
 if __name__ == '__main__':
     # Log server start

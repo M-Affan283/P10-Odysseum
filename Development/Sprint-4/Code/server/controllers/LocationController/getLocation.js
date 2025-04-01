@@ -99,7 +99,7 @@ const getPopularLocations = async (req, res) =>
 {
   try
   {
-    const locations = await Location.find({}).sort({averageRating: -1, heatmapScore: -1}).limit(5).select('_id name');
+    const locations = await Location.find({}).sort({averageRating: -1, heatmapScore: -1}).limit(5).select('_id name imageUrl avgRating');
     return res.status(200).json({locations: locations});
   }
   catch(error)
