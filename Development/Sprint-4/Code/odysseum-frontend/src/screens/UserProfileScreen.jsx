@@ -6,7 +6,7 @@ import Toast from 'react-native-toast-message';
 import axiosInstance from '../utils/axios'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Foundation from '@expo/vector-icons/Foundation';
-import { Cog6ToothIcon, ExclamationCircleIcon } from 'react-native-heroicons/solid'
+import { Cog6ToothIcon, ExclamationCircleIcon, TicketIcon } from 'react-native-heroicons/solid'
 import LottieView from 'lottie-react-native';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import useUserStore from '../context/userStore'
@@ -43,11 +43,6 @@ const UserProfileScreen = () => {
     // const [posts, setPosts] = useState([]);
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState(null);
-    const [updateBio, setUpdateBio] = useState(false);
-    const [form, setForm] = useState({ //for updating user info
-        bio: '',
-        profilePicture: ''
-    });
 
     const { data, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error, refetch } = useInfiniteQuery({
         queryKey: ['posts', user._id], // read as posts of user with id user._id
@@ -62,37 +57,13 @@ const UserProfileScreen = () => {
     // const posts = tempPosts; // use for ui testing
     const posts = data?.pages.flatMap((page) => page.posts) || []; //main posts array
 
-    const userLogout = () =>
+    const userLogout = async () =>
     {
         console.log("Logging out user: ", user.username);
-        logout();
+        await logout();
         // router.dismissAll();
         if (router.canDismiss()) router.dismissAll()
         router.replace('/')
-    }
-
-
-    // Updates user bio
-    const updateUserBio = async () => {
-        try {
-            axiosInstance.post('/user/updateUserBio', {userId: user._id, bio: form.bio})
-            .then((res) => {
-                console.log("message: ", res.data.message);
-
-                setUser({
-                    ...user,
-                    bio: form.bio,
-                    // profilePicture: form.profilePicture
-                })
-            })
-            .catch((error) => {
-                console.log(error);
-                setError(error.message);
-            })
-        }
-        catch(error) {
-            setError(error.message);
-        }
     }
 
     const loadMorePosts = () => {
@@ -103,20 +74,6 @@ const UserProfileScreen = () => {
         refetch();
     }
 
-    // Add this near your other useEffect hooks
-    // useEffect(() => {
-    //     // Test server connection
-    //     const testConnection = async () => {
-    //         try {
-    //             const response = await axiosInstance.get('/user/getAll');  // or any other endpoint you know works
-    //             console.log('Server connection test successful');
-    //         } catch (error) {
-    //             console.log('Server connection test failed:', error);
-    //         }
-    //     };
-
-    //     testConnection();
-    // }, []);
 
 
     useEffect(() => {
@@ -161,18 +118,22 @@ const UserProfileScreen = () => {
                                 <Cog6ToothIcon size={35} strokeWidth={1.5} color="white" />
                             </TouchableOpacity>
                         </View>
+
+                        <View className="absolute top-0 left-0">
+                            <TouchableOpacity onPress={() => router.push('/user/booking/bookings')} className="bg-slate-700 p-1 rounded-full">
+                                <TicketIcon size={35} strokeWidth={1.5} color="white" />
+                            </TouchableOpacity>
+                        </View>
                     </ImageBackground>
 
                     <View className="items-center mt-5 gap-2">
                         <Text className="font-bold text-xl text-white top-1">{user?.firstName + " " + user?.lastName}</Text>
                         <Text style={{fontSize: 15, color: "rgba(255,255,255,0.6)",}}>@{user?.username}</Text>
-                        <TouchableOpacity onPress={()=> setUpdateBio(true)}>
-                            <Text style={{fontSize: 15, color: "rgba(255,255,255,0.6)",}}>{user?.bio || "Add a bio"}</Text>
-                        </TouchableOpacity>
+                        <Text style={{fontSize: 15, color: "rgba(255,255,255,0.6)",}}>{user?.bio || "Add a bio"}</Text>
                     </View>
                 </View>
 
-                <View className="flex-row mt-5 justify-around items-center bg-[#2B2C3E]" style={{paddingVertical: 10, marginBottom:20 , marginHorizontal: 10, borderRadius: 20}}>
+                <View className="flex-row mt-5 justify-around items-center bg-[#191a2b]" style={{paddingVertical: 10, marginBottom:20 , marginHorizontal: 10, borderRadius: 20}}>
                     <ProfileStat text={user?.followers?.length || 0} subText="Followers" />
                     <ProfileStat text={user?.following?.length || 0} subText="Following" />
                     <ProfileStat text={posts?.length || 0} subText="Posts" />
@@ -230,7 +191,7 @@ const UserProfileScreen = () => {
 
     //show username, profile picture, bio, number of followers, number of following, number of posts, then in a scrollview and gridview (like instagram) show the posts. also show logout button
   return (
-    <SafeAreaView className="flex-1 bg-primary">
+    <SafeAreaView className="flex-1 bg-[#070f1b]">
         <FlatList
             data={posts}
             keyExtractor={(item) => item._id}
@@ -244,40 +205,12 @@ const UserProfileScreen = () => {
             ListHeaderComponent={ListHeaderComponent}
             ListEmptyComponent={ListEmptyComponent}
             renderItem={renderItem}
-            // getItemLayout={}
+            getItemLayout={(data, index) => ({
+                length: 310,  // Estimated height of each item
+                offset: 310 * index,
+                index
+              })}
         />
-
-        {/*  Open a modal to update bio */}
-        <Modal visible={updateBio} animationType='fade' transparent={true}>
-
-            <View className="flex-1 justify-center items-center bg-black bg-opacity-50 rounded-md">
-                <View className="bg-white p-6 rounded-lg w-80">
-                    <Text className="text-xl font-semibold mb-4">Update Bio</Text>
-                    <TextInput
-                        value={form.bio}
-                        onChangeText={(text) => setForm({ ...form, bio: text })}
-                        placeholder="Enter your new bio"
-                        multiline
-                        numberOfLines={4}
-                        className="border border-gray-300 p-3 rounded-md mb-4"
-                    />
-                    <TouchableOpacity
-                        onPress={()=> {updateUserBio(); setUpdateBio(false)}}
-                        className="bg-primary p-3 rounded-lg items-center"
-                    >
-                        <Text className="text-white font-semibold">Submit</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setUpdateBio(false)}
-                        className="mt-4 items-center"
-                    >
-                        <Text className="text-red-500">Cancel</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-
-        </Modal>
 
     </SafeAreaView>
   )
