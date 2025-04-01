@@ -11,8 +11,7 @@ Author: Affan and Shahrez
 import { User } from "../../models/User.js";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES, REGEX_PATTERNS } from "../../utils/constants.js";
 import bcrypt from 'bcryptjs';
-
-
+import { uploadFile } from "../../services/firebaseService.js";
 
 /**
  * Update the user's bio.
@@ -115,3 +114,39 @@ export const updateUserPassword = async (req, res) => {
         return res.status(500).json({ message: "An error occurred while updating the password." });
     }
 };
+
+export const updateProfile = async (req, res) => {
+    const { userId, firstName, lastName, username, email, bio } = req.body;
+    const files = req.files;
+
+    try 
+    {
+        // Fetch user from the database
+        const user = await User.findById(userId);
+
+        if (!user) {
+            console.log("User not found");
+            return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
+        }
+
+        const fileURLS = await uploadFile(files, userId);
+
+        if (fileURLS.status !== 200) return res.status(500).json({ error: fileURLS.message });
+
+        console.log("File URLs:", fileURLS.urls);
+
+        user.firstName = firstName;
+        user.lastName = lastName;
+        user.username = username;
+        user.email = email;
+        user.bio = bio;
+        user.profilePicture = fileURLS.urls[0]; // Assuming the first URL is the profile picture
+
+        await user.save();
+
+        return res.status(200).json({ message: SUCCESS_MESSAGES.USER_UPDATED, user });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        return res.status(500).json({ message: ERROR_MESSAGES.SERVER_ERROR });
+    }
+}
