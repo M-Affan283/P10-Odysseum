@@ -10,7 +10,9 @@ const LocationLayout = () => {
     <>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="[id]" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="[id]" options={{ headerShown: false }} /> */}
+        <Stack.Screen name="[id]/index" options={{ headerShown: false }} />
+        <Stack.Screen name="[id]/posts" options={{ headerShown: false }} />
         
       </Stack>
 

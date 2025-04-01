@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocalSearchParams } from 'expo-router'
-import LocationDetailsScreen from '../../src/screens/LocationDetailsScreen'
+import LocationDetailsScreen from '../../../src/screens/LocationDetailsScreen';
 
 const SingleLocation = () => {
     const { id } = useLocalSearchParams();
