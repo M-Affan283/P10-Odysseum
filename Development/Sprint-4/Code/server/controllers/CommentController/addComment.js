@@ -44,6 +44,8 @@ export const addTopComment = async (req,res) =>
 
             await comment.save();
 
+            await comment.populate('creatorId', 'username');
+
             return res.status(201).json({message: SUCCESS_MESSAGES.COMMENT_ADDED, comment: comment});
         }
         else
@@ -57,6 +59,8 @@ export const addTopComment = async (req,res) =>
             });
 
             await comment.save();
+
+            await comment.populate('creatorId', 'username');
 
             return res.status(201).json({message: SUCCESS_MESSAGES.COMMENT_ADDED, comment: comment});
         }

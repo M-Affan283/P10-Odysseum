@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, Dimensions } from 'react-native'
+import { View, Text, Image, ScrollView, Dimensions, Modal, ActivityIndicator, TouchableOpacity } from 'react-native'
 import { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axiosInstance from '../utils/axios';
@@ -6,12 +6,11 @@ import Toast from 'react-native-toast-message';
 import useUserStore from '../context/userStore';
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
-import { HeartIcon, ChatBubbleLeftEllipsisIcon, ChevronLeftIcon, FlagIcon, MapPinIcon } from "react-native-heroicons/outline";
-import { HeartIcon as HeartIconSolid } from "react-native-heroicons/solid";
+import { HeartIcon, ChatBubbleLeftEllipsisIcon, ChevronLeftIcon, FlagIcon, MapPinIcon, XMarkIcon} from "react-native-heroicons/outline";
+import { HeartIcon as HeartIconSolid,TrashIcon } from "react-native-heroicons/solid";
 import LottieView from 'lottie-react-native';
 import ReportModal from '../components/ReportModal';
 import CommentModal from '../components/CommentsModal';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
 import { calculateDuration } from '../utils/dateTimCalc';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,6 +23,8 @@ const PostDetailsScreen = ({ postId }) => {
     const [loading, setLoading] = useState(false);
     const [commentModalVisibile, setCommentModalVisible] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const user = useUserStore((state) => state.user);
 
@@ -90,11 +91,66 @@ const PostDetailsScreen = ({ postId }) => {
         });
     }
 
+    const deletePost = () =>
+    {
+        setShowDeleteModal(true)
+    }
+
+    const confirmDelete = async () =>
+    {
+        console.log("Deleting post...")
+        setIsDeleting(true);
+        setShowDeleteModal(false);
+
+        // //simulate a delay for the delete action
+        // setTimeout(() => {
+        //     setIsDeleting(false);
+        //     Toast.show({
+        //         type: 'success',
+        //         position: 'bottom',
+        //         text1: 'Success',
+        //         text2: 'Post deleted successfully',
+        //         visibilityTime: 2000,
+        //     })
+        // }, 2000);
+
+        // return
+
+        axiosInstance.delete(`/post/delete?postId=${post._id}&userId=${user._id}`)
+        .then((res)=>
+        {
+            console.log(res.data.message);
+            Toast.show({
+                type: 'success',
+                position: 'bottom',
+                text1: 'Success',
+                text2: res.data.message,
+                visibilityTime: 2000,
+            })
+            router.push('/profile');
+            setIsDeleting(false);
+        })
+        .catch((error)=>
+        {
+            console.log(error);
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error',
+                text2: error.response?.data?.message || "Something went wrong",
+                visibilityTime: 2000,
+            })
+            setIsDeleting(false);
+        })
+
+        setShowDeleteModal(false);
+    }
+
     useEffect(() => {
         getPost();
     }, [])
 
-    if (loading) {
+    if (loading || isDeleting) {
         return (
             <SafeAreaView className="flex-1" style={{backgroundColor: '#070f1b'}}>
                 <LinearGradient
@@ -102,13 +158,14 @@ const PostDetailsScreen = ({ postId }) => {
                     style={{ flex: 1 }}
                 >
                     <TouchableOpacity 
-                        onPress={() => router.back()} 
+                        onPress={() => isDeleting ? null : router.back()} // Disable back button while deleting
                         className="items-start justify-start mt-5 ml-5"
                         style={{
                             shadowColor: "#7b61ff",
                             shadowOffset: { width: 0, height: 2 },
                             shadowOpacity: 0.2,
                             shadowRadius: 3,
+                            opacity: isDeleting ? 0.5 : 1, // Dim the back button when deleting
                         }}
                     >
                         <ChevronLeftIcon size={30} strokeWidth={3} color="#f8f8ff" />
@@ -123,6 +180,9 @@ const PostDetailsScreen = ({ postId }) => {
                             autoPlay
                             loop
                         />
+                        {isDeleting && (
+                            <Text className="text-white text-lg mt-4">Deleting post...</Text>
+                        )}
                     </View>
                 </LinearGradient>
             </SafeAreaView>
@@ -276,6 +336,22 @@ const PostDetailsScreen = ({ postId }) => {
                                 >
                                     <ChatBubbleLeftEllipsisIcon size={24} color="white" />
                                 </TouchableOpacity>
+
+                                {user._id === post?.creatorId?._id && (
+                                    <TouchableOpacity 
+                                        activeOpacity={0.7} 
+                                        onPress={deletePost}
+                                        className="bg-[#221e33] p-3 rounded-full"
+                                        style={{
+                                            shadowColor: "#ff6b81",
+                                            shadowOffset: { width: 0, height: 3 },
+                                            shadowOpacity: 0.3,
+                                            shadowRadius: 5,
+                                        }}
+                                    >
+                                        <TrashIcon size={24} color="#ff6b81" />
+                                    </TouchableOpacity>
+                                )}
                             </View>
                             
                             <View className="flex-row space-x-4">
@@ -301,8 +377,45 @@ const PostDetailsScreen = ({ postId }) => {
                     </LinearGradient>
                 </ScrollView>
 
-                <CommentModal postId={postId} visible={commentModalVisibile} setVisible={setCommentModalVisible} />
+                <CommentModal postId={postId} visible={commentModalVisibile} setVisible={setCommentModalVisible} postCreatorId={post?.creatorId?._id} />
                 <ReportModal entityId={postId} reportType="Post" visible={showReportModal} setVisible={setShowReportModal} />
+
+                <Modal visible={showDeleteModal} animationType='fade' transparent={true}>
+                    <View className="flex-1 justify-center items-center bg-black bg-opacity-50 rounded-md">
+                    <LinearGradient
+                        colors={['rgba(41, 27, 62, 0.95)', 'rgba(25, 27, 42, 0.95)']}
+                        className="w-full rounded-2xl p-5 items-center"
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
+                        
+                        <Text className="text-white font-bold text-xl mb-4">Delete Post</Text>
+                        <Text className="text-gray-200 text-center text-base mb-6 leading-5">
+                            Are you sure you want to delete this post? This action cannot be undone.
+                        </Text>
+                        <View className="flex-row w-full justify-between">
+                            <TouchableOpacity
+                                className="py-3 px-5 rounded-xl bg-gray-700/50 w-5/12 items-center"
+                                onPress={() => setShowDeleteModal(false)}
+                                activeOpacity={0.8}
+                                disabled={isDeleting}
+                            >
+                                <Text className="text-white font-semibold text-base">Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                className="py-3 px-5 rounded-xl bg-red-500/80 w-5/12 items-center"
+                                onPress={confirmDelete}
+                                activeOpacity={0.8}
+                                disabled={isDeleting}
+                            >
+                                <Text className="text-white font-semibold text-base">Delete</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </LinearGradient>
+                    </View>
+
+                </Modal>
             </LinearGradient>
         </SafeAreaView>
     );

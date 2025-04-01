@@ -2,7 +2,7 @@ import { View, Text, Image, TextInput, TouchableOpacity, ActivityIndicator } fro
 import React, {useEffect, useState} from 'react';
 import { FlatList } from 'react-native-gesture-handler';
 import { PaperAirplaneIcon, ExclamationCircleIcon } from 'react-native-heroicons/outline';
-import { ChatBubbleBottomCenterTextIcon } from 'react-native-heroicons/solid';
+import { ChatBubbleBottomCenterTextIcon, TrashIcon } from 'react-native-heroicons/solid';
 import ActionSheet from 'react-native-actions-sheet';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
@@ -10,6 +10,7 @@ import LottieView from 'lottie-react-native';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
 import { calculateDuration } from '../utils/dateTimCalc';
+import Toast from 'react-native-toast-message';
 
 const getQueryComments = async ({pageParam = 1, postId }) => {
     console.log("Page param:", pageParam);
@@ -23,7 +24,7 @@ const getQueryComments = async ({pageParam = 1, postId }) => {
     }
 }
 
-const CommentModal = ({postId, visible, setVisible}) => {
+const CommentModal = ({postId, visible, setVisible, postCreatorId}) => {
     const [comments, setComments] = useState([]);
     const [commentInput, setCommentInput] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +84,8 @@ const CommentModal = ({postId, visible, setVisible}) => {
         
         axiosInstance.post('/comment/addTopComment', {postId: postId, creatorId: user._id, text: text})
             .then((res) => {
+
+                console.log(res.data.comment);
                 setComments((prevComments) => prevComments.map((comment) => {
                     if(comment._id === tempId) return {
                         ...comment,
@@ -114,6 +117,38 @@ const CommentModal = ({postId, visible, setVisible}) => {
 
     const loadMoreComments = () => {
         if(hasNextPage) fetchNextPage();
+    }
+
+    const deleteComment = async (commentId) =>
+    {
+        // if (!commentId) return;
+
+        // optimistic update
+
+        // getting the comment to delete from the comments array in case of failure
+        let comment_to_delete = comments.find((comment) => comment._id === commentId);
+        if (!comment_to_delete) return;
+
+        setComments((prevComments) => prevComments.filter((comment) => comment._id !== commentId));
+
+        axiosInstance.delete(`/comment/delete?commentId=${commentId}&postId=${postId}&deletinguserId=${user._id}`)
+        .then((res)=>
+        {
+            console.log(res.data.message);
+        })
+        .catch((error) =>
+        {
+            console.log(error);
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error',
+                text2: error.response.data.error
+            });
+
+            // revert optimistic update
+            setComments((prevComments) => [...prevComments, comment_to_delete]);
+        });
     }
 
     const ListEmptyComponent = () => {
@@ -165,6 +200,53 @@ const CommentModal = ({postId, visible, setVisible}) => {
             <Text className="text-white text-xl font-bold">Comments</Text>
         </View>
     );
+
+    const CommentCard = ({comment}) => {
+        // Check if current user can delete this comment
+        // (user is either post creator or comment creator)
+        const canDelete = 
+            user?._id === postCreatorId || 
+            user?._id === comment?.creatorId?._id;
+
+        return (
+            <View 
+                className={`mx-2 my-1 p-3 rounded-2xl ${comment?.blurred ? 'opacity-50' : 'opacity-100'}`}
+                style={{
+                    backgroundColor: 'rgba(41, 27, 62, 0.4)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(123, 97, 255, 0.15)',
+                }}
+            >
+                <View className="flex-row">
+                    <Image 
+                        source={{ uri: comment?.creatorId?.profilePicture }} 
+                        style={{ width: 40, height: 40, borderRadius: 20 }}
+                        resizeMode='cover'
+                    />
+                    <View className="flex-1 ml-3">
+                        <View className="flex-row items-center justify-between">
+                            <Text className="text-white text-sm font-bold">{comment?.creatorId?.username}</Text>
+                            <View className="flex-row items-center">
+                                {comment?.createdAt && (
+                                    <Text className="text-gray-400 text-xs mr-2">{calculateDuration(comment?.createdAt)}</Text>
+                                )}
+                                {/* Only show delete button if user can delete */}
+                                {canDelete && !comment?.blurred && (
+                                    <TouchableOpacity 
+                                        onPress={() => deleteComment(comment?._id)}
+                                        className="p-1"
+                                    >
+                                        <TrashIcon size={16} color="#ff6b81" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        </View>
+                        <Text className="text-white text-sm mt-1 leading-5">{comment?.text}</Text>
+                    </View>
+                </View>
+            </View>
+        );
+    }
     
     return (
         <View className="flex-1">
@@ -266,34 +348,5 @@ const CommentModal = ({postId, visible, setVisible}) => {
     );
 }
 
-const CommentCard = ({comment}) => {
-    return (
-        <View 
-            className={`mx-2 my-1 p-3 rounded-2xl ${comment?.blurred ? 'opacity-50' : 'opacity-100'}`}
-            style={{
-                backgroundColor: 'rgba(41, 27, 62, 0.4)',
-                borderWidth: 1,
-                borderColor: 'rgba(123, 97, 255, 0.15)',
-            }}
-        >
-            <View className="flex-row">
-                <Image 
-                    source={{ uri: comment?.creatorId?.profilePicture }} 
-                    style={{ width: 40, height: 40, borderRadius: 20 }}
-                    resizeMode='cover'
-                />
-                <View className="flex-1 ml-3">
-                    <View className="flex-row items-center justify-between">
-                        <Text className="text-white text-sm font-bold">{comment?.creatorId?.username}</Text>
-                        {comment?.createdAt && (
-                            <Text className="text-gray-400 text-xs">{calculateDuration(comment?.createdAt)}</Text>
-                        )}
-                    </View>
-                    <Text className="text-white text-sm mt-1 leading-5">{comment?.text}</Text>
-                </View>
-            </View>
-        </View>
-    );
-}
 
 export default CommentModal;
