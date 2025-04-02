@@ -1,5 +1,5 @@
 import { View, Text, FlatList, Platform, TouchableOpacity, Dimensions, TextInput, Image, ScrollView } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,10 +7,14 @@ import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { Dropdown } from 'react-native-element-dropdown';
 import LottieView from "lottie-react-native";
-import { ArrowLeftIcon, ArrowRightIcon, XMarkIcon, CalendarIcon } from 'react-native-heroicons/solid';
+import { ArrowLeftIcon, ArrowRightIcon, XMarkIcon, CalendarIcon, PhotoIcon, TrashIcon } from 'react-native-heroicons/solid';
 import images from '../../assets/images/images';
 import CalendarModal from '../components/CalendarModal';
 import Checkbox from "expo-checkbox";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import Carousel, { Pagination } from "react-native-reanimated-carousel";
+import { useSharedValue } from "react-native-reanimated";
 
 const { width } = Dimensions.get('window');
 
@@ -70,13 +74,86 @@ const ServiceCreateScreen = ({ businessId }) => {
         customDetails: {}
     });
 
+    const [imageViewerVisible, setImageViewerVisible] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const carouselRef = useRef(null);
+    const progress = useSharedValue(0);
+
+    const pickMedia = async () => {
+        const permissionResult =
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (permissionResult.granted === false) {
+            Toast.show({
+            type: "error",
+            position: "top",
+            text1: "Error",
+            text2: "Permission to access media library is required!",
+            visibilityTime: 2000,
+            });
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            quality: 1,
+            allowsMultipleSelection: true,
+        });
+
+        if (!result.canceled) {
+            try {
+            // Compress images
+            const compressedImages = await Promise.all(
+                result.assets.map(async (asset) => {
+                // Compress if size > 3mb
+                if (asset.fileSize > 3 * 1024 * 1024) {
+                    let compressedImage = await ImageManipulator.manipulateAsync(
+                    asset.uri,
+                    [],
+                    { compress: 0.5 }
+                    );
+                    return { ...asset, uri: compressedImage.uri };
+                }
+                return asset;
+                })
+            );
+
+            setForm({ ...form, media: [...form.media, ...compressedImages] });
+            } catch (error) {
+            console.log(error);
+            Toast.show({
+                type: "error",
+                position: "top",
+                text1: "Error",
+                text2: "An error occurred while processing images",
+                visibilityTime: 2000,
+            });
+            }
+        }
+    };
+
+    const removeAllMedia = () => {
+        setForm({ ...form, media: [] });
+        console.log("Media Removed");
+    };
+
+    const removeSingleMedia = (index) => {
+        let newMedia = form.media.filter((media, i) => i !== index);
+        setForm({ ...form, media: newMedia });
+    };
+
+    const onPressPagination = (index) => 
+    {
+        carouselRef.current?.scrollTo({
+            count: index - progress.value,
+            animated: true,
+        });
+    };
+
     // debug function to print entire form object entirely along with all objects
     const printForm = () =>
     {
-        // console.dir(form, {depth: null, colors: true});
-
         console.log(JSON.stringify(form, null, 2));
-
     }
 
     const createService = async () =>
@@ -183,15 +260,15 @@ const ServiceCreateScreen = ({ businessId }) => {
     const screens = [
         {screen: startScreen, params: {onNextPress}},
         {screen: serviceInfoScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
-        {screen: imageScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
+        {screen: imageScreen, params: {form, setForm, onNextPress, onBackPress, pickMedia, removeAllMedia, removeSingleMedia, carouselRef, progress, onPressPagination, setSelectedImageIndex, setImageViewerVisible, imageViewerVisible, selectedImageIndex}},
         {screen: pricingScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress, specialPrices, setSpecialPrices, calendarVisible, setCalendarVisible, currentEditingIndex, setCurrentEditingIndex}},
         {screen: paymentScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
         {screen: bookingScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
         {screen: cancellationScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
         {screen: availabilityScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress, calendarVisible, setCalendarVisible, currentEditingIndex, setCurrentEditingIndex, editMode, setEditMode}},
         {screen: customDetailsScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress, customDetails, setCustomDetails}},
-        {screen: reviewScreen, params: {form, createService, onNextPress, onBackPress, printForm}},
-        {screen: successScreen, params: {uploading, error}}
+        {screen: reviewScreen, params: {form, createService, onNextPress, onBackPress, printForm, carouselRef, progress, onPressPagination, setSelectedImageIndex, setImageViewerVisible}},
+        {screen: successScreen, params: {uploading, error, businessId}}
     ];
 
 
@@ -338,34 +415,141 @@ const serviceInfoScreen = ({ form, setForm, onNextPress, onBackPress, focusedInp
 }
 
 // Screen to add images
-const imageScreen = ({ form, setForm, onNextPress, onBackPress }) =>
-{
+const imageScreen = ({
+  form,
+  setForm,
+  onNextPress,
+  onBackPress,
+  pickMedia,
+  removeAllMedia,
+  removeSingleMedia,
+  carouselRef,
+  progress,
+  onPressPagination,
+  setSelectedImageIndex,
+  setImageViewerVisible,
+}) => {
+  return (
+    <View className="flex-1 items-center mt-4">
+      <Image
+        source={images.CameraImg}
+        style={{ width: 100, height: 100 }}
+        className="rounded-full"
+        resizeMode="cover"
+      />
 
-    return (
-        <View className="flex-1 items-center mt-4">
-            <Image source={images.CameraImg} style={{ width: 100, height: 100 }} className="rounded-full" resizeMode='cover' />
+      <Text className="text-gray-300 text-4xl p-5 font-dsbold">
+        Add some images
+      </Text>
 
-            <Text className="text-gray-300 text-4xl p-5 font-dsbold">Add some images</Text>
+      <Text className="text-gray-400 text-lg p-5 text-center">
+        Add some images to showcase your business. You can add up to 5 images.
+        Feel free to skip this step if you want.
+      </Text>
 
-            <Text className="text-gray-400 text-lg p-5 text-center">Add some images to showcase your service. You can add up to 5 images. Feel free to skip this step if you want.</Text>
-
-            
-            {/* Expo image picker here */}
-
-
-
-            <View className="flex-row gap-x-10 py-5">
-                <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                    <ArrowLeftIcon size={40} color="black" />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                    <ArrowRightIcon size={40} color="black" />
-                </TouchableOpacity>
-            </View>
-        
+      {/* Image picker functionality */}
+      {form.media.length === 0 ? (
+        <View className="mt-6 w-[80%]">
+          <View className="rounded-xl p-6 border border-dashed border-gray-700 bg-gray-800">
+            <TouchableOpacity
+              onPress={pickMedia}
+              className="justify-center items-center"
+            >
+              <View className="p-3 rounded-full mb-3 bg-blue-500">
+                <PhotoIcon size={30} color="white" />
+              </View>
+              <Text className="font-medium text-gray-300 text-center">
+                Add your photos
+              </Text>
+              <Text className="text-gray-500 text-xs text-center mt-1">
+                Tap to upload
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-    );
+      ) : (
+        <View className="flex-1 items-center my-5">
+          <Carousel
+            data={form.media.map((media) => media.uri)}
+            loop={true}
+            ref={carouselRef}
+            width={250}
+            height={250}
+            scrollAnimationDuration={100}
+            style={{ alignItems: "center", justifyContent: "center" }}
+            onProgressChange={progress}
+            onConfigurePanGesture={(panGesture) => {
+              panGesture.activeOffsetX([-5, 5]);
+              panGesture.failOffsetY([-5, 5]);
+            }}
+            renderItem={({ item, index }) => (
+              <View className="items-center">
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedImageIndex(index);
+                    setImageViewerVisible(true);
+                  }}
+                >
+                  <Image
+                    source={{ uri: item }}
+                    style={{ width: 250, height: 250, borderRadius: 15 }}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => removeSingleMedia(index)}
+                  className="absolute top-2 right-2"
+                >
+                  <TrashIcon size={30} color="red" />
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+
+          <Pagination.Basic
+            progress={progress}
+            data={form.media.map((media) => media.uri)}
+            onPress={onPressPagination}
+            size={5}
+            dotStyle={{ backgroundColor: "gray", borderRadius: 100 }}
+            activeDotStyle={{
+              backgroundColor: "white",
+              overflow: "hidden",
+              aspectRatio: 1,
+              borderRadius: 15,
+            }}
+            containerStyle={{ gap: 5, marginTop: 20 }}
+            horizontal
+          />
+
+          <View className="flex-row gap-x-4 mt-5">
+            <TouchableOpacity onPress={pickMedia}>
+              <Text className="text-blue-500 font-semibold">Add More</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={removeAllMedia}>
+              <Text className="text-red-600 font-medium">Remove all</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      <View className="flex-row gap-x-10 py-5">
+        <TouchableOpacity
+          onPress={onBackPress}
+          className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
+        >
+          <ArrowLeftIcon size={40} color="black" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={onNextPress}
+          className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
+        >
+          <ArrowRightIcon size={40} color="black" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 };
 
 const pricingScreen = ({focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress, specialPrices, setSpecialPrices, calendarVisible, setCalendarVisible, currentEditingIndex, setCurrentEditingIndex}) =>
@@ -1804,7 +1988,7 @@ const reviewScreen = ({form, onNextPress, onBackPress, createService, printForm}
     )
 }
 
-const successScreen = ({uploading, error}) => {
+const successScreen = ({uploading, error, businessId}) => {
     return (
 
         uploading ? (
@@ -1862,7 +2046,7 @@ const successScreen = ({uploading, error}) => {
 
                 <View className="flex-row gap-x-10 py-5">
 
-                    <TouchableOpacity onPress={() => router.replace(`/service/profile/${service._id}`)} className="bg-purple-500 p-3 rounded-full mt-10">
+                    <TouchableOpacity onPress={() => router.replace(`/settings/service/manage/${businessId}`)} className="bg-purple-500 p-3 rounded-full mt-10">
                         <Text className="text-white text-lg">Complete</Text>
                     </TouchableOpacity>
                 </View>

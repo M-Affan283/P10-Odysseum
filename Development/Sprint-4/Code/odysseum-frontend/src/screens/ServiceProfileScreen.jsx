@@ -351,6 +351,13 @@ const ServiceProfileScreen = ({serviceId}) => {
 
   const displayCustomDetails = () => 
   {
+    if(!service?.customDetails) return (
+      <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+        <Text className="text-white text-xl font-dsbold mb-3">More Info</Text>
+        <Text className="text-white">No custom details added</Text>
+      </View>
+    )
+
       return (
         <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
           <Text className="text-white text-xl font-dsbold mb-3">More Info</Text>
@@ -458,8 +465,8 @@ const ServiceProfileScreen = ({serviceId}) => {
                 data={service?.mediaUrls}
                 loop={false}
                 ref={carouselRef}
-                width={500}
-                height={300}
+                width={width}
+                height={310}
                 scrollAnimationDuration={100}
                 onProgressChange={progress}
                 onConfigurePanGesture={(panGesture) => {

@@ -14,6 +14,7 @@ import themes from "../../assets/themes/themes";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Linking from "expo-linking"; 
 import LottieView from "lottie-react-native";
+import Toast from "react-native-toast-message";
 
 const width = Dimensions.get('window').width;
 
@@ -72,6 +73,7 @@ const BusinessProfileScreen = ({ businessId }) => {
   const [selectedButton, setSelectedButton] = useState('about');
   const [llmSummary, setLlmSummary] = useState('');
   const user = useUserStore(state => state.user);
+  const setUser = useUserStore(state => state.setUser);
 
   const { data, isFetching, error, refetch} = useQuery({
     queryKey: ['business', {businessId}],
@@ -82,6 +84,8 @@ const BusinessProfileScreen = ({ businessId }) => {
   const business = data?.business || tempBusiness;
   // const business = tempBusiness;
   // const isFetching = false;
+
+  // console.log(JSON.stringify(business, null, 2));
 
   useEffect(() => {
     if(business.bookmarked) setBookmarked(true);
@@ -169,7 +173,34 @@ const BusinessProfileScreen = ({ businessId }) => {
     else Linking.openURL(item.url);
   }
 
-  const bookmarkBusiness = async () => {};
+  const bookmarkBusiness = async () => 
+  {
+    console.log("Bookmarking business...");
+    setBookmarked(!bookmarked); //optimistic update
+
+    axiosInstance
+      .post("/user/bookmarkBusiness", { userId: user._id, businessId: businessId })
+      .then(async (res) => {
+        // console.log("Bookmarked location: ", res.data.bookmarks);
+        await setUser({
+          ...user,
+          bookmarks: res.data.bookmarks,
+        });
+
+        // console.log("User bookmarks: ", user.bookmarks);
+      })
+      .catch((error) => {
+        console.log(error);
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Could not bookmark business. Please try again later.",
+          position: "bottom",
+          visibilityTime: 3000,
+        })
+        setBookmarked(!bookmarked); //revert back to original state
+      });
+  };
 
   const mapRef = useRef(null);
   
@@ -366,8 +397,8 @@ const BusinessProfileScreen = ({ businessId }) => {
                 data={business?.mediaUrls}
                 loop={false}
                 ref={carouselRef}
-                width={500}
-                height={300}
+                width={width}
+                height={310}
                 scrollAnimationDuration={100}
                 onProgressChange={progress}
                 onConfigurePanGesture={(panGesture) => {

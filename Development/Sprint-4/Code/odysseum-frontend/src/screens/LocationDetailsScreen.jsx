@@ -36,6 +36,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import LottieView from "lottie-react-native";
 import images from "../../assets/images/images";
 import themes from "../../assets/themes/themes";
+import Toast from "react-native-toast-message";
 
 const tempLocation = {
   _id: "67310369aa977e99fcc2c31e",
@@ -112,7 +113,7 @@ const LocationDetailsScreen = ({ locationId }) => {
     setBookmarked(!bookmarked); //optimistic update
 
     axiosInstance
-      .post("/user/bookmark", { userId: user._id, locationId: locationId })
+      .post("/user/bookmarkLocation", { userId: user._id, locationId: locationId })
       .then(async (res) => {
         // console.log("Bookmarked location: ", res.data.bookmarks);
         await setUser({
@@ -124,6 +125,13 @@ const LocationDetailsScreen = ({ locationId }) => {
       })
       .catch((error) => {
         console.log(error);
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Could not bookmark location. Please try again.",
+          position: "bottom",
+          visibilityTime: 3000,
+        })
         setBookmarked(!bookmarked); //revert back to original state
       });
   };
