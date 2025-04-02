@@ -14,22 +14,23 @@ import { deleteFiles } from "../../services/firebaseService.js";
  */
 export const deleteService = async (req, res) =>
 {
-    const { businessId, serviceId, userId } = req.query;
+    const { serviceId, userId } = req.query;
 
-    if (!businessId || !serviceId || !userId) return res.status(400).json({ message: "Missing required fields" });
+    if (!serviceId || !userId) return res.status(400).json({ message: "Missing required fields" });
 
     try
     {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        const business = await Business.findById(businessId);
-        if (!business) return res.status(404).json({ message: "Business not found" });
-
         const service = await Service.findById(serviceId);
         if (!service) return res.status(404).json({ message: "Service not found" });
+        
+        const business = await Business.findById(service.businessId);
+        if (!business) return res.status(404).json({ message: "Business not found" });
 
-        if (service.businessId.toString() !== businessId || business.userId.toString() !== userId) return res.status(403).json({ message: "Unauthorized" });
+        // Check if the user is the owner of the business
+        if (business.ownerId.toString() !== userId) return res.status(403).json({ message: "Unauthorized" });
 
         const deletedFilesResponse = await deleteFiles(service.mediaUrls);
 
