@@ -131,7 +131,7 @@ const ServiceManageScreen = ({ businessId }) => {
         ItemSeparatorComponent={() => (<View className="bg-gray-600 h-0.5 w-[90%] mx-auto mt-4" />)}
       />
 
-      <ServiceManageModal serviceId={selectedService} visible={modalVisible} setVisible={setModalVisible} />
+      <ServiceManageModal serviceId={selectedService} visible={modalVisible} setVisible={setModalVisible} refetch={refetch}/>
     </SafeAreaView>
   );
 };

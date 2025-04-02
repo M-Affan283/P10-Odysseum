@@ -3,7 +3,7 @@
 // like one will be for name and category, then user presses next button and then it goes to the next screen where user enters the location and then the next screen where user enters the contact info
 
 import { View, Text, FlatList, Platform, TouchableOpacity, Dimensions, TextInput, Image, ScrollView, ActivityIndicator } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,11 +12,15 @@ import Toast from 'react-native-toast-message';
 import { Dropdown } from 'react-native-element-dropdown';
 import LocationsModal from '../components/LocationsModal';
 import LottieView from "lottie-react-native";
-import { MapIcon, ArrowLeftIcon, ArrowRightIcon, XMarkIcon, TrashIcon, ClockIcon, PlusIcon, MapPinIcon, PlusCircleIcon } from 'react-native-heroicons/solid';
+import { MapIcon, ArrowLeftIcon, ArrowRightIcon, XMarkIcon, TrashIcon, ClockIcon, PlusIcon, MapPinIcon, PlusCircleIcon, PhotoIcon } from 'react-native-heroicons/solid';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import images from '../../assets/images/images';
 import * as Location from 'expo-location';
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import Carousel, { Pagination } from "react-native-reanimated-carousel";
+import { useSharedValue } from "react-native-reanimated";
 
 const { width } = Dimensions.get('window');
 
@@ -84,6 +88,83 @@ const BusinessCreateScreen = () => {
     });
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
+
+    // Image picker and carousel related states and refs
+    const [imageViewerVisible, setImageViewerVisible] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const carouselRef = useRef(null);
+    const progress = useSharedValue(0);
+
+    const pickMedia = async () => {
+        const permissionResult =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+        if (permissionResult.granted === false) {
+          Toast.show({
+            type: "error",
+            position: "top",
+            text1: "Error",
+            text2: "Permission to access media library is required!",
+            visibilityTime: 2000,
+          });
+          return;
+        }
+    
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 1,
+          allowsMultipleSelection: true,
+        });
+    
+        if (!result.canceled) {
+          try {
+            // Compress images
+            const compressedImages = await Promise.all(
+              result.assets.map(async (asset) => {
+                // Compress if size > 3mb
+                if (asset.fileSize > 3 * 1024 * 1024) {
+                  let compressedImage = await ImageManipulator.manipulateAsync(
+                    asset.uri,
+                    [],
+                    { compress: 0.5 }
+                  );
+                  return { ...asset, uri: compressedImage.uri };
+                }
+                return asset;
+              })
+            );
+    
+            setForm({ ...form, media: [...form.media, ...compressedImages] });
+          } catch (error) {
+            console.log(error);
+            Toast.show({
+              type: "error",
+              position: "top",
+              text1: "Error",
+              text2: "An error occurred while processing images",
+              visibilityTime: 2000,
+            });
+          }
+        }
+    };
+    
+    const removeAllMedia = () => {
+        setForm({ ...form, media: [] });
+        console.log("Media Removed");
+    };
+
+    const removeSingleMedia = (index) => {
+        let newMedia = form.media.filter((media, i) => i !== index);
+        setForm({ ...form, media: newMedia });
+    };
+
+    const onPressPagination = (index) => 
+    {
+        carouselRef.current?.scrollTo({
+            count: index - progress.value,
+            animated: true,
+        });
+    };
 
     // debug function to print entire form object entirely along with all objects
     const printForm = () =>
@@ -248,9 +329,9 @@ const BusinessCreateScreen = () => {
         {screen: startScreen, params: {onNextPress}},
         {screen: businessInfoScreen, params: {focusedInput, setFocusedInput, form, setForm, userLocation, setUserLocation, locationLoading, setLocationLoading, setRegion, region, mapRef, visible, setVisible, onNextPress, onBackPress}},
         {screen: contactScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
-        {screen: imageScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress}},
+        {screen: imageScreen, params: {form, setForm, onNextPress, onBackPress, pickMedia, removeAllMedia, removeSingleMedia, carouselRef, progress, onPressPagination, setSelectedImageIndex, setImageViewerVisible, imageViewerVisible, selectedImageIndex}},
         {screen: operatingHoursScreen, params: {focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress, selectedDay, setSelectedDay, isStartTimePickerVisible, setStartTimePickerVisible, isEndTimePickerVisible, setEndTimePickerVisible, tempTimeRange, setTempTimeRange}},
-        {screen: reviewScreen, params: {form, createBusiness, onNextPress, onBackPress, printForm}},
+        {screen: reviewScreen, params: {form, createBusiness, onNextPress, onBackPress, printForm, carouselRef, progress, onPressPagination, setSelectedImageIndex, setImageViewerVisible}},
         {screen: successScreen, params: {uploading, error}}
     ];
 
@@ -536,32 +617,141 @@ const businessInfoScreen = ({focusedInput, setFocusedInput, form, setForm, userL
 };
 
 // Screen to add images
-const imageScreen = ({ focusedInput, setFocusedInput, form, setForm, onNextPress, onBackPress }) => {
-    return (
-        <View className="flex-1 items-center mt-4">
-            <Image source={images.CameraImg} style={{ width: 100, height: 100 }} className="rounded-full" resizeMode='cover' />
+const imageScreen = ({
+  form,
+  setForm,
+  onNextPress,
+  onBackPress,
+  pickMedia,
+  removeAllMedia,
+  removeSingleMedia,
+  carouselRef,
+  progress,
+  onPressPagination,
+  setSelectedImageIndex,
+  setImageViewerVisible,
+}) => {
+  return (
+    <View className="flex-1 items-center mt-4">
+      <Image
+        source={images.CameraImg}
+        style={{ width: 100, height: 100 }}
+        className="rounded-full"
+        resizeMode="cover"
+      />
 
-            <Text className="text-gray-300 text-4xl p-5 font-dsbold">Add some images</Text>
+      <Text className="text-gray-300 text-4xl p-5 font-dsbold">
+        Add some images
+      </Text>
 
-            <Text className="text-gray-400 text-lg p-5 text-center">Add some images to showcase your business. You can add up to 5 images. Feel free to skip this step if you want.</Text>
+      <Text className="text-gray-400 text-lg p-5 text-center">
+        Add some images to showcase your business. You can add up to 5 images.
+        Feel free to skip this step if you want.
+      </Text>
 
-            
-            {/* Expo image picker here */}
-
-
-
-            <View className="flex-row gap-x-10 py-5">
-                <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                    <ArrowLeftIcon size={40} color="black" />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                    <ArrowRightIcon size={40} color="black" />
-                </TouchableOpacity>
-            </View>
-        
+      {/* Image picker functionality */}
+      {form.media.length === 0 ? (
+        <View className="mt-6 w-[80%]">
+          <View className="rounded-xl p-6 border border-dashed border-gray-700 bg-gray-800">
+            <TouchableOpacity
+              onPress={pickMedia}
+              className="justify-center items-center"
+            >
+              <View className="p-3 rounded-full mb-3 bg-blue-500">
+                <PhotoIcon size={30} color="white" />
+              </View>
+              <Text className="font-medium text-gray-300 text-center">
+                Add your photos
+              </Text>
+              <Text className="text-gray-500 text-xs text-center mt-1">
+                Tap to upload
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-    );
+      ) : (
+        <View className="flex-1 items-center my-5">
+          <Carousel
+            data={form.media.map((media) => media.uri)}
+            loop={true}
+            ref={carouselRef}
+            width={250}
+            height={250}
+            scrollAnimationDuration={100}
+            style={{ alignItems: "center", justifyContent: "center" }}
+            onProgressChange={progress}
+            onConfigurePanGesture={(panGesture) => {
+              panGesture.activeOffsetX([-5, 5]);
+              panGesture.failOffsetY([-5, 5]);
+            }}
+            renderItem={({ item, index }) => (
+              <View className="items-center">
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedImageIndex(index);
+                    setImageViewerVisible(true);
+                  }}
+                >
+                  <Image
+                    source={{ uri: item }}
+                    style={{ width: 250, height: 250, borderRadius: 15 }}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => removeSingleMedia(index)}
+                  className="absolute top-2 right-2"
+                >
+                  <TrashIcon size={30} color="red" />
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+
+          <Pagination.Basic
+            progress={progress}
+            data={form.media.map((media) => media.uri)}
+            onPress={onPressPagination}
+            size={5}
+            dotStyle={{ backgroundColor: "gray", borderRadius: 100 }}
+            activeDotStyle={{
+              backgroundColor: "white",
+              overflow: "hidden",
+              aspectRatio: 1,
+              borderRadius: 15,
+            }}
+            containerStyle={{ gap: 5, marginTop: 20 }}
+            horizontal
+          />
+
+          <View className="flex-row gap-x-4 mt-5">
+            <TouchableOpacity onPress={pickMedia}>
+              <Text className="text-blue-500 font-semibold">Add More</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={removeAllMedia}>
+              <Text className="text-red-600 font-medium">Remove all</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      <View className="flex-row gap-x-10 py-5">
+        <TouchableOpacity
+          onPress={onBackPress}
+          className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
+        >
+          <ArrowLeftIcon size={40} color="black" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={onNextPress}
+          className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
+        >
+          <ArrowRightIcon size={40} color="black" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 };
 
 // Screen to add contact info
@@ -835,105 +1025,204 @@ const operatingHoursScreen = ({ focusedInput, setFocusedInput, form, setForm, on
 };
 
 // Screen to review and submit
-const reviewScreen = ({ form, createBusiness, onNextPress, onBackPress, printForm }) => {
-    return (
-        <View className="flex-1 items-center justify-center">
+const reviewScreen = ({
+  form,
+  createBusiness,
+  onNextPress,
+  onBackPress,
+  printForm,
+  carouselRef,
+  progress,
+  onPressPagination,
+  setSelectedImageIndex,
+  setImageViewerVisible,
+}) => {
+  return (
+    <View className="flex-1 items-center justify-center">
+      <ScrollView
+        className="p-2 w-[90%] mx-auto"
+        contentContainerStyle={{ alignItems: "center" }}
+      >
+        <Image
+          source={images.ReviewImg}
+          style={{ width: "95%", height: 250 }}
+          className="rounded-full"
+          resizeMode="cover"
+        />
 
-            <ScrollView className="p-2 w-[90%] mx-auto" contentContainerStyle={{ alignItems: 'center' }}>
-                <Image source={images.ReviewImg} style={{ width: '95%', height: 250 }} className="rounded-full" resizeMode='cover' />
+        <Text className="text-gray-300 text-4xl p-5 font-dsbold">
+          Review and Submit
+        </Text>
 
-                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Review and Submit</Text>
+        <Text className="text-gray-400 text-lg p-5 text-center">
+          Please review the information you have provided and submit.
+        </Text>
 
-                <Text className="text-gray-400 text-lg p-5 text-center">Please review the information you have provided and submit.</Text>
+        {/* Media preview */}
+        {form.media.length > 0 && (
+          <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+            <Text className="text-white text-xl font-dsbold mb-3">Media</Text>
+            <View className="items-center">
+              <Carousel
+                data={form.media.map((media) => media.uri)}
+                loop={true}
+                ref={carouselRef}
+                width={200}
+                height={200}
+                scrollAnimationDuration={100}
+                style={{ alignItems: "center", justifyContent: "center" }}
+                onProgressChange={progress}
+                onConfigurePanGesture={(panGesture) => {
+                  panGesture.activeOffsetX([-5, 5]);
+                  panGesture.failOffsetY([-5, 5]);
+                }}
+                renderItem={({ item, index }) => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedImageIndex(index);
+                      setImageViewerVisible(true);
+                    }}
+                  >
+                    <Image
+                      source={{ uri: item }}
+                      style={{ width: 200, height: 200, borderRadius: 10 }}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
+                )}
+              />
 
-                {/* Genral info */}
-                <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-                    <Text className="text-white text-xl font-dsbold mb-3">General Information</Text>
-                    <View className="space-y-4">
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Name:</Text>
-                            <Text className="text-white">{form.name}</Text>
-                        </View>
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Category:</Text>
-                            <Text className="text-white">{form.category}</Text>
-                        </View>
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Address:</Text>
-                            <Text className="text-white">{form.address}</Text>
-                        </View>
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Description:</Text>
-                            <Text className="text-white">{form.description}</Text>
-                        </View>
-                    </View>
-                </View>
+              {form.media.length > 1 && (
+                <Pagination.Basic
+                  progress={progress}
+                  data={form.media.map((media) => media.uri)}
+                  onPress={onPressPagination}
+                  size={5}
+                  dotStyle={{ backgroundColor: "gray", borderRadius: 100 }}
+                  activeDotStyle={{
+                    backgroundColor: "white",
+                    overflow: "hidden",
+                    aspectRatio: 1,
+                    borderRadius: 15,
+                  }}
+                  containerStyle={{ gap: 5, marginTop: 10 }}
+                  horizontal
+                />
+              )}
+            </View>
+          </View>
+        )}
 
-                {/* Contact Info */}
-                <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-                    <Text className="text-white text-xl font-dsbold mb-3">Contact Information</Text>
-                    <View className="space-y-4">
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Phone:</Text>
-                            <Text className="text-white">{form.phone}</Text>
-                        </View>
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Email:</Text>
-                            <Text className="text-white">{form.email}</Text>
-                        </View>
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Website:</Text>
-                            <Text className="text-white">{form.website}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Operating hours */}
-                <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-                    <Text className="text-white text-xl font-dsbold mb-3">Operating Hours</Text>
-                    <View className="space-y-2">
-                        {Object.keys(form.operatingHours).map((key) => (
-                            <View key={key} className="flex-row justify-between">
-                                <Text className="text-gray-400">{`${key.charAt(0).toUpperCase() + key.slice(1)}:`}</Text>
-                                <Text className="text-white">{form.operatingHours[key]}</Text>
-                            </View>
-                        ))}
-                    </View>
-                </View>
-
-                {/* Location Info */}
-                <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-                    <Text className="text-white text-xl font-dsbold mb-3">Location Information</Text>
-                    <View className="space-y-4">
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Location:</Text>
-                            <Text className="text-white flex-1">{form.location ? form.location.name : 'N/A'}</Text>
-                        </View>
-                        <View className="flex-row justify-between">
-                            <Text className="text-gray-400">Coordinates:</Text>
-                            <Text className="text-white">{`Long: ${form.longitude} \nLat: ${form.latitude}`}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View className="flex-row gap-x-10 py-5">
-                    <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                        <ArrowLeftIcon size={40} color="black" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={()=> { onNextPress(); createBusiness()}} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                        <ArrowRightIcon size={40} color="black" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={printForm} className="bg-purple-500  h-14 p-2 rounded-full mt-10">
-                        <Text className="text-white text-lg font-dsbold">Debug</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-
-        
+        {/* Genral info */}
+        <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+          <Text className="text-white text-xl font-dsbold mb-3">
+            General Information
+          </Text>
+          <View className="space-y-4">
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Name:</Text>
+              <Text className="text-white">{form.name}</Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Category:</Text>
+              <Text className="text-white">{form.category}</Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Address:</Text>
+              <Text className="text-white">{form.address}</Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Description:</Text>
+              <Text className="text-white">{form.description}</Text>
+            </View>
+          </View>
         </View>
-    );
+
+        {/* Contact Info */}
+        <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+          <Text className="text-white text-xl font-dsbold mb-3">
+            Contact Information
+          </Text>
+          <View className="space-y-4">
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Phone:</Text>
+              <Text className="text-white">{form.phone}</Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Email:</Text>
+              <Text className="text-white">{form.email}</Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Website:</Text>
+              <Text className="text-white">{form.website}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Operating hours */}
+        <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+          <Text className="text-white text-xl font-dsbold mb-3">
+            Operating Hours
+          </Text>
+          <View className="space-y-2">
+            {Object.keys(form.operatingHours).map((key) => (
+              <View key={key} className="flex-row justify-between">
+                <Text className="text-gray-400">{`${
+                  key.charAt(0).toUpperCase() + key.slice(1)
+                }:`}</Text>
+                <Text className="text-white">{form.operatingHours[key]}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Location Info */}
+        <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+          <Text className="text-white text-xl font-dsbold mb-3">
+            Location Information
+          </Text>
+          <View className="space-y-4">
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Location:</Text>
+              <Text className="text-white flex-1">
+                {form.location ? form.location.name : "N/A"}
+              </Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-400">Coordinates:</Text>
+              <Text className="text-white">{`Long: ${form.longitude} \nLat: ${form.latitude}`}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View className="flex-row gap-x-10 py-5">
+          <TouchableOpacity
+            onPress={onBackPress}
+            className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
+          >
+            <ArrowLeftIcon size={40} color="black" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              onNextPress();
+              createBusiness();
+            }}
+            className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
+          >
+            <ArrowRightIcon size={40} color="black" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={printForm}
+            className="bg-purple-500  h-14 p-2 rounded-full mt-10"
+          >
+            <Text className="text-white text-lg font-dsbold">Debug</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
+  );
 };
 
 // Screen to show success message

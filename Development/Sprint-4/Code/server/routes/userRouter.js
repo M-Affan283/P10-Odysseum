@@ -17,7 +17,7 @@ import { reportUser } from "../controllers/UserController/reportUser.js";
 import { updateUserUsername, updateProfile, updateUserBio, updateUserPassword } from "../controllers/UserController/updateUser.js";
 
 // Bookmark CRUD
-import { bookmarkLocation } from "../controllers/BookmarkController/addBookmark.js";
+import { bookmarkLocation, bookMarkBusiness } from "../controllers/BookmarkController/addBookmark.js";
 import { getUserLocationBookmarks,getUserBusinessBookmarks } from "../controllers/BookmarkController/getBookmark.js";
 
 import { verifyToken } from "../middleware/tokenVerification.js";
@@ -46,7 +46,8 @@ userRouter.post("/updateProfile", upload.array("profilePicture",1), updateProfil
 userRouter.post("/report", reportUser);
 
 // Bookmarking routes
-userRouter.post("/addBookmark", bookmarkLocation);
+userRouter.post("/bookmarkLocation", bookmarkLocation);
+userRouter.post("/bookmarkBusiness", bookMarkBusiness);
 userRouter.get("/getLocationBookmarks", getUserLocationBookmarks);
 userRouter.get("/getBusinessBookmarks", getUserBusinessBookmarks);
 
