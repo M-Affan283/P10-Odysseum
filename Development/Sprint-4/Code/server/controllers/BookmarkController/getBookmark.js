@@ -53,7 +53,7 @@ const getUserBusinessBookmarks = async (req, res) =>
 
         const skip = (page - 1) * limit;
         
-        const bookmarks = await Business.find({_id: { $in: user.businessBookmarks }, name: { $regex: searchParam, $options: 'i' }}).skip(skip).limit(limit).select('_id name mediaUrls');
+        const bookmarks = await Business.find({_id: { $in: user.businessBookmarks }, name: { $regex: searchParam, $options: 'i' }}).skip(skip).limit(limit).select('_id name category mediaUrls');
         const totalBookmarks = user.businessBookmarks.length;
         
         return res.status(200).json({
