@@ -10,10 +10,16 @@ const messages = new Map();
 
 export const setupSocket = (server) => {
     const io = new Server(server, {
-        cors: {
-            origin: "*",
-            methods: ["GET", "POST"]
-        } 
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
+      },
+      allowEIO3: true,
+      pingTimeout: 60000,
+      pingInterval: 25000,
+      transports: ["websocket", "polling"],
     });
 
     io.on('connection', (socket) => {
@@ -22,79 +28,114 @@ export const setupSocket = (server) => {
       
       // Store socket id with user id
       connectedUsers.set(userId, socket.id);
+      
+      // Emit user online status to relevant users
+      emitUserStatus(userId, true);
+
+      // Handle typing indicators
+      socket.on('typing', (data) => {
+        const { chatId, receiverId } = data;
+        const receiverSocketId = connectedUsers.get(receiverId);
+        
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit('userTyping', {
+            chatId,
+            userId
+          });
+        }
+      });
+      
+      socket.on('stopTyping', (data) => {
+        const { chatId, receiverId } = data;
+        const receiverSocketId = connectedUsers.get(receiverId);
+        
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit('userStoppedTyping', {
+            chatId,
+            userId
+          });
+        }
+      });
     
       // Handle sending a new message
       socket.on('sendMessage', async (messageData) => {
         const { senderId, receiverId, messageId, text, createdAt, chatId } = messageData;
-
-        // Create a new message
-        const message = new Message({
-          _id: messageId,
-          chatId: chatId,
-          sender: senderId,
-          receiver: receiverId,
-          content: text,
-          status: 'sent',
-        });
-
-        // Save the message to the database
-        await message.save();
-          
-        // Update the last message in the chat
-        await Chat.findByIdAndUpdate(chatId, {
-          lastMessage: {
-            content: text,
+        
+        try {
+          // Create a new message
+          const message = new Message({
+            _id: messageId,
+            chatId: chatId,
             sender: senderId,
-            timestamp: createdAt
-          }
-        });
-        
-        // Increment unread count for the receiver
-        const chat = await Chat.findById(chatId);
-        chat.incrementUnreadCount(receiverId);
-        await chat.save();
-        
-        
-        // Check if the receiver is online
-        const receiverSocketId = connectedUsers.get(receiverId);
-        
-        if (receiverSocketId) {
-          // Deliver message to receiver
-          io.to(receiverSocketId).emit('message', message);
+            receiver: receiverId,
+            content: text,
+            status: 'sent',
+          });
 
-          await Message.findByIdAndUpdate(messageId, {
-            status: 'delivered',
-            deliveredAt: new Date()
+          // Save the message to the database
+          await message.save();
+            
+          // Update the last message in the chat
+          await Chat.findByIdAndUpdate(chatId, {
+            lastMessage: {
+              content: text,
+              sender: senderId,
+              timestamp: createdAt
+            }
           });
           
-          // Update message status to delivered
-          // messages.set(messageId, {
-          //   ...messages.get(messageId),
-          //   status: 'delivered',
-          //   deliveredAt: new Date()
-          // });
+          // Increment unread count for the receiver
+          const chat = await Chat.findById(chatId);
+          if (!chat) {
+            throw new Error('Chat not found');
+          }
           
-          // Notify sender that message was delivered
-          const senderSocketId = connectedUsers.get(senderId);
-          if (senderSocketId) {
-            io.to(senderSocketId).emit('messageDelivered', {
-              messageId: messageId,  // Use messageId consistently
+          chat.incrementUnreadCount(receiverId);
+          await chat.save();
+          
+          // Check if the receiver is online
+          const receiverSocketId = connectedUsers.get(receiverId);
+          
+          if (receiverSocketId) {
+            // Deliver message to receiver
+            io.to(receiverSocketId).emit('message', message);
+
+            // Update message status to delivered
+            await Message.findByIdAndUpdate(messageId, {
+              status: 'delivered',
               deliveredAt: new Date()
             });
+            
+            // Notify sender that message was delivered
+            const senderSocketId = connectedUsers.get(senderId);
+            if (senderSocketId) {
+              io.to(senderSocketId).emit('messageDelivered', {
+                messageId: messageId,
+                deliveredAt: new Date()
+              });
+            }
+          } else {
+            // Receiver is offline - we could store the message for later delivery
+            console.log(`User ${receiverId} is offline. Message queued.`);
+            const senderSocketId = connectedUsers.get(senderId);
+            if (senderSocketId) {
+              io.to(senderSocketId).emit('messageQueued', {
+                messageId: messageId,
+                receiverId: receiverId
+              });
+            }
           }
-        } else {
-          // Receiver is offline - we could store the message for later delivery
-          console.log(`User ${receiverId} is offline. Message queued.`);
-          // console.log("Message Data: ", messages);
+        } catch (error) {
+          console.error('Error sending message:', error);
+          // Notify sender of the error
           const senderSocketId = connectedUsers.get(senderId);
           if (senderSocketId) {
-            io.to(senderSocketId).emit('messageQueued', {
+            io.to(senderSocketId).emit('messageError', {
               messageId: messageId,
-              receiverId: receiverId
+              error: error.message || 'Failed to send message'
             });
           }
         }
-
       });
     
       // Handle message read receipt
@@ -121,29 +162,42 @@ export const setupSocket = (server) => {
           const senderSocketId = connectedUsers.get(senderId);
           if (senderSocketId) {
             io.to(senderSocketId).emit('messageRead', {
-              messageId: messageId,  // Use messageId consistently instead of _id
+              messageId: messageId,
               readAt
             });
           }
         } catch (error) {
           console.error('Error updating read status:', error);
+          socket.emit('error', {
+            type: 'messageReadError',
+            message: 'Failed to mark message as read',
+            details: error.message
+          });
         }
       });
     
       // When a user reconnects, deliver any pending messages
-      socket.on('getUndeliveredMessages', async () => {
-        console.log(`User ${userId} reconnected. Checking for undelivered messages...`);
+      socket.on('getUndeliveredMessages', async (data) => {
+        console.log(`User ${userId} checking for undelivered messages...`);
         
         try {
-          // Find all undelivered messages for this user
+          const { userId, chatId } = data;
+          
+          if (!chatId) {
+            throw new Error('Chat ID is required');
+          }
+          
+          // Find all undelivered messages for this user in this chat
           const pendingMessages = await Message.find({
             receiver: userId,
+            chatId: chatId,
             status: 'sent'
-          })//.populate('sender', 'name profilePicture');
+          });
           
           // Send all pending messages to the user
           if (pendingMessages.length > 0) {
-            console.log("Pending Messages: ", pendingMessages);
+            console.log(`Found ${pendingMessages.length} pending messages for user ${userId} in chat ${chatId}`);
+            
             for (const message of pendingMessages) {
               // Format message for client
               const messageData = {
@@ -164,7 +218,7 @@ export const setupSocket = (server) => {
               await message.save();
               
               // Notify sender
-              const senderSocketId = connectedUsers.get(message.sender._id.toString());
+              const senderSocketId = connectedUsers.get(message.sender.toString());
               if (senderSocketId) {
                 io.to(senderSocketId).emit('messageDelivered', {
                   messageId: message._id,
@@ -172,24 +226,63 @@ export const setupSocket = (server) => {
                 });
               }
             }
+          } else {
+            console.log(`No pending messages for user ${userId} in chat ${chatId}`);
           }
         } catch (error) {
           console.error('Error delivering pending messages:', error);
+          socket.emit('error', {
+            type: 'undeliveredMessagesError',
+            message: 'Failed to retrieve undelivered messages',
+            details: error.message
+          });
+        }
+      });
+      
+      // Handle user going offline
+      socket.on('logout', () => {
+        if (userId) {
+          connectedUsers.delete(userId);
+          emitUserStatus(userId, false);
+          console.log(`User logged out: ${userId}`);
         }
       });
       
       // Handle disconnection
       socket.on('disconnect', () => {
-        // Remove user from connected users
-        for (const [key, value] of connectedUsers.entries()) {
-          if (value === socket.id) {
-            connectedUsers.delete(key);
-            console.log(`User disconnected: ${key}`);
-            break;
-          }
+        // Find user from connected users map
+        if (userId) {
+          connectedUsers.delete(userId);
+          emitUserStatus(userId, false);
+          console.log(`User disconnected: ${userId}`);
         }
       });
     });
+    
+    // Helper function to emit user online/offline status
+    function emitUserStatus(userId, isOnline) {
+      // Find all chats this user is part of
+      Chat.find({ participants: userId })
+        .then(chats => {
+          chats.forEach(chat => {
+            // For each chat, notify the other participant
+            const otherParticipantId = chat.participants.find(p => p.toString() !== userId.toString());
+            if (otherParticipantId) {
+              const otherParticipantSocketId = connectedUsers.get(otherParticipantId.toString());
+              if (otherParticipantSocketId) {
+                io.to(otherParticipantSocketId).emit('userStatus', {
+                  userId,
+                  isOnline,
+                  lastSeen: isOnline ? null : new Date()
+                });
+              }
+            }
+          });
+        })
+        .catch(err => {
+          console.error('Error emitting user status:', err);
+        });
+    }
 
     return io;
 };

@@ -7,6 +7,7 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  Dimensions
 } from "react-native";
 import { useEffect, useState, useCallback } from "react";
 import useUserStore from "../context/userStore";
@@ -18,6 +19,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import axiosInstance from "../utils/axios";
+import { Component, MapPinIcon } from "lucide-react-native";
+
+const width = Dimensions.get("window").width;
+const cardWidth = width * 0.42;
 
 // Function to fetch location bookmarks
 const getLocationBookmarks = async ({ userId, pageParam = 1, searchParam = "" }) => 
@@ -110,19 +115,22 @@ const BookmarkScreen = () => {
   const businessBookmarks = businessesData?.pages.flatMap((page) => page.bookmarks) || [];
 
   // Function to load more when nearing the end of the list
-  const loadMore = () => {
+  const loadMore = () => 
+  {
     if (activeTab === "locations" &&hasNextLocationsPage &&!isFetchingNextLocations ) fetchNextLocations();
     else if (activeTab === "businesses" && hasNextBusinessesPage && !isFetchingNextBusinesses) fetchNextBusinesses();
   };
 
   // Refresh function for pull-to-refresh
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(() => 
+  {
     if (activeTab === "locations") refetchLocations();
     else refetchBusinesses();
   }, [activeTab, refetchLocations, refetchBusinesses]);
 
   // Handle tab change
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tab) => 
+  {
     setActiveTab(tab);
     // Optionally force refetch when tab changes
     if (tab === "locations" && locationsData === undefined) refetchLocations();
@@ -310,56 +318,53 @@ const BookmarkScreen = () => {
 const BookMarkCard = ({ bookmark, type }) => {
   const handlePress = () => {
     // Navigate to appropriate screen based on bookmark type
-    if (type === "location") {
-      router.push(`/location/${bookmark._id}`);
-    } else {
-      router.push(`/business/profile/${bookmark._id}`);
-    }
+    if (type === "location") router.push(`/location/${bookmark._id}`);
+    else router.push(`/business/profile/${bookmark._id}`);
   };
 
   return (
     <TouchableOpacity
-      className="flex justify-end relative p-0 py-6 space-y-2 mb-4"
-      style={{ width: "44%", height: 150 }}
+      className="mb-5 relative rounded-2xl overflow-hidden"
+      style={{ width: cardWidth, height: 180 }}
       onPress={handlePress}
     >
-      {
-        type === "location" ? (
-          <Image
-            source={
-              bookmark?.imageUrl
-                ? { uri: bookmark?.imageUrl }
-                : images.DefaultBookmarkImg
-            }
-            className="absolute rounded-lg h-full w-full"
-          />
-        ) : (
-          <Image
-            source={
-              bookmark?.mediaUrls[0]
-                ? { uri: bookmark?.mediaUrls[0] }
-                : images.DefaultBookmarkImg
-            }
-            className="absolute rounded-lg h-full w-full"
-          />
-        )
-
-      }
-
-      <LinearGradient
-        colors={["transparent", "rgba(0,0,0,1)"]}
-        style={{ width: "100%", height: 50 }}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        className="absolute bottom-0 rounded-b-lg"
+      <Image
+        source={
+          type === "location"
+            ? bookmark?.imageUrl
+              ? { uri: bookmark?.imageUrl }
+              : images.DefaultBookmarkImg
+            : bookmark?.mediaUrls[0]
+              ? { uri: bookmark?.mediaUrls[0] }
+              : images.DefaultBookmarkImg
+        }
+        className="w-full h-full"
+        resizeMode="cover"
       />
 
-      <View className="px-2">
-        <Text className="text-white font-semibold">{bookmark.name}</Text>
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.9)"]}
+        style={{ width: "100%", height: 70 }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        className="absolute bottom-0 justify-end p-3"
+      >
+        <Text className="text-white font-semibold text-base">{bookmark.name}</Text>
         {type === "business" && bookmark.category && (
-          <Text className="text-gray-300 text-xs">{bookmark.category}</Text>
+          <View className="flex-row items-center mt-1">
+            <Component size={12} color="#f97316" />
+            <Text className="text-gray-300 text-xs ml-1">{bookmark.category}</Text>
+          </View>
         )}
-      </View>
+        {type === "location" && (
+          <View className="flex-row items-center mt-1">
+            <MapPinIcon size={12} color="#f97316" />
+            <Text className="text-gray-300 ml-1 text-xs">
+              {bookmark.region || 'Pakistan'}
+            </Text>
+          </View>
+        )}
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
