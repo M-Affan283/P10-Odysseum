@@ -324,6 +324,7 @@ const processBookingPayment = async (booking, paymentMethod, paymentDetails, amo
             throw new Error("Invalid payment amount");
             
         // Process the payment
+        console.log(`Processing payment of ${amountToCharge} via ${paymentMethod}`);
         const paymentSuccess = await processPayment(paymentMethod, paymentDetails, amountToCharge);
         
         if (!paymentSuccess)
@@ -373,6 +374,12 @@ const processBookingPayment = async (booking, paymentMethod, paymentDetails, amo
             error: error.message
         };
     }
+};
+
+const generateTransactionId = () => {
+    // This is a simple implementation - in a real application,
+    // you might use a more sophisticated method. like stripe.transaction.create() etc
+    return 'txn_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
 };
 
 /**
@@ -593,6 +600,7 @@ const calculatePaymentInfo = (booking, service) => {
     
     return paymentInfo;
 };
+
 
 
 export {
