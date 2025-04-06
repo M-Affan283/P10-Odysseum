@@ -214,21 +214,27 @@ const UserBookingsScreen = () => {
                 <View className="justify-center items-center">
                   <LinearGradient
                     colors={
-                      item.status === "Approved" ? ['#0d331d', '#10512e'] : 
-                      item.status === "Pending" ? ['#3a3000', '#554700'] : 
+                      item.status === "confirmed" ? ['#0d331d', '#10512e'] : 
+                      item.status === "pending" ? ['#3a3000', '#554700'] : 
+                      item.status === "completed" ? ['#0d330d', '#10512e'] :
+                      item.status === "no-show" ? ['#330d0d', '#501010'] : 
                       ['#330d0d', '#501010']
                     }
                     className="px-3 py-1 rounded-full border"
                     style={{ 
                       borderColor: 
-                        item.status === "Approved" ? '#22c55e' : 
-                        item.status === "Pending" ? '#eab308' : 
+                        item.status === "confirmed" ? '#22c55e' : 
+                        item.status === "pending" ? '#eab308' : 
+                        item.status === "completed" ? ['#0d330d', '#10512e'] :
+                        item.status === "no-show" ? ['#330d0d', '#501010'] : 
                         '#ef4444'
                     }}
                   >
                     <Text className={`text-xs font-medium ${
-                      item.status === "Approved" ? "text-green-400" : 
-                      item.status === "Pending" ? "text-yellow-400" : 
+                      item.status === "confirmed" ? "text-green-400" : 
+                      item.status === "pending" ? "text-yellow-400" :
+                      item.status === "completed" ? ['#0d330d', '#10512e'] :
+                      item.status === "no-show" ? ['#330d0d', '#501010'] : 
                       "text-red-400"
                     }`}>
                       {item.status}
