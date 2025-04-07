@@ -28,7 +28,11 @@ import SingleUserProfileScreen from "../src/screens/SingleUserProfileScreen";
 import ChatListScreen from "../src/screens/ChatListScreen";
 import LoginScreen from "../src/screens/LoginScreen";
 import BookingCreateScreen from "../src/screens/BookingCreateScreen";
-
+import UserBookingsScreen from "../src/screens/UserBookingsScreen";
+import ServiceBookingsScreen from "../src/screens/ServiceBookingsScreen";
+import UserBookingProfileScreen from "../src/screens/UserBookingProfileScreen";
+import ManageProfileScreen from "../src/screens/ManageProfileScreen";
+import MainCreateScreen from "../src/screens/MainCreateScreen";
 // Component testing
 
 export default function App() {
@@ -39,34 +43,35 @@ export default function App() {
       {/* <HomeScreen /> */}
       {/* <LoginScreen /> */}
       {/* <BookmarkScreen /> */}
+      {/* <DiscoverLocationsScreen /> */}
       {/* <CreatePostScreen /> */}
       {/* <UserProfileScreen /> */}
-      {/* <PostDetailsScreen postId="67307bbe0fe5cfaf17cbe7c4" /> */}
-      {/* <DiscoverLocationsScreen /> */}
+      {/* <PostDetailsScreen postId="67703efb15c0aad3657ac7b7" /> */}
       {/* <UserSearchScreen /> */}
       {/* <MainSearchScreen /> */}
+      {/* <MainCreateScreen /> */}
       {/* <SingleUserProfileScreen userId={'67719c4bbf46669c947acedc'} /> */}
       {/* <CreateItineraryScreen /> */}
-      {/* <ReviewsScreen entityId={'12345'} entityType={"Location"} entityName={"Test Entity"} /> */}
+      {/* <ReviewsScreen entityId={'6781353badab4c338ff55148'} entityType={"Location"} entityName={"TestLocation, Test1"} /> */}
       {/* <LocationDetailsScreen locationId={'6781353badab4c338ff55148'}/> */}
-
       {/* <SettingsScreen /> */}
       {/* <AboutScreen /> */}
       {/* <SecurityScreen /> */}
       {/* <PrivacyScreen /> */}
-
       {/* <BusinessLocationScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'}/> */}
-      {/* <BusinessCategoryScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'} category={'Test Category'}/> */}
-      {/* <BusinessProfileScreen businessId={'6781353badab4c338ff55148'}/> */}
+      {/* <BusinessCategoryScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'} category={'Restaurant'}/> */}
+      {/* <BusinessProfileScreen businessId={'67ecf968dc31bf9b620bf223'}/> */}
       {/* <BusinessLocationHeatmapScreen locationId={'6781353badab4c338ff55148'} locationName={'Test Location'}/> */}
       {/* <BusinessCreateScreen /> */}
       {/* <BusinessManageScreen /> */}
       {/* <ServiceCreateScreen /> */}
-      {/* <ServiceProfileScreen serviceId={'6781353badab4c338ff55148'}/> */}
-      {/* <BookingCreateScreen serviceId={'6781353badab4c338ff55148'}/> */}
+      {/* <ServiceProfileScreen serviceId={'67c549430fae13c7efcd1173'}/> */}
       {/* <ChatListScreen /> */}
-
-
+      {/* <ManageProfileScreen /> */}
+      {/* <BookingCreateScreen serviceId={'67c549430fae13c7efcd1173'}/> */}
+      {/* <UserBookingsScreen /> */}
+      {/* <UserBookingProfileScreen bookingId={'67e9000145ebed69024c3128'}/> */}
+      {/* <ServiceBookingsScreen serviceId={"67c549430fae13c7efcd1173"} /> */}
     </>
   );
 }
