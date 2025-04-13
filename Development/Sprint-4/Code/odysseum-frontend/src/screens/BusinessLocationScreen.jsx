@@ -257,10 +257,11 @@ const PopularBusinessesSlider = ({ businesses, loading }) => {
         className="mx-3 rounded-xl overflow-hidden shadow-lg"
         activeOpacity={0.7}
         onPress={() => router.push(`/business/profile/${business?._id}`)}
+        style={{ width: 250, height: 300 }} // Fixed dimensions for consistent card size
       >
         <LinearGradient
           colors={["rgba(34, 18, 66, 0.95)", "rgba(34, 18, 66, 0.85)"]}
-          className="p-2 rounded-xl"
+          className="p-2 rounded-xl h-full"
         >
           <Image
             source={
@@ -268,12 +269,12 @@ const PopularBusinessesSlider = ({ businesses, loading }) => {
                 ? { uri: business?.mediaUrls[0] }
                 : images.BusinessSearchImg
             }
-            style={{ width: 250, height: 170 }}
+            style={{ width: "100%", height: 170 }}
             className="rounded-xl"
             resizeMode="cover"
           />
 
-          <View className="mt-3 px-2 pb-3">
+          <View className="mt-2 px-2 pb-2 flex-1">
             <View className="flex-row items-center gap-1 py-1">
               <Image
                 source={icons.category}
@@ -294,11 +295,19 @@ const PopularBusinessesSlider = ({ businesses, loading }) => {
               </View>
             </View>
 
-            <View className="space-y-1">
-              <Text className="font-dsbold text-2xl text-white">
+            <View className="space-y-2 mt-1">
+              <Text 
+                className="font-dsbold text-xl text-white"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {business?.name}
               </Text>
-              <Text className="text-[#a0aec0] font-medium text-sm">
+              <Text 
+                className="text-[#a0aec0] font-medium text-sm"
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
                 {business?.address}
               </Text>
             </View>
@@ -309,7 +318,7 @@ const PopularBusinessesSlider = ({ businesses, loading }) => {
   };
 
   return (
-    <View className="space-y-3 py-4">
+    <View className="space-y-3 py-1">
       <View className="mx-6 flex-row justify-between items-center">
         <Text className="font-dsbold text-white text-xl">
           Popular Businesses

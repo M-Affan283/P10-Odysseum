@@ -4,7 +4,7 @@ import useUserStore from "../context/userStore";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import axiosInstance from "../utils/axios";
-import { ArrowLeftIcon, MagnifyingGlassIcon } from "react-native-heroicons/outline";
+import { ArrowLeftIcon, LightBulbIcon, MagnifyingGlassIcon } from "react-native-heroicons/outline";
 import images from "../../assets/images/images";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -146,7 +146,8 @@ const UserBookingsScreen = () => {
                 <Text className="mt-3 text-gray-300 font-medium">Loading bookings...</Text>
               </View>
             );
-          } else if (error) {
+          } 
+          else if (error) {
             return (
               <View className="flex-1 mt-8 justify-center items-center">
                 <Text className="text-lg text-red-400 font-medium">Failed to fetch bookings.</Text>
@@ -156,6 +157,16 @@ const UserBookingsScreen = () => {
                 >
                   <Text className="text-white font-medium">Retry</Text>
                 </TouchableOpacity>
+              </View>
+            );
+          }
+          else if (bookings.length === 0)
+          {
+            return (
+              <View className="flex-1 mt-8 justify-center items-center">
+                <LightBulbIcon size={40} color="#ffd454" />
+                <Text className="mt-3 text-lg text-gray-300 font-medium">No bookings found.</Text>
+                <Text className="text-gray-400 text-base mt-1 text-center">You have no bookings at the moment.</Text>
               </View>
             );
           }
