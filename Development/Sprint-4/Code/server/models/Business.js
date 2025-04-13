@@ -16,7 +16,7 @@ const businessSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please provide a business name'],
-    }, 
+    },
 
     address: {
         type: String,
@@ -83,7 +83,7 @@ const businessSchema = new mongoose.Schema({
         type: Number,
         default: 0.0,
     },
-    
+
     lastInteraction: { // To track dynamic popularity
         type: Date,
         default: null,
@@ -93,6 +93,11 @@ const businessSchema = new mongoose.Schema({
         type: Number,
         default: 0.0,
     },
+
+    adminNotes: { // Notes added by admin during approval/rejection
+        type: String,
+        default: ''
+    }
 
 
 

@@ -3,7 +3,6 @@
     Author: Shahrez
     Description: Router for admin-specific API endpoints
 */
-
 import express from "express";
 import { adminLogin } from "../controllers/AdminController/adminLogin.js";
 import { adminRefreshToken } from "../controllers/AdminController/adminRefreshToken.js";
@@ -16,6 +15,24 @@ import { getPostReportDetails } from "../controllers/AdminController/getPostRepo
 import { updateReportStatus } from "../controllers/AdminController/updateReportStatus.js";
 import { deleteReportedUser } from "../controllers/AdminController/deleteReportedUser.js";
 import { deleteReportedPost } from "../controllers/AdminController/deleteReportedPost.js";
+import { getPendingBusinesses } from "../controllers/AdminController/getPendingBusinesses.js";
+import { getBusinessDetails } from "../controllers/AdminController/getBusinessDetails.js";
+import { updateBusinessStatus } from "../controllers/AdminController/updateBusinessStatus.js";
+import { getUsers } from "../controllers/AdminController/getUsers.js";
+import { getUserDetails } from "../controllers/AdminController/getUserDetails.js";
+import { deleteUserPost } from "../controllers/AdminController/deleteUserPost.js";
+import { deleteUserComment } from "../controllers/AdminController/deleteUserComment.js";
+import { updateUserRole } from "../controllers/AdminController/updateUserRole.js";
+import { banUser } from "../controllers/AdminController/banUser.js";
+import { getLocations } from "../controllers/AdminController/getLocations.js";
+import { getLocationDetails } from "../controllers/AdminController/getLocationDetails.js";
+import { createLocation } from "../controllers/AdminController/createLocation.js";
+import { updateLocation } from "../controllers/AdminController/updateLocation.js";
+import { deleteLocation } from "../controllers/AdminController/deleteLocation.js";
+import { getPosts } from "../controllers/AdminController/getPosts.js";
+import { getPostDetails } from "../controllers/AdminController/getPostDetails.js";
+import { deletePost } from "../controllers/AdminController/deletePost.js";
+import { deleteComment } from "../controllers/AdminController/deleteComment.js";
 import { verifyAdminToken } from "../middleware/adminTokenVerification.js";
 
 const adminRouter = express.Router();
@@ -38,5 +55,31 @@ adminRouter.get("/reports/posts/:reportId", getPostReportDetails);
 adminRouter.post("/reports/update-status", updateReportStatus);
 adminRouter.post("/reports/delete-user", deleteReportedUser);
 adminRouter.post("/reports/delete-post", deleteReportedPost);
+
+// Business management routes
+adminRouter.get("/businesses/pending", getPendingBusinesses);
+adminRouter.get("/businesses/:businessId", getBusinessDetails);
+adminRouter.post("/businesses/update-status", updateBusinessStatus);
+
+// User management routes
+adminRouter.get("/users", getUsers);
+adminRouter.get("/users/:userId", getUserDetails);
+adminRouter.delete("/users/posts/:postId", deleteUserPost);
+adminRouter.delete("/users/comments/:commentId", deleteUserComment);
+adminRouter.post("/users/:userId/ban", banUser);
+adminRouter.post("/users/:userId/role", updateUserRole);
+
+// Location management routes
+adminRouter.get("/locations", getLocations);
+adminRouter.get("/locations/:locationId", getLocationDetails);
+adminRouter.post("/locations", createLocation);
+adminRouter.put("/locations/:locationId", updateLocation);
+adminRouter.delete("/locations/:locationId", deleteLocation);
+
+// Post management routes
+adminRouter.get("/posts", getPosts);
+adminRouter.get("/posts/:postId", getPostDetails);
+adminRouter.delete("/posts/:postId", deletePost);
+adminRouter.delete("/comments/:commentId", deleteComment);
 
 export default adminRouter;
