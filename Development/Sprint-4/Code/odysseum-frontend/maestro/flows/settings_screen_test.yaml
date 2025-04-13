@@ -1,0 +1,41 @@
+appId: com.odysseum.app
+---
+- launchApp:
+    clearState: true
+
+# Log in first
+- runFlow:
+    file: login_screen_test.yaml
+    env:
+      SKIP_WELCOME: "true"
+
+# Navigate to settings
+- tapOn: "Profile"
+- tapOn: "Settings"
+- assertVisible: "Settings"
+
+# Test various settings options
+- tapOn: "Account"
+- assertVisible: "Account Settings"
+- tapOn: "Back"
+
+- tapOn: "Security"
+- assertVisible: "Update Password"
+- tapOn: "Back"
+
+- tapOn: "Privacy"
+- assertVisible: "Privacy Settings"
+- tapOn: "Back"
+
+- tapOn: "Notifications"
+- assertVisible: "Notification Preferences"
+- tapOn: "Back"
+
+- tapOn: "About"
+- assertVisible: "About Odysseum"
+- tapOn: "Back"
+
+
+# Go back
+- tapOn:
+    id: "backButton"
