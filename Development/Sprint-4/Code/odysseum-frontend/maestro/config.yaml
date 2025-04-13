@@ -1,0 +1,6 @@
+# appId: com.odysseum.app
+appId: host.exp.Exponent # Expo Go appId
+environmentVariables:
+  TEST_USER_EMAIL: "affantest"
+  TEST_USER_PASSWORD: "Aff@n123"
+# defaultDeviceName: "Pixel 6"

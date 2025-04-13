@@ -1,0 +1,30 @@
+appId: com.odysseum.app
+---
+- launchApp:
+    clearState: true
+
+# Log in first
+- runFlow:
+    file: login_screen_test.yaml
+    env:
+      SKIP_WELCOME: "true"
+
+# Navigate to Bookmark Screen
+- tapOn: "Bookmarks"
+
+# Verify the Bookmark screen elements are visible
+- assertVisible: "Your Bookmarks"
+
+# Test bookmark tabs
+- tapOn: "Locations"
+- assertVisible: "Locations"
+
+- tapOn: "Businesses"
+- assertVisible: "Businesses"
+
+# Scroll through bookmarks
+- scroll
+
+# Navigate back
+- tapOn:
+    id: "backButton"

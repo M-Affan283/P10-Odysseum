@@ -1,0 +1,44 @@
+appId: com.odysseum.app
+---
+- launchApp:
+    clearState: true
+
+# Log in first
+- runFlow:
+    file: login_screen_test.yaml
+    env:
+      SKIP_WELCOME: "true"
+
+# Navigate to security settings
+- tapOn: "Profile"
+- tapOn: "Settings"
+- tapOn: "Security"
+- assertVisible: "Update Password"
+
+# Test password update form
+- tapOn:
+    id: "currentPasswordInput"
+- inputText: "WrongPassword123!"
+
+- tapOn:
+    id: "newPasswordInput"
+- inputText: "NewPassword123!"
+
+- tapOn:
+    id: "confirmPasswordInput"
+- inputText: "NewPassword123!"
+
+# Verify password requirements are displayed
+- assertVisible: "Password Requirements"
+- assertVisible: "Minimum 8 characters"
+- assertVisible: "At least one uppercase letter"
+- assertVisible: "At least one number"
+- assertVisible: "At least one special character"
+
+# Try to update (will fail due to wrong current password)
+- tapOn: "Update Password"
+- assertVisible: "Error updating password"
+
+# Go back
+- tapOn:
+    id: "backButton"

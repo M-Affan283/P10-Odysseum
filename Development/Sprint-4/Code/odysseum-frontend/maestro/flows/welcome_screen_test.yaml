@@ -1,0 +1,11 @@
+appId: host.exp.Exponent
+---
+- launchApp
+- assertVisible: "Welcome to Odysseum"
+- assertVisible: "Your gateway to shared journeys"
+- tapOn: "Login"
+- assertVisible: "Login"
+- back
+- tapOn: "Register"
+- assertVisible: "Register"
+- back
