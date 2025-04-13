@@ -25,12 +25,12 @@ const AdminDashboard = () => {
       console.log("Fetched reports response:", response);
       if (response.success) {
         const { reportedPostReports, reportedUserReports } = response.data;
-        console.log("Number of reported post reports:", reportedPostReports.length);
-        console.log("Number of reported user reports:", reportedUserReports.length);
+        console.log("Reported posts count:", reportedPostReports.length);
+        console.log("Reported users count:", reportedUserReports.length);
         setReportedPosts(reportedPostReports || []);
         setReportedUsers(reportedUserReports || []);
       } else {
-        console.error("API returned success false:", response.message);
+        console.error("API error:", response.message);
         setError("Failed to fetch reported data from server.");
       }
     } catch (err) {
@@ -39,7 +39,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Dummy handlers for delete and ban actions (ensure these work in your implementation)
   const handleDeletePost = async (postId) => {
     try {
       const res = await adminService.deletePost(postId);
@@ -50,6 +49,19 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error("Error deleting post:", error);
+    }
+  };
+
+  const handleIgnoreReport = async (reportId) => {
+    try {
+      const res = await adminService.ignoreReport(reportId);
+      if (res.success) {
+        fetchReports();
+      } else {
+        console.error("Ignore report failed:", res.message);
+      }
+    } catch (error) {
+      console.error("Error ignoring report:", error);
     }
   };
 
@@ -79,6 +91,20 @@ const AdminDashboard = () => {
     }
   };
 
+  // Handler specifically for ignoring a reported user (if needed, you can combine it with ignoreReport)
+  const handleIgnoreUserReport = async (reportId) => {
+    try {
+      const res = await adminService.ignoreReport(reportId);
+      if (res.success) {
+        fetchReports();
+      } else {
+        console.error("Ignore user report failed:", res.message);
+      }
+    } catch (error) {
+      console.error("Error ignoring user report:", error);
+    }
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Admin Dashboard</h1>
@@ -86,7 +112,11 @@ const AdminDashboard = () => {
       
       <h2>Reported Posts</h2>
       {reportedPosts && reportedPosts.length > 0 ? (
-        <ReportedPostsList reports={reportedPosts} onDeletePost={handleDeletePost} />
+        <ReportedPostsList
+          reports={reportedPosts}
+          onDeletePost={handleDeletePost}
+          onIgnoreReport={handleIgnoreReport}
+        />
       ) : (
         <p>No reported posts found. (Check console logs for details.)</p>
       )}
@@ -96,7 +126,11 @@ const AdminDashboard = () => {
         reportedUsers.map((report) => (
           <div
             key={report._id}
-            style={{ border: "1px solid #ccc", padding: "10px", marginBottom: "10px" }}
+            style={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              marginBottom: "10px",
+            }}
           >
             <p>
               <strong>User:</strong>{" "}
@@ -109,12 +143,17 @@ const AdminDashboard = () => {
             <p>
               <strong>Reason:</strong> {report.reason}
             </p>
-            <button onClick={() => handleDeleteUser(report.reportedUser._id)}>
-              Delete User
-            </button>
-            <button onClick={() => handleBanUser(report.reportedUser._id)}>
-              Ban User
-            </button>
+            <div>
+              <button onClick={() => handleDeleteUser(report.reportedUser._id)}>
+                Delete User
+              </button>
+              <button onClick={() => handleBanUser(report.reportedUser._id)} style={{ marginLeft: "10px" }}>
+                Ban User
+              </button>
+              <button onClick={() => handleIgnoreUserReport(report._id)} style={{ marginLeft: "10px" }}>
+                Ignore Report
+              </button>
+            </div>
           </div>
         ))
       ) : (

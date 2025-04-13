@@ -1,7 +1,7 @@
 import express from "express";
 import { adminLogin, getReportedReports, deletePost, deleteUser, banUser } from "../controllers/AdminController/adminDash.js";
 import { adminAuth } from "../middlewares/adminAuth.js";
-
+import { ignoreReport } from "../controllers/AdminController/adminDash.js";
 const router = express.Router();
 
 // Admin login
@@ -18,5 +18,7 @@ router.delete("/delete-user/:userId", adminAuth, deleteUser);
 
 // Ban a user (set to deactivated)
 router.put("/ban-user/:userId", adminAuth, banUser);
+
+router.delete("/ignore-report/:reportId", adminAuth, ignoreReport);
 
 export default router;

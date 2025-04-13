@@ -126,3 +126,36 @@ export const banUser = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const ignoreReport = async (req, res) => {
+  const { reportId } = req.params;
+  try {
+    // First attempt: try deleting from the PostReport model (for post reports)
+    let deletedReport = await PostReport.findByIdAndDelete(reportId);
+    if (deletedReport) {
+      return res.json({
+        success: true,
+        message: "Post report ignored (deleted) successfully."
+      });
+    }
+    // Second attempt: try deleting from the Report model (for user reports)
+    deletedReport = await Report.findByIdAndDelete(reportId);
+    if (deletedReport) {
+      return res.json({
+        success: true,
+        message: "User report ignored (deleted) successfully."
+      });
+    }
+    // If not found in either collection, return a 404 error
+    return res.status(404).json({
+      success: false,
+      message: "Report not found."
+    });
+  } catch (error) {
+    console.error("Error ignoring report:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

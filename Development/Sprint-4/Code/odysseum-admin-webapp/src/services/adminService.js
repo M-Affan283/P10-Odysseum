@@ -1,10 +1,6 @@
 import axios from "axios";
 
-// Ensure environment variable naming matches your setup. For Create React App,
-// use REACT_APP_API_BASE_URL. You can change this to match your environment.
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
-
-// Define the admin API URL (assuming admin endpoints are under /admin)
 const API_URL = `${BASE_URL}/admin`;
 
 const login = async (credentials) => {
@@ -14,7 +10,6 @@ const login = async (credentials) => {
 
 const getReportedReports = async () => {
   const token = localStorage.getItem("adminToken");
-  // Ensure token is available
   if (!token) {
     throw new Error("No admin token found in local storage.");
   }
@@ -61,6 +56,17 @@ const banUser = async (userId) => {
   return response.data;
 };
 
-const adminService = { login, getReportedReports, deletePost, deleteUser, banUser };
+const ignoreReport = async (reportId) => {
+  const token = localStorage.getItem("adminToken");
+  if (!token) {
+    throw new Error("No admin token found in local storage.");
+  }
+  const response = await axios.delete(`${API_URL}/ignore-report/${reportId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+const adminService = { login, getReportedReports, deletePost, deleteUser, banUser, ignoreReport };
 
 export default adminService;
