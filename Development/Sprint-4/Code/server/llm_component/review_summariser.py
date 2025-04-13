@@ -7,7 +7,7 @@ from langchain.prompts import PromptTemplate
 
 # setup mongodb connection
 def connect_to_db():
-    db_client = pymongo.MongoClient(os.getenv("MONGODB_URI_REMOTE"))
+    db_client = pymongo.MongoClient(os.getenv("MONGODB_URI_LOCAL"))
     db = db_client['OdysseumDataBase']
     return db
 

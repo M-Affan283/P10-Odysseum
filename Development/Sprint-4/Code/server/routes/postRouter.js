@@ -8,8 +8,8 @@ import { createPost } from "../controllers/PostContoller/createPost.js";
 import { getUserPosts, getFollowingPosts, getPostById, getAllPosts } from "../controllers/PostContoller/getPost.js";
 import { updatePost, likePost } from "../controllers/PostContoller/updatePost.js";
 import { deletePost } from "../controllers/PostContoller/deletePost.js";
-import upload from "../middleware/multerMiddleware.js";
-import { verifyToken } from "../middleware/tokenVerification.js";
+import upload from "../middlewares/multerMiddleware.js";
+import { verifyToken } from "../middlewares/tokenVerification.js";
 import { reportPost } from "../controllers/PostContoller/reportPost.js";
 
 const postRouter = express.Router();

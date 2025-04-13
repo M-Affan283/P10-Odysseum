@@ -19,7 +19,7 @@ import {
   getBusinessMapData
 } from "../controllers/BusinessController/getBusiness.js";
 import { updateBusiness, likeBusiness, bookmarBusiness } from "../controllers/BusinessController/updateBusiness.js";
-import upload from "../middleware/multerMiddleware.js";
+import upload from "../middlewares/multerMiddleware.js";
 
 const businessRouter = express.Router();
 

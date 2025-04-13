@@ -7,7 +7,7 @@ import express from "express";
 import {addReplyComment, addTopComment} from "../controllers/CommentController/addComment.js";
 import {getCommentById, getCommentsByPostId} from "../controllers/CommentController/getComment.js";
 import { deleteSingleComment } from "../controllers/CommentController/deleteComment.js";
-import { verifyToken } from "../middleware/tokenVerification.js";
+import { verifyToken } from "../middlewares/tokenVerification.js";
 
 const commentRouter = express.Router();
 
