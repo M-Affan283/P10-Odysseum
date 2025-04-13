@@ -1,0 +1,40 @@
+appId: com.odysseum.app
+---
+- launchApp:
+    clearState: true
+
+# Log in first
+- runFlow:
+    file: login_screen_test.yaml
+    env:
+      SKIP_WELCOME: "true"
+
+# Navigate to chat list
+- tapOn: "Messages"
+- assertVisible: "Conversations"
+
+# Test search function
+- tapOn:
+    id: "searchInput"
+- inputText: "John"
+- tapOn: "Search"
+
+# Clear search
+- tapOn:
+    id: "clearSearch"
+
+# Test message sorting
+- tapOn: "Recent"
+- tapOn: "Unread"
+
+# Try to create a new message
+- tapOn:
+    id: "newMessageButton"
+- assertVisible: "New Message"
+- tapOn: "Cancel"
+
+# Test scrolling
+- scroll
+
+# Go back to home
+- tapOn: "Home"

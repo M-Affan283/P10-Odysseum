@@ -13,17 +13,16 @@ import { registerUser } from "../controllers/UserController/registerUser.js";
 import { loginUser, oAuthLoginUser } from "../controllers/UserController/loginUser.js";
 import { followUser } from "../controllers/UserController/followUser.js";
 import { getAllUsers, getUserById, getUserByUsername, searchUser, getFollowingUsers } from "../controllers/UserController/getUser.js";
-import { updateUserBio } from "../controllers/UserController/updateUser.js";
 import { reportUser } from "../controllers/UserController/reportUser.js";
-import { updateUserUsername } from "../controllers/UserController/updateUser.js";
-import { updateUserPassword } from "../controllers/UserController/updateUser.js";
+import { updateUserUsername, updateProfile, updateUserBio, updateUserPassword } from "../controllers/UserController/updateUser.js";
 
 // Bookmark CRUD
-import { bookmarkLocation } from "../controllers/BookmarkController/addBookmark.js";
+import { bookmarkLocation, bookMarkBusiness } from "../controllers/BookmarkController/addBookmark.js";
 import { getUserLocationBookmarks,getUserBusinessBookmarks } from "../controllers/BookmarkController/getBookmark.js";
 
 import { verifyToken } from "../middleware/tokenVerification.js";
 import { refreshToken } from "../controllers/UserController/refreshToken.js";
+import upload from "../middleware/multerMiddleware.js";
 
 const userRouter = express.Router();
 
@@ -43,10 +42,12 @@ userRouter.get("/getFollowing", getFollowingUsers);
 userRouter.post("/updateUserBio", updateUserBio);
 userRouter.post("/updateUserUsername", updateUserUsername);
 userRouter.post("/updateUserPassword", updateUserPassword);
+userRouter.post("/updateProfile", upload.array("profilePicture",1), updateProfile);
 userRouter.post("/report", reportUser);
 
 // Bookmarking routes
-userRouter.post("/addBookmark", bookmarkLocation);
+userRouter.post("/bookmarkLocation", bookmarkLocation);
+userRouter.post("/bookmarkBusiness", bookMarkBusiness);
 userRouter.get("/getLocationBookmarks", getUserLocationBookmarks);
 userRouter.get("/getBusinessBookmarks", getUserBusinessBookmarks);
 

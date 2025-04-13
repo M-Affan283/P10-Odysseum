@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Platform, TouchableOpacity, Dimensions, TextInput, Image, ScrollView } from 'react-native';
+import { View, Text, FlatList, Platform, TouchableOpacity, Dimensions, TextInput, Image, ScrollView, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
@@ -13,6 +13,7 @@ import CalendarModal from '../components/CalendarModal';
 import Checkbox from "expo-checkbox";
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer'
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import moment from 'moment';
 
 const { width } = Dimensions.get('window');
 
@@ -31,9 +32,9 @@ const BookingCreateScreen = ({ serviceId }) => {
   const flatListRef = React.useRef();
 
   const [uploading, setUploading] = useState(false);
-  const [isTimedOut, setIsTimedOut] = useState(false);
+  const [isTimedOut, setIsTimedOut] = useState(false); //if timeout then show a message and restart the process by going back to the first screen
   const [serviceLoading, setServiceLoading] = useState(true); //for loading the service
-  const [availablityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityInfo, setAvailabilityInfo] = useState(null);
   const [error, setError] = useState('');
   const [calendarVisible, setCalendarVisible] = useState(false);
@@ -47,32 +48,20 @@ const BookingCreateScreen = ({ serviceId }) => {
     bookingDate: '',
     status: '',
     numberOfPeople: '',
-  timeSlot: {
-      startTime: '',
-      endTime: ''
-    },
-    pricing: {
-      basePrice: '',
-      specialPrice: {
-        applied: '',
-        name: '',
-        price: ''
-      },
-      taxAmount: '',
-      depositAmount: '',
-      totalAmount: ''
+    timeSlot: {
+        startTime: '',
+        endTime: ''
     },
     payment: {
       status: ''
       //transactions handledin the backend
     },
-
     //if online payment
     paymentMethod: '',
     paymentDetails: {
       cardNumber: '',
       expiryDate: '',
-      cvv: '',
+      cvc: '',
       name: ''
     },
   })
@@ -105,7 +94,7 @@ const BookingCreateScreen = ({ serviceId }) => {
     axiosInstance.get(`/service/getById?serviceId=${serviceId}`)
     .then((res)=>
     {
-      console.log(res.data)
+      // console.log(res.data)
       setService(res.data.service)
       setServiceLoading(false);
     })
@@ -118,20 +107,34 @@ const BookingCreateScreen = ({ serviceId }) => {
   }
 
   useEffect(() => {
-    // getService();
+    getService();
   }, []);
 
-  const getServiceAvailability = async (date) => {}
-  const setBookingDate = (date) =>
+  const getServiceAvailability = async (date) =>
   {
-    setForm({ ...form, bookingDate: date })
-  }
+    console.log(date)
 
-  useEffect(() =>
-  {
-    //if the booking date is changed, check if the service is available on that date
-    getServiceAvailability(form.bookingDate);
-  }, [form.bookingDate]);
+    setAvailabilityLoading(true);
+
+    axiosInstance.get(`/service/getAvailability?serviceId=${serviceId}&date=${date}`)
+    .then((res)=>
+    {
+      // console.log(res.data.availability)
+      setAvailabilityInfo(res.data.availability);
+      setAvailabilityLoading(false);
+    })
+    .catch((err)=>
+    {
+      console.log(err)
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'An error occurred while checking service availability.',
+        visibilityTime: 4000,
+      });
+      setAvailabilityLoading(false);
+    })
+  }
 
 
   // Handle Next button click
@@ -157,59 +160,78 @@ const BookingCreateScreen = ({ serviceId }) => {
   };
 
   const screens = [
-    // {screen: startScreen, params: {onNextPress}},
-    {screen: DateSelectScreen, params: {onNextPress, onBackPress, form, setForm, getServiceAvailability, calendarVisible, setCalendarVisible, focusedInput, setBookingDate }},
-    // {screen: BookingInfoScreen, params: {onNextPress, onBackPress, form, setForm, focusedInput }},
-    // {screen: PaymentScreen, params: {onNextPress, onBackPress, form, setForm, focusedInput }},
-    // {screen: ReviewScreen, params: {onNextPress, onBackPress, form, setForm, focusedInput }},
-    // {screen: SuccessScreen, params: {uploading, error }},
+    {screen: StartScreen, params: {onNextPress}},
+    {screen: DateSelectScreen, params: {service, onNextPress, onBackPress, form, setForm, getServiceAvailability, calendarVisible, setCalendarVisible, focusedInput, availabilityInfo, availabilityLoading }},
+    {screen: BookingInfoScreen, params: {service, onNextPress, onBackPress, form, setForm, focusedInput, isEndTimePickerVisible, setEndTimePickerVisible, isStartTimePickerVisible, setStartTimePickerVisible }},
+    {screen: PaymentScreen, params: {service, onNextPress, onBackPress, form, setForm, focusedInput }},
+    {screen: ReviewScreen, params: {service,onNextPress, onBackPress, form, createBooking }},
+    {screen: SuccessScreen, params: {uploading, error }},
   ];
+
+  if (serviceLoading)
+  {
+    return (
+      <View className="flex-1 items-center justify-center bg-[#070f1b]">
+        <LottieView
+            source={require('../../assets/animations/Loading1.json')}
+            autoPlay
+            loop={true}
+            style={{ width: 400, height: 400 }}
+        />
+
+        <Text className="text-gray-300 text-4xl p-5 font-dsbold">Loading...</Text>
+
+        <Text className="text-gray-400 text-lg p-5 text-center">Please wait while we load the service details.</Text>
+
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#070f1b]">
 
-      {/* timer here on top right*/}
-      {service && (
-        <View className="absolute top-3 right-3 z-10">
-          <CountdownCircleTimer
-            isPlaying
-            duration={service.bookingSettings.timeout * 60} // Convert minutes to seconds
-            colors={['#00FF00', '#F7B801', '#A30000']}
-            colorsTime={[
-              (service.bookingSettings.timeout * 60) * 0.6,
-              (service.bookingSettings.timeout * 60) * 0.3,
-              0
-            ]}
-            size={70}
-            strokeWidth={6}
-            onComplete={() => {
-              setIsTimedOut(true);
-              Toast.show({
-                type: 'error',
-                text1: 'Time Expired',
-                text2: 'Your booking session has timed out. Please start again.',
-                visibilityTime: 4000,
-              });
-              return { shouldRepeat: false };
-            }}
-          >
-            {({ remainingTime }) => {
-              const minutes = Math.floor(remainingTime / 60);
-              const seconds = remainingTime % 60;
-              return (
-                <View className="items-center">
-                  <Text className="text-white text-xs">Time Left</Text>
-                  <Text className="text-white font-bold">
-                    {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
-                  </Text>
-                </View>
-              );
-            }}
-          </CountdownCircleTimer>
-        </View>
-      )}
-
-
+      {
+        service && (
+          <View className="absolute bottom-5 right-5 z-10">
+            <CountdownCircleTimer
+              isPlaying
+              duration={service?.bookingSettings?.bookingTimeout * 60} // Convert minutes to seconds
+              colors={['#00FF00', '#F7B801', '#A30000']}
+              colorsTime={[
+                (service.bookingSettings.timeout * 60) * 0.6,
+                (service.bookingSettings.timeout * 60) * 0.3,
+                0
+              ]}
+              size={70}
+              strokeWidth={6}
+              onComplete={() => {
+                setIsTimedOut(true);
+                Toast.show({
+                  type: 'error',
+                  text1: 'Time Expired',
+                  text2: 'Your booking session has timed out. Please start again.',
+                  visibilityTime: 4000,
+                });
+                return { shouldRepeat: false };
+              }}
+            >
+              {({ remainingTime }) => {
+                const minutes = Math.floor(remainingTime / 60);
+                const seconds = remainingTime % 60;
+                return (
+                  <View className="items-center">
+                    <Text className="text-white text-xs">Time Left</Text>
+                    <Text className="text-white font-bold">
+                      {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
+                    </Text>
+                  </View>
+                );
+              }}
+            </CountdownCircleTimer>
+          </View>
+        )
+      }
+    
       <FlatList
         ref={flatListRef}
         horizontal
@@ -223,17 +245,119 @@ const BookingCreateScreen = ({ serviceId }) => {
           <View style={{ width: width}}>
             {item.screen(item.params)}
           </View>   
+        )}
+        getItemLayout={(data, index) => (
+          {length: width, offset: width * index, index}
         )} 
       />
     </SafeAreaView>
   )
 }
 
-const startScreen = ({onNextPress}) => {}
+const StartScreen = ({ onNextPress }) =>
+  {
+      return (
+          //move to screen center
+          <View className="flex-1 items-center justify-center">
+              <Image source={images.BookingImg} style={{ width: '95%', height: 250 }} className="rounded-full" resizeMode='cover' />
+  
+              <Text className="text-gray-300 text-4xl p-5 font-dsbold">Create Booking</Text>
+  
+              <Text className="text-gray-400 text-lg p-5 text-center">Welcome to the booking hub. This hub will guide you through the process of making a reservation for a service.</Text>
+  
+              <View className="flex-row gap-x-10 py-5">
+                  <TouchableOpacity onPress={ () => router.back()} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                      <ArrowLeftIcon size={40} color="black" />
+                  </TouchableOpacity>
+  
+                  <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+                      <ArrowRightIcon size={40} color="black" />
+                  </TouchableOpacity>
+              </View>
+          
+          </View>
+      );
+  };
 
-const DateSelectScreen = ({service, onNextPress, onBackPress, form, setForm, getServiceAvailability, calendarVisible, setCalendarVisible, focusedInput, setBookingDate, availabilityInfo, availablityLoading }) => 
+const DateSelectScreen = ({service, onNextPress, onBackPress, form, setForm, getServiceAvailability, calendarVisible, setCalendarVisible, focusedInput, availabilityInfo, availabilityLoading }) => 
 {
-  const validateScreen = () => {};
+  const setBookingDate = (date) =>
+  {
+    const dateString = date.toISOString();
+    setForm(prevForm => ({ ...prevForm, bookingDate: dateString }));
+    
+    // This ensures we're using the actual dateString value, not depending on state
+    getServiceAvailability(dateString);
+  }
+
+  const checkAdvanceBookingRequirements = () => {
+    if (!form.bookingDate || !service.bookingSettings) return null;
+    
+    const bookingDate = moment(form.bookingDate);
+    const currTime = moment();
+    
+    // Check if booking is too soon
+    if (bookingDate.isBefore(currTime.clone().add(service.bookingSettings.minAdvanceBooking, 'hours'))) {
+      return {
+        valid: false,
+        message: `Booking must be made at least ${service.bookingSettings.minAdvanceBooking} hours in advance`
+      };
+    }
+    
+    // Check if booking is too far in the future
+    if (bookingDate.isAfter(currTime.clone().add(service.bookingSettings.maxAdvanceBooking, 'days'))) {
+      return {
+        valid: false,
+        message: `Booking must be made at most ${service.bookingSettings.maxAdvanceBooking} days in advance`
+      };
+    }
+    
+    return {
+      valid: true,
+      message: 'Booking time is valid'
+    };
+  };
+
+  const validateScreen = () => 
+  {
+    if (!Date.parse(form.bookingDate) || !form.bookingDate)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please select a booking date.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    const advanceCheck = checkAdvanceBookingRequirements();
+    if (!advanceCheck?.valid) 
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: advanceCheck.message,
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    onNextPress();
+  };
+
+  // Function to determine the status color
+  const getStatusColor = (status) => {
+    if (status.includes('Available')) return 'text-green-500';
+    if (status.includes('Limited')) return 'text-yellow-500';
+    return 'text-red-500'; // For Fully Booked or Unavailable
+  };
+
+  // Function to handle selecting a date from upcoming dates
+  const selectUpcomingDate = (dateString) => {
+    const date = new Date(dateString);
+    setBookingDate(date);
+  };
 
   return (
     <View className="flex-1">
@@ -245,7 +369,7 @@ const DateSelectScreen = ({service, onNextPress, onBackPress, form, setForm, get
         <Image source={images.Business2Img} style={{ width: 400, height: 250 }} resizeMode='contain' />
         <Text className="text-gray-300 text-3xl p-5 font-dsbold text-center">Select a Booking Date.</Text>
 
-        {/* First displat available dates of service */}
+        {/* First display available days/dates of service */}
         <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
           <Text className="text-white text-xl font-dsbold mb-3">Availability Info</Text>
           <View className="space-y-2">
@@ -299,23 +423,94 @@ const DateSelectScreen = ({service, onNextPress, onBackPress, form, setForm, get
           <Text className="text-white text-xl font-dsbold mb-3">Select a Date</Text>
           <View className="flex-row justify-between items-center">
             <Text className="text-gray-400">Booking Date:</Text>
-            <TouchableOpacity onPress={() => setCalendarVisible(true)} className="flex-row items-center gap-x-2">
+            <TouchableOpacity onPress={() => setCalendarVisible(true)} className="flex-row items-center gap-x-2 bg-gray-700 p-2 rounded-lg">
               <Text className="text-white">{form.bookingDate ? new Date(form.bookingDate).toLocaleDateString('en-GB') : 'Select Date'}</Text>
               <CalendarIcon size={20} color="white" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Display output of getServiceAvailability here. it will tell if its available at the selecred dates. if not it will give array of upcoming dates */}
-        
+        {/* Display availability information */}
+        <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+          <Text className="text-white text-xl font-dsbold mb-3">Availability Status</Text>
+          
+          {availabilityLoading ? (
+            <View className="items-center py-4">
+              <ActivityIndicator size="large" color="#8B5CF6" />
+              <Text className="text-gray-400 mt-2">Checking availability...</Text>
+            </View>
+          ) : availabilityInfo ? (
+            <View className="space-y-4">
+              {/* Show availability status */}
+              <View className="bg-gray-700 p-4 rounded-lg">
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="text-gray-400">Date:</Text>
+                  <Text className="text-white">{availabilityInfo.requestedDate}</Text>
+                </View>
+                
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-gray-400">Status:</Text>
+                  <Text className={`font-dsbold ${getStatusColor(availabilityInfo.availabilityStatus)}`}>
+                    {availabilityInfo.availabilityStatus}
+                  </Text>
+                </View>
+                
+                {/* Add Advance Booking Check */}
+                {form.bookingDate && (
+                  <>
+                    {(() => {
+                      const advanceCheck = checkAdvanceBookingRequirements();
+                      return (
+                        <View className="mt-3 pt-3 border-t border-gray-600">
+                          <Text className="text-gray-400 mb-1">Booking Window:</Text>
+                          <Text className={`font-dsbold ${advanceCheck?.valid ? 'text-green-500' : 'text-red-500'}`}>
+                            {advanceCheck?.message}
+                          </Text>
+                        </View>
+                      );
+                    })()}
+                  </>
+                )}
+              </View>
+              
+              {/* If not available on requested date, show upcoming dates */}
+              {!availabilityInfo.isAvailable && availabilityInfo.upcomingDates.length > 0 && (
+                <View>
+                  <Text className="text-white text-lg font-dsbold mb-2">Upcoming Available Dates:</Text>
+                  <View className="space-y-2">
+                    {availabilityInfo.upcomingDates.map((date, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => selectUpcomingDate(date.date)}
+                        className="bg-gray-700 p-3 rounded-lg flex-row justify-between items-center"
+                      >
+                        <Text className="text-white">{date.date}</Text>
+                        <View className="flex-row items-center">
+                          <Text className="text-green-500 mr-2">{date.remainingSpots} spots</Text>
+                          <ArrowRightIcon size={16} color="#8B5CF6" />
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </View>
+          ) : (
+            <Text className="text-gray-400 text-center py-4">Please select a date to check availability</Text>
+          )}
+        </View>
 
         <View className="flex-row gap-5 py-5 justify-center">
-            <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                <ArrowLeftIcon size={40} color="black" />
+            <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10 items-center justify-center">
+                <ArrowLeftIcon size={30} color="black" />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={validateScreen} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
-                <ArrowRightIcon size={40} color="black" />
+            <TouchableOpacity 
+              onPress={validateScreen} 
+              className={`${(!form.bookingDate || (availabilityInfo && !availabilityInfo.isAvailable)) ? 'bg-gray-500' : 'bg-purple-500'} w-14 h-14 p-2 rounded-full mt-10 items-center justify-center`}
+              disabled={!form.bookingDate || (availabilityInfo && !availabilityInfo.isAvailable)}
+            >
+                <ArrowRightIcon size={30} color="black" />
             </TouchableOpacity>
         </View>
 
@@ -341,6 +536,44 @@ const BookingInfoScreen = ({service, onNextPress, onBackPress, form, setForm, fo
   {
       setForm({ ...form, timeSlot: { ...form.timeSlot, endTime: new Date(time).toLocaleTimeString('en-GB') } });
       setEndTimePickerVisible(false);
+  };
+
+  const validateScreen = () => 
+  {
+    if (!form.timeSlot.startTime)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please select a start time.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    if (!form.timeSlot.endTime)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please select an end time.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    if (!form.numberOfPeople)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter the number of people.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    onNextPress();
   };
 
   return (
@@ -397,6 +630,7 @@ const BookingInfoScreen = ({service, onNextPress, onBackPress, form, setForm, fo
           <TextInput
             placeholder="Number of People"
             placeholderTextColor="#4B5563"
+            keyboardType='numeric'
             style={{ padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
             value={form.numberOfPeople}
             onChangeText={(text) => setForm({ ...form, numberOfPeople: text })}
@@ -408,8 +642,12 @@ const BookingInfoScreen = ({service, onNextPress, onBackPress, form, setForm, fo
                 <ArrowLeftIcon size={40} color="black" />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+            <TouchableOpacity onPress={validateScreen} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
                 <ArrowRightIcon size={40} color="black" />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => console.log(JSON.stringify(form))} className="bg-purple-500 h-14 p-2 rounded-full mt-10">
+                <Text className="text-white text-lg font-dsbold">Debug</Text>
             </TouchableOpacity>
         </View>
       </ScrollView>
@@ -422,7 +660,76 @@ const PaymentScreen = ({service, onNextPress, onBackPress, form, setForm, focuse
 {
   //check if online payment is enabled. if not, show a message that online payment is not enabled for this service, so skip this step.
 
-  if (!service?.onlinePaymentEnabled) return onNextPress();
+  // if (!service?.onlinePaymentEnabled)
+  // {
+  //   onNextPress();
+  // }
+
+  const validateScreen = () => 
+  {
+    if (!service.onlinePaymentEnabled)
+    {
+      onNextPress();
+      return;
+    }
+
+    if (!form.paymentMethod)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please select a payment method.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    if (!form.paymentDetails.cardNumber)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a card number.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    if (!form.paymentDetails.expiryDate)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter an expiry date.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    if (!form.paymentDetails.cvv)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a CVV.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    if (!form.paymentDetails.name)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a name.',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    onNextPress();
+  };
 
   return (
     <View className="flex-1">
@@ -434,76 +741,93 @@ const PaymentScreen = ({service, onNextPress, onBackPress, form, setForm, focuse
         <Image source={images.Business2Img} style={{ width: 400, height: 250 }} resizeMode='contain' />
         <Text className="text-gray-300 text-3xl p-5 font-dsbold text-center">Enter Payment Information.</Text>
 
-        <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-          <Text className="text-white text-xl font-dsbold mb-3">Select a Payment Method</Text>
-          <View className="flex-row justify-between items-center">
-            <Text className="text-gray-400">Payment Method:</Text>
-            <Dropdown
-              options={[
-                { label: 'Credit Card', value: 'credit_card' },
-                { label: 'Debit Card', value: 'debit_card' },
-                { label: 'Paypal', value: 'paypal' },
-                { label: 'Stripe', value: 'stripe' },
-              ]}
-              value={form.paymentMethod}
-              onChange={(text) => setForm({ ...form, paymentMethod: text })}
-            />
-          </View>
-        </View>
+        {
+          service?.onlinePaymentEnabled ? (
+            <>
+            <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+              <Text className="text-white text-xl font-dsbold mb-3">Select a Payment Method</Text>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-gray-400">Payment Method:</Text>
+                <Dropdown
+                  options={[
+                    { label: 'Credit Card', value: 'credit_card' },
+                    { label: 'Debit Card', value: 'debit_card' },
+                    { label: 'Paypal', value: 'paypal' },
+                    { label: 'Stripe', value: 'stripe' },
+                  ]}
+                  value={form.paymentMethod}
+                  onChange={(text) => setForm({ ...form, paymentMethod: text })}
+                />
+              </View>
+            </View>
 
-        <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-          <Text className="text-white text-xl font-dsbold mb-3">Enter Payment Details</Text>
-          <View className="flex-row justify-between items-center">
-            <Text className="text-gray-400">Card Number:</Text>
-            <TextInput
-              placeholder="Card Number"
-              placeholderTextColor="#4B5563"
-              style={{ width: 200, padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
-              value={form.paymentDetails.cardNumber}
-              onChangeText={(text) => setForm({ ...form, paymentDetails: { ...form.paymentDetails, cardNumber: text } })}
-            />
-          </View>
-          <View className="flex-row justify-between items-center mt-2">
-            <Text className="text-gray-400">Expiry Date:</Text>
-            <TextInput
-              placeholder="Expiry Date"
-              placeholderTextColor="#4B5563"
-              style={{ width: 200, padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
-              value={form.paymentDetails.expiryDate}
-              onChangeText={(text) => setForm({ ...form, paymentDetails: { ...form.paymentDetails, expiryDate: text } })}
-            />
-          </View>
+            <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+              <Text className="text-white text-xl font-dsbold mb-3">Enter Payment Details</Text>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-gray-400">Card Number:</Text>
+                <TextInput
+                  placeholder="Card Number"
+                  placeholderTextColor="#4B5563"
+                  style={{ width: 200, padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
+                  value={form.paymentDetails.cardNumber}
+                  onChangeText={(text) => setForm({ ...form, paymentDetails: { ...form.paymentDetails, cardNumber: text } })}
+                />
+              </View>
+              <View className="flex-row justify-between items-center mt-2">
+                <Text className="text-gray-400">Expiry Date:</Text>
+                <TextInput
+                  placeholder="Expiry Date"
+                  placeholderTextColor="#4B5563"
+                  style={{ width: 200, padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
+                  value={form.paymentDetails.expiryDate}
+                  onChangeText={(text) => setForm({ ...form, paymentDetails: { ...form.paymentDetails, expiryDate: text } })}
+                />
+              </View>
 
-          <View className="flex-row justify-between items-center mt-2">
-            <Text className="text-gray-400">CVV:</Text>
-            <TextInput
-              placeholder="CVV"
-              placeholderTextColor="#4B5563"
-              style={{ width: 200, padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
-              value={form.paymentDetails.cvv}
-              onChangeText={(text) => setForm({ ...form, paymentDetails: { ...form.paymentDetails, cvv: text } })}
-            />
-          </View>
+              <View className="flex-row justify-between items-center mt-2">
+                <Text className="text-gray-400">CVV:</Text>
+                <TextInput
+                  placeholder="CVV"
+                  placeholderTextColor="#4B5563"
+                  style={{ width: 200, padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
+                  value={form.paymentDetails.cvc}
+                  onChangeText={(text) => setForm({ ...form, paymentDetails: { ...form.paymentDetails, cvc: text } })}
+                />
+              </View>
 
-          <View className="flex-row justify-between items-center mt-2">
-            <Text className="text-gray-400">Name:</Text>
-            <TextInput
-              placeholder="Name"
-              placeholderTextColor="#4B5563"
-              style={{ width: 200, padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
-              value={form.paymentDetails.name}
-              onChangeText={(text) => setForm({ ...form, paymentDetails: { ...form.paymentDetails, name: text } })}
-            />
-          </View>
-        </View>
+              <View className="flex-row justify-between items-center mt-2">
+                <Text className="text-gray-400">Name:</Text>
+                <TextInput
+                  placeholder="Name"
+                  placeholderTextColor="#4B5563"
+                  style={{ width: 200, padding: 10, color: 'white', backgroundColor: '#374151', borderRadius: 10 }}
+                  value={form.paymentDetails.name}
+                  onChangeText={(text) => setForm({ ...form, paymentDetails: { ...form.paymentDetails, name: text } })}
+                />
+              </View>
+            </View>
+            </>
+          )
+          :
+          (
+            <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+              <Text className="text-white text-xl font-dsbold mb-3">Payment Method</Text>
+              <Text className="text-gray-400 text-lg">Online payment is not enabled for this service. Please proceed to the next step.</Text>
+            </View>
+          )
+        }
 
         <View className="flex-row gap-5 py-5 justify-center">
             <TouchableOpacity onPress={onBackPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
                 <ArrowLeftIcon size={40} color="black" />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+            <TouchableOpacity onPress={validateScreen} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
                 <ArrowRightIcon size={40} color="black" />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => console.log(form.paymentDetails)} className="bg-purple-500 h-14 p-2 rounded-full mt-10">
+                <Text className="text-white text-lg font-dsbold">Debug</Text>
             </TouchableOpacity>
         </View>
       </ScrollView>
@@ -512,7 +836,7 @@ const PaymentScreen = ({service, onNextPress, onBackPress, form, setForm, focuse
 };
 
 //review booking, confirm
-const ReviewScreen = ({service, onNextPress, onBackPress, form, setForm, focusedInput }) =>
+const ReviewScreen = ({service,onNextPress, onBackPress, form, createBooking }) =>
 {
   return (
     <View className="flex-1 items-center justify-center">
@@ -546,26 +870,36 @@ const ReviewScreen = ({service, onNextPress, onBackPress, form, setForm, focused
 
           <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
             <Text className="text-white text-xl font-dsbold mb-3">Payment Information</Text>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-400">Payment Method:</Text>
-              <Text className="text-white">{form.paymentMethod}</Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-400">Card Number:</Text>
-              <Text className="text-white">{form.paymentDetails.cardNumber}</Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-400">Expiry Date:</Text>
-              <Text className="text-white">{form.paymentDetails.expiryDate}</Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-400">CVV:</Text>
-              <Text className="text-white">{form.paymentDetails.cvv}</Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-400">Name:</Text>
-              <Text className="text-white">{form.paymentDetails.name}</Text>
-            </View>
+            {
+              service.onlinePaymentEnabled ? (
+                <>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Payment Method:</Text>
+                  <Text className="text-white">{form.paymentMethod}</Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Card Number:</Text>
+                  <Text className="text-white">{form.paymentDetails.cardNumber}</Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Expiry Date:</Text>
+                  <Text className="text-white">{form.paymentDetails.expiryDate}</Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">CVV:</Text>
+                  <Text className="text-white">{form.paymentDetails.cvv}</Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Name:</Text>
+                  <Text className="text-white">{form.paymentDetails.name}</Text>
+                </View>
+                </>
+              )
+              :
+              (
+                <Text className="text-gray-400 text-lg">Online payment is not enabled for this service.</Text>
+              )
+            }
           </View>
 
           <View className="flex-row gap-5 py-5 justify-center">
@@ -573,7 +907,7 @@ const ReviewScreen = ({service, onNextPress, onBackPress, form, setForm, focused
                   <ArrowLeftIcon size={40} color="black" />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={onNextPress} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
+              <TouchableOpacity onPress={() => { onNextPress() ; createBooking() }} className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10">
                   <ArrowRightIcon size={40} color="black" />
               </TouchableOpacity>
           </View>
@@ -584,7 +918,7 @@ const ReviewScreen = ({service, onNextPress, onBackPress, form, setForm, focused
 };
 
 //success screen
-const successScreen = ({uploading, error}) => {
+const SuccessScreen = ({uploading, error}) => {
     return (
 
         uploading ? (
@@ -614,12 +948,12 @@ const successScreen = ({uploading, error}) => {
 
                 <Text className="text-gray-300 text-4xl p-5 font-dsbold">Error creating booking</Text>
 
-                <Text className="text-gray-400 text-lg p-5 text-center">An error occurred while creating your service. Please try again later.</Text>
+                <Text className="text-gray-400 text-lg p-5 text-center">An error occurred while making the booking. Please try again later.</Text>
                 <Text className="text-gray-400 text-lg p-5 text-center">Error: {error}</Text>
 
                 <View className="flex-row gap-x-10 mb-3">
                     <TouchableOpacity onPress={() => router.replace(`/service/profile/${service._id}`)} className="bg-purple-500 p-3 rounded-full mt-10">
-                        <Text className="text-white text-lg">Back to Settings</Text>
+                        <Text className="text-white text-lg">Back to Profile</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -636,14 +970,14 @@ const successScreen = ({uploading, error}) => {
                     style={{ width: 300, height: 300 }}
                 />
 
-                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Service!!</Text>
+                <Text className="text-gray-300 text-4xl p-5 font-dsbold">Booking Created!!</Text>
 
-                <Text className="text-gray-400 text-lg p-5 text-center">Congratulations! Your service has been successfully created. Now go and advertise it to the world!</Text>
+                <Text className="text-gray-400 text-lg p-5 text-center">Congratulations! Your booking has been successfully created.</Text>
 
                 <View className="flex-row gap-x-10 py-5">
 
-                    <TouchableOpacity onPress={() => router.replace('/route-to-mybooking-in-profile')} className="bg-purple-500 p-3 rounded-full mt-10">
-                        <Text className="text-white text-lg">Complete</Text>
+                    <TouchableOpacity onPress={() => router.replace('/user/booking/bookings')} className="bg-purple-500 p-3 rounded-full mt-10">
+                        <Text className="text-white text-lg">Go to My Bookings</Text>
                     </TouchableOpacity>
                 </View>
             

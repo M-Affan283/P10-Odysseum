@@ -1,11 +1,19 @@
 import { Route, Routes as RouterRoutes, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import LoginPage from './pages/auth/LoginPage'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import UserReportsPage from './pages/reports/UserReportsPage'
 import UserReportDetailsPage from './pages/reports/UserReportDetailsPage'
 import PostReportsPage from './pages/reports/PostReportsPage'
 import PostReportDetailsPage from './pages/reports/PostReportDetailsPage'
+import PendingBusinessesPage from './pages/businesses/PendingBusinessesPage';
+import BusinessDetailsPage from './pages/businesses/BusinessDetailsPage';
+import UsersPage from './pages/users/UsersPage';
+import UserDetailsPage from './pages/users/UserDetailsPage';
+import LocationsPage from './pages/locations/LocationsPage';
+import LocationDetailsPage from './pages/locations/LocationDetailsPage';
+import PostsPage from './pages/posts/PostsPage';
+import PostDetailsPage from './pages/posts/PostDetailsPage';
 import useAdminStore from './store/adminStore'
 
 // Protected route component
@@ -66,6 +74,58 @@ export const Routes = () => {
             <Route path="/reports/posts/:reportId" element={
                 <ProtectedRoute>
                     <PostReportDetailsPage />
+                </ProtectedRoute>
+            } />
+
+            {/* Business Routes */}
+            <Route path="/businesses" element={
+                <ProtectedRoute>
+                    <PendingBusinessesPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/businesses/:businessId" element={
+                <ProtectedRoute>
+                    <BusinessDetailsPage />
+                </ProtectedRoute>
+            } />
+
+            {/* User Routes */}
+            <Route path="/users" element={
+                <ProtectedRoute>
+                    <UsersPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/users/:userId" element={
+                <ProtectedRoute>
+                    <UserDetailsPage />
+                </ProtectedRoute>
+            } />
+
+            {/* Location Routes */}
+            <Route path="/locations" element={
+                <ProtectedRoute>
+                    <LocationsPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/locations/:locationId" element={
+                <ProtectedRoute>
+                    <LocationDetailsPage />
+                </ProtectedRoute>
+            } />
+
+            {/* Post Routes */}
+            <Route path="/posts" element={
+                <ProtectedRoute>
+                    <PostsPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/posts/:postId" element={
+                <ProtectedRoute>
+                    <PostDetailsPage />
                 </ProtectedRoute>
             } />
 

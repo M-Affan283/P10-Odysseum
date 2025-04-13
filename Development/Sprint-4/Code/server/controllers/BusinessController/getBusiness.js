@@ -41,7 +41,7 @@ const getBusinessById = async (req, res) =>
 
     const retBusiness = {
       ...business._doc,
-      bookmarked: user.bookmarks.includes(businessId),
+      bookmarked: user.businessBookmarks.includes(businessId),
     }
 
     return res.status(200).json({ message: "Business found", business: retBusiness });

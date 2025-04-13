@@ -1,0 +1,13 @@
+appId: com.odysseum.app
+---
+- launchApp
+- tapOn: "Login"
+- assertVisible: "Login"
+- inputText:
+    id: "email-input"
+    text: "${TEST_USER_EMAIL}"
+- inputText:
+    id: "password-input"
+    text: "${TEST_USER_PASSWORD}"
+- tapOn: "Login"
+- assertVisible: "Explore" # Check that we've navigated to home screen

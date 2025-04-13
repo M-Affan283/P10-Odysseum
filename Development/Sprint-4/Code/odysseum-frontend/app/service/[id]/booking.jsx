@@ -3,7 +3,7 @@ import React from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import BookingCreateScreen from '../../../src/screens/BookingCreateScreen';
 
-const ServiceBooking = () => {
+const ServiceCreateBooking = () => {
 
     const { id } = useLocalSearchParams();
 
@@ -14,4 +14,4 @@ const ServiceBooking = () => {
   )
 }
 
-export default ServiceBooking
+export default ServiceCreateBooking

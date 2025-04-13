@@ -95,7 +95,7 @@ export const createService = async (req, res) => {
         }
 
         // Upload media files
-        const fileURLS = await uploadFile(files, businessId);
+        const fileURLS = await uploadFile(files, business.ownerId);
         if (fileURLS.status !== 200) return res.status(500).json({ message: fileURLS.message });
 
         // Create new service

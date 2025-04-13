@@ -1,7 +1,7 @@
 import { View, Text, FlatList, TouchableOpacity, Image, TextInput, Modal, ActivityIndicator } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import axiosInstance from '../utils/axios';
 import useUserStore from '../context/userStore';
 import { MagnifyingGlassIcon, PlusIcon } from 'react-native-heroicons/outline';
@@ -21,9 +21,19 @@ const ChatListScreen = () => {
   
   const user = useUserStore(state => state.user);
 
-  useEffect(() => {
-    fetchChats();
-  }, []);
+  //reload chats every time the screen is focused (usecallback) and useEffect to fetch chats when the component mounts
+  
+  // useEffect(() => {
+  //   fetchChats();
+  // }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchChats();
+      fetchFollowedUsers();
+    }, [])
+  );
+
 
   const fetchChats = async () => {
     try {
@@ -69,6 +79,17 @@ const ChatListScreen = () => {
   };
 
   const handleCreateNewChat = async (otherUserId) => {
+
+    //if chat already exists, navigate to it
+    const existingChat = chats.find(chat => chat.otherUser._id === otherUserId);
+    if (existingChat) 
+    {
+      console.log('Chat already exists:', existingChat._id);
+      setShowNewChatModal(false);
+      router.push(`/chat/${existingChat._id}`);
+      return;
+    }
+
     try {
       setCreatingChat(true);
       // console.log('Creating chat with user:', otherUserId);

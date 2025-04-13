@@ -24,24 +24,24 @@ export const deletePost = async (req,res) =>
 {
     const { postId, userId } = req.query;
 
-    if(!postId) return res.status(400).json({error: ERROR_MESSAGES.NO_POST_ID});
-    if(!userId) return res.status(400).json({error: ERROR_MESSAGES.NO_USER_ID});
+    if(!postId) return res.status(400).json({message: ERROR_MESSAGES.NO_POST_ID});
+    if(!userId) return res.status(400).json({message: ERROR_MESSAGES.NO_USER_ID});
 
     try
     {
         const post = await Post.findById(postId);
-        if(!post) return res.status(404).json({error: ERROR_MESSAGES.INVALID_POST});
+        if(!post) return res.status(404).json({message: ERROR_MESSAGES.INVALID_POST});
         
         const user = await User.findById(userId);
-        if(!user) return res.status(404).json({error: ERROR_MESSAGES.USER_NOT_FOUND});
+        if(!user) return res.status(404).json({message: ERROR_MESSAGES.USER_NOT_FOUND});
 
         //Aiuthorization check. If not creator or admin, return unauthorized
-        if(post.creatorId.toString() !== userId && user.role !== 'admin') return res.status(401).json({error: ERROR_MESSAGES.UNAUTHORIZED});
+        if(post.creatorId.toString() !== userId && user.role !== 'admin') return res.status(401).json({message: ERROR_MESSAGES.UNAUTHORIZED});
 
         //delete all media files for the post if any
         const deletefiles = await deleteFiles(post.mediaUrls);
 
-        if(deletefiles.status !== 200) return res.status(500).json({error: deletefiles.message});
+        if(deletefiles.status !== 200) return res.status(500).json({message: deletefiles.message});
 
         //delete all comments for the post if any
         await Comment.deleteMany({postId: postId});
@@ -54,6 +54,6 @@ export const deletePost = async (req,res) =>
     catch(error)
     {
         console.log(error);
-        return res.status(500).json({error: ERROR_MESSAGES.SERVER_ERROR});
+        return res.status(500).json({message: ERROR_MESSAGES.SERVER_ERROR});
     }
 }

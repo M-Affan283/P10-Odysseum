@@ -1,75 +1,301 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, Image, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  FlatList,
+  Dimensions,
+  StatusBar,
+  Animated,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import images from "../../assets/images/images";
+import {
+  Users,
+  MapPin,
+  Building2,
+  Search,
+  ChevronRight,
+} from "lucide-react-native";
 
+const { width } = Dimensions.get("window");
+const cardWidth = width * 0.85;
 
 const searchList = [
-    {
-        img: images.UserSearchImg,
-        title: 'Find Users',
-        onPress: () => router.push(`/user`)
-    },
-    {
-        img: images.DiscoverLocationImg,
-        title: 'Discover Locations',
-        onPress: () => router.push(`/location`)
-    },
-    {
-        img: images.BusinessSearchImg,
-        title: 'Find Businesses',
-        onPress: () => router.push(`/business`)
-    }
+  {
+    img: images.UserSearchImg,
+    title: "Find Users",
+    description: "Connect with travelers worldwide",
+    icon: <Users size={24} color="#fff" />,
+    onPress: () => router.push(`/user`),
+    gradientColors: ["#6366F1", "#8B5CF6"],
+  },
+  {
+    img: images.DiscoverLocationImg,
+    title: "Discover Locations",
+    description: "Explore exciting destinations",
+    icon: <MapPin size={24} color="#fff" />,
+    onPress: () => router.push(`/location`),
+    gradientColors: ["#EC4899", "#D946EF"],
+  },
+  {
+    img: images.BusinessSearchImg,
+    title: "Find Businesses",
+    description: "Discover local experiences",
+    icon: <Building2 size={24} color="#fff" />,
+    onPress: () => router.push(`/business`),
+    gradientColors: ["#F59E0B", "#F97316"],
+  },
+];
 
-    //add map, itinerary, reviews, posts, etc
-]
+const renderCardOption1 = ({ item }) => (
+  <TouchableOpacity
+    className="mb-6 overflow-hidden"
+    activeOpacity={0.9}
+    onPress={item.onPress}
+    style={{
+      width: cardWidth,
+      borderRadius: 16,
+      elevation: 5,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      backgroundColor: "#1a2234",
+    }}
+  >
+    <View className="flex-row h-32">
+      <View className="w-1/3 relative">
+        <Image
+          source={item.img}
+          className="w-full h-full"
+          style={{ resizeMode: "cover" }}
+        />
+        <LinearGradient
+          colors={["rgba(0,0,0,0.4)", "transparent"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+      </View>
+      <View className="w-2/3 p-4 justify-center">
+        <View className="flex-row items-center justify-between mb-2">
+          <View
+            className="p-2 rounded-full"
+            style={{ backgroundColor: item.gradientColors[0] }}
+          >
+            {item.icon}
+          </View>
+          <ChevronRight size={20} color="white" />
+        </View>
+        <Text className="text-white font-dsbold text-xl">{item.title}</Text>
+        <Text className="text-white/70 font-dsregular text-sm">
+          {item.description}
+        </Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
+
+const renderCardOption2 = ({ item }) => (
+  <TouchableOpacity
+    className="mb-6 overflow-hidden"
+    activeOpacity={0.9}
+    onPress={item.onPress}
+    style={{
+      width: cardWidth,
+      borderRadius: 16,
+      elevation: 5,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+    }}
+  >
+    <LinearGradient
+      colors={item.gradientColors}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      className="p-4 h-44"
+    >
+      <View className="flex-row h-full">
+        <View className="flex-1 justify-between">
+          <View className="bg-white/20 self-start p-2 rounded-full">
+            {item.icon}
+          </View>
+          <View>
+            <Text className="text-white font-dsbold text-2xl mb-1">
+              {item.title}
+            </Text>
+            <Text className="text-white/80 font-dsregular text-sm mb-3">
+              {item.description}
+            </Text>
+            <View className="bg-white/30 w-24 py-1 px-3 rounded-full flex-row items-center justify-center">
+              <Text className="text-white font-dsmedium text-xs mr-1">
+                Explore
+              </Text>
+              <ChevronRight size={14} color="white" />
+            </View>
+          </View>
+        </View>
+        <View className="w-1/3 justify-center items-center">
+          <View className="bg-white/30 p-2 rounded-full overflow-hidden">
+            <Image
+              source={item.img}
+              className="w-20 h-20 rounded-full"
+              style={{ resizeMode: "cover" }}
+            />
+          </View>
+        </View>
+      </View>
+    </LinearGradient>
+  </TouchableOpacity>
+);
+
+const renderCardOption3 = ({ item }) => (
+  <TouchableOpacity
+    className="mb-6 overflow-hidden"
+    activeOpacity={0.9}
+    onPress={item.onPress}
+    style={{
+      width: cardWidth,
+      borderRadius: 16,
+      elevation: 5,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      backgroundColor: "#1a2234",
+    }}
+  >
+    <View className="flex-row items-center p-4">
+      <View
+        className="mr-4 rounded-full h-14 w-14 items-center justify-center"
+        style={{ backgroundColor: item.gradientColors[0] }}
+      >
+        {item.icon}
+      </View>
+      <View className="flex-1">
+        <Text className="text-white font-dsbold text-xl">{item.title}</Text>
+        <Text className="text-white/70 font-dsregular text-sm">
+          {item.description}
+        </Text>
+      </View>
+      <View
+        className="ml-2 rounded-full p-2"
+        style={{ backgroundColor: `${item.gradientColors[0]}40` }}
+      >
+        <ChevronRight size={20} color={item.gradientColors[0]} />
+      </View>
+    </View>
+    <View
+      className="h-0.5 w-full"
+      style={{ backgroundColor: item.gradientColors[0] }}
+    />
+    <View className="p-2">
+      <Image
+        source={item.img}
+        className="w-full h-48 rounded-lg"
+        style={{ resizeMode: "cover" }}
+      />
+      <View
+        className="absolute top-4 right-4 px-3 py-1 rounded-full"
+        style={{ backgroundColor: item.gradientColors[0] }}
+      >
+        <Text className="text-white font-dsmedium text-xs">Explore Now</Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
 
 const MainSearchScreen = () => {
+  const scrollY = React.useRef(new Animated.Value(0)).current;
+  const [selectedLayout, setSelectedLayout] = useState(1);
+
+  const renderItem = ({ item, index }) => {
+    switch (selectedLayout) {
+      case 1:
+        return renderCardOption1({ item, index });
+      case 2:
+        return renderCardOption2({ item, index });
+      case 3:
+        return renderCardOption3({ item, index });
+      default:
+        return renderCardOption1({ item, index });
+    }
+  };
+
+  const cycleLayout = () => {
+    setSelectedLayout((prev) => (prev === 3 ? 1 : prev + 1));
+  };
+
   return (
-    <SafeAreaView className="flex-1 items-center justify-center bg-primary">
-        <View className="space-y-4">
-            <View className="gap-5 bg-primary">
-
-                <FlatList 
-                    data={searchList}
-                    keyExtractor={(item) => item.title}
-                    contentContainerStyle={{ alignItems: 'center', padding: 20 }}
-                    columnWrapperStyle={{ gap: 20 }}
-                    numColumns={2}
-                    ListHeaderComponent={()=> (
-                        <View className="flex-row items-center justify-center" style={{marginBottom: 50, marginHorizontal:20}}>
-
-                            <View style={{ alignItems: "center" }}>
-                                <Text style={{ color: "white", fontSize: 30}} className="font-dsbold">Search</Text>
-                                <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 15 }}>Find what you're looking for</Text>
-                            </View>
-                        </View>
-                    )}
-                    renderItem={({item}) => (
-                        <TouchableOpacity className="flex justify-end relative p-0 space-y-2 mb-4" style={{ width: 175, height: 100 }} activeOpacity={0.8} onPress={item.onPress}>
-                            <Image source={item.img}  className="absolute rounded-lg h-full w-full" />
-                        
-                            <LinearGradient
-                                colors={['transparent', 'rgba(0,0,0,1)']}
-                                style={{width: '100%', height: 60, borderBottomLeftRadius: 5, borderBottomRightRadius: 5}}
-                                start={{ x: 0.5, y: 0 }}
-                                end={{ x: 0.5, y: 1 }}
-                                className="absolute bottom-0"
-                            />
-                
-                            <Text className="text-white font-dsregular mb-1 text-2xl"> {item.title} </Text>
-                        </TouchableOpacity>
-                    )}
-                />
-                
+    <LinearGradient colors={["#0F172A", "#070f1b"]} className="flex-1">
+      <StatusBar barStyle="light-content" />
+      <SafeAreaView className="flex-1">
+        <Animated.View
+          style={{
+            opacity: scrollY.interpolate({
+              inputRange: [0, 50],
+              outputRange: [1, 0.9],
+              extrapolate: "clamp",
+            }),
+            transform: [
+              {
+                translateY: scrollY.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: [0, -20],
+                  extrapolate: "clamp",
+                }),
+              },
+            ],
+          }}
+          className="z-10 px-5 pt-6 pb-4"
+        >
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text className="text-white font-dsbold text-3xl">Explore</Text>
+              <Text className="text-white/60 font-dsregular text-base">
+                Find your next adventure
+              </Text>
             </View>
-        </View>
-    </SafeAreaView>
-  )
-}
+            <TouchableOpacity
+              onPress={cycleLayout}
+              className="bg-white/10 p-3 rounded-full"
+            >
+              <Search size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
 
+        <Animated.FlatList
+          data={searchList}
+          keyExtractor={(item) => item.title}
+          renderItem={renderItem}
+          contentContainerStyle={{
+            paddingBottom: 40,
+            paddingHorizontal: width * 0.075,
+            paddingTop: 10,
+          }}
+          showsVerticalScrollIndicator={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
+          scrollEventThrottle={16}
+        />
+      </SafeAreaView>
+    </LinearGradient>
+  );
+};
 
-export default MainSearchScreen
+export default MainSearchScreen;

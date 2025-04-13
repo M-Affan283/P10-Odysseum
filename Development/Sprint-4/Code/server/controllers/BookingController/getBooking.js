@@ -11,7 +11,7 @@ const getBookingById = async (req, res) =>
     const { bookingId } = req.query;
     try
     {
-        const booking = await Booking.findById(bookingId);
+        const booking = await Booking.findById(bookingId).populate("userId serviceId");
         if (!booking)
         {
             return res.status(404).json({ message: "Booking not found" });
@@ -27,6 +27,7 @@ const getBookingById = async (req, res) =>
 const getBookingsByUser = async (req, res) =>
 {
   const { userId, page = 1 } = req.query;
+
   let limit=10;
 
   if (!userId) return res.status(400).json({ message: "User ID is required" });
@@ -35,7 +36,7 @@ const getBookingsByUser = async (req, res) =>
   {
     let skip = (page - 1) * limit;
 
-    const bookings = await Booking.find({ userId: userId }).skip(skip).limit(Number(limit));
+    const bookings = await Booking.find({ userId: userId }).skip(skip).limit(Number(limit)).populate("serviceId");
     if (!bookings) return res.status(200).json({ message: "No bookings found", bookings: [] });
 
     const totalBookings = await Booking.countDocuments({ userId: userId });
@@ -66,7 +67,7 @@ const getBookingsByService = async (req, res) =>
   {
     let skip = (page - 1) * limit;
 
-    const bookings = await Booking.find({ serviceId: serviceId }).skip(skip).limit(Number(limit));
+    const bookings = await Booking.find({ serviceId: serviceId }).skip(skip).limit(Number(limit)).populate("userId");
     if (!bookings) return res.status(200).json({ message: "No bookings found", bookings: [] });
 
     const totalBookings = await Booking.countDocuments({ serviceId: serviceId });

@@ -19,6 +19,7 @@ export const createBooking = async (req, res) =>
     if (!timeSlot) return res.status(400).json({ message: "Time slot is required" });
     if (!bookingDate) return res.status(400).json({ message: "Booking date is required" });
 
+
     try
     {
         const user = await User.findById(userId);
@@ -27,11 +28,30 @@ export const createBooking = async (req, res) =>
         const service = await Service.findById(serviceId);
         if (!service) return res.status(404).json({ message: "Service not found" });
 
+        // // 3. Check service availability
+        const availabilityCheck = await getServiceAvailabilityHelper(serviceId, bookingDate)
+
+        if (!availabilityCheck.availability.isAvailable) return res.status(400).json({ message: "Service is not available for the requested date" });
+        if (availabilityCheck.error) return res.status(500).json({ message: "Could not verify service availability" });
+        
+        // 4. Validate capacity
+        if (availabilityCheck.remainingSpots < numberOfPeople)
+            {
+                return res.status(400).json({
+                    success: false,
+                    message: "Not enough capacity for the requested number of people"
+                });
+            }
+        // return res.status(200).json({ message: "Valid time slots" });
+
         //validate time slots
-        timeSlot = JSON.parse(timeSlot);
-        let startTime = moment(timeSlot.startTime).utc();
-        let endTime = moment(timeSlot.endTime).utc();
+        //get the yyyy=mm-dd part of the bboking date
+        bookingDate = moment(bookingDate).format('YYYY-MM-DD');
+        let startTime = moment(`${bookingDate}T${timeSlot.startTime}`).utc();
+        let endTime = moment(`${bookingDate}T${timeSlot.endTime}`).utc();
         let currTime = moment().utc();
+
+        // return res.status(200).json({ message: "Valid time slots" });
         
         if(startTime.isBefore(currTime.clone().add(service.bookingSettings.minAdvanceBooking, 'hours'))) return res.status(400).json({ message: `Booking must be made at least ${service.bookingSettings.minAdvanceBooking} hours in advance` });
 
@@ -39,26 +59,6 @@ export const createBooking = async (req, res) =>
         
         if(endTime.isBefore(startTime)) return res.status(400).json({ message: "End time should be after start time" });
 
-
-        // 3. Check service availability
-        const availabilityCheck = await getServiceAvailabilityHelper(serviceId, moment(bookingDate).utc())
-
-        if (!availabilityCheck.isAvailable)
-        {
-            return res.status(400).json({
-                success: false,
-                message: "Service is not available for the requested date"
-            });
-        }
-
-        // 4. Validate capacity
-        if (availabilityCheck.remainingSpots < numberOfPeople)
-        {
-            return res.status(400).json({
-                success: false,
-                message: "Not enough capacity for the requested number of people"
-            });
-        }
 
         const pricing = calculateBookingPrice(service, numberOfPeople, bookingDate, timeSlot);
 
@@ -70,7 +70,7 @@ export const createBooking = async (req, res) =>
         const paymentDetails = service.paymentSettings.acceptOnlinePayment ? req.body.paymentDetails : null;
 
         // 7. Determine payment requirements and process payment
-        const { paymentStatus, transactions } = await handlePayment(
+        const { paymentStatus, transactions, remainingBalance } = await handlePayment(
             service, 
             pricing, 
             paymentMethod, 
@@ -90,8 +90,8 @@ export const createBooking = async (req, res) =>
             bookingDate: moment(bookingDate).toDate(),
             numberOfPeople,
             timeSlot: {
-                startTime: moment(timeSlot.startTime).toDate(),
-                endTime: moment(timeSlot.endTime).toDate()
+                startTime: moment(`${bookingDate}T${timeSlot.startTime}`).toDate(),
+                endTime: moment(`${bookingDate}T${timeSlot.endTime}`).toDate()
             },
             status: initialStatus,
             pricing,
@@ -190,7 +190,7 @@ const handlePayment = async (service, pricing, paymentMethod, paymentDetails, re
         // Case 2: Booking requires approval (no immediate payment unless deposit)
         if (requiresApproval)
         {
-            // Case 2a: Deposit is enabled with approval
+            // Case 2a: Deposit is enabled with approval (shouldnt go here ideally)
             if (paymentSettings.deposit.enabled && pricing.depositAmount > 0) 
             {
                 const depositSuccess = await processPayment(
@@ -314,9 +314,9 @@ const calculateBookingPrice = (service, numberOfPeople, bookingDate, timeSlot) =
         const bookingDay = moment(bookingDate).format('dddd');
         const specialPriceMatch = pricing.specialPrices.find(sp => {
             return (
-                (!sp.conditions.daysOfWeek || sp.conditions.daysOfWeek.includes(bookingDay)) &&
+                (!sp.conditions.daysOfWeek || sp.conditions.daysOfWeek.includes(bookingDay)) ||
                 (!sp.conditions.specificDates || sp.conditions.specificDates.some(date => 
-                    moment(date).isSame(bookingDate, 'day'))) &&
+                    moment(date).isSame(bookingDate, 'day'))) ||
                 (!sp.conditions.minPeople || numberOfPeople >= sp.conditions.minPeople)
             );
         });
@@ -382,6 +382,6 @@ const processPayment = async (paymentMethod, paymentDetails, amount) => {
 // Helper function to generate transaction IDs
 const generateTransactionId = () => {
     // This is a simple implementation - in a real application,
-    // you might use a more sophisticated method
+    // you might use a more sophisticated method. like stripe.transaction.create() etc
     return 'txn_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
 };
