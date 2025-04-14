@@ -3,6 +3,8 @@ import { Redirect } from "expo-router";
 import WelcomeScreen from "../src/screens/WelcomeScreen";
 import HomeScreen from "../src/screens/HomeScreen";
 import useUserStore from "../src/context/userStore";
+// Itinerary Screens
+// import CreateItineraryScreen from "../src/screens/itinerary_screens/CreateItineraryScreen";
 // import CreatePostScreen from "../src/screens/CreatePostScreen";
 // import BookmarkScreen from "../src/screens/BookmarkScreen";
 // import PostDetailsScreen from "../src/screens/PostDetailsScreen";

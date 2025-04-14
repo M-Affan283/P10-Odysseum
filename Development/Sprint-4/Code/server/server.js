@@ -15,20 +15,20 @@ const MONGO_URI = environment === 'local' ? process.env.MONGODB_URI_LOCAL : proc
 const PORT = process.env.PORT || 8000;
 
 mongoose.connect(MONGO_URI)
-.then(async () => {
-    console.log("Connected to MongoDB");
-
-    // Initialize HTTP server and socket server
-    const server = http.createServer(app);
-    // Socket server will run in parallel to the Express server
+.then(async()=>
+{
+    console.log("\n[SERVER] Connected to MongoDB");
+    // Initializing HTTP server and socket server
+    const server = http.createServer(app)
+    // socket server will run in paraller to express server
     const io = setupSocket(server);         
 
     // Start the server and listen for incoming requests
     server.listen(PORT, () => {
-        console.log(`[${environment.toUpperCase()}] Server running on port ${PORT} at ${new Date().toLocaleString()}`);
+        console.log(`[SERVER] ${environment.toUpperCase()} server running on port ${PORT} at ${new Date().toLocaleString()}`);
     });
 })
-.catch((error) => {
-    console.log("Could not connect");
+.catch((error)=> {
+    console.log("\n[SERVER] Could not connect");
     console.log(ERROR_MESSAGES.DATABASE_CONNECTION_ERROR, ": ", error);
 });
