@@ -3,7 +3,7 @@
  */
 
 import express from "express";
-import upload from "../middleware/multerMiddleware.js";
+import upload from "../middlewares/multerMiddleware.js";
 import { createService } from "../controllers/ServiceController/createService.js";
 import { deleteService } from "../controllers/ServiceController/deleteService.js";
 import {

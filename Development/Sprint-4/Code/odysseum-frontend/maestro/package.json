@@ -1,0 +1,24 @@
+{
+  "name": "odysseum-maestro-tests",
+  "version": "1.0.0",
+  "description": "Maestro tests for Odysseum app",
+  "scripts": {
+    "test": "maestro test flows/",
+    "test:welcome": "maestro test flows/welcome_screen_test.yaml",
+    "test:login": "maestro test flows/login_screen_test.yaml",
+    "test:main-search": "maestro test flows/main_search_screen_test.yaml",
+    "test:user-profile": "maestro test flows/user_profile_screen_test.yaml",
+    "test:create-post": "maestro test flows/create_post_screen_test.yaml",
+    "test:create-itinerary": "maestro test flows/create_itinerary_screen_test.yaml",
+    "test:business-create": "maestro test flows/business_create_screen_test.yaml",
+    "test:service-create": "maestro test flows/service_create_screen_test.yaml",
+    "test:booking-create": "maestro test flows/booking_create_screen_test.yaml",
+    "test:user-bookings": "maestro test flows/user_bookings_screen_test.yaml",
+    "test:settings": "maestro test flows/settings_screen_test.yaml",
+    "test:service-manage": "maestro test flows/service_manage_screen_test.yaml",
+    "test:service-profile": "maestro test flows/service_profile_screen_test.yaml",
+    "test:main-create": "maestro test flows/main_create_screen_test.yaml",
+    "test:security": "maestro test flows/security_screen_test.yaml",
+    "test:business-manage": "maestro test flows/business_manage_screen_test.yaml"
+  }
+}

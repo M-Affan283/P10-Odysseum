@@ -47,16 +47,53 @@ const useAdminStore = create(
                 comments: [],
             },
 
+            // Business state
+            businesses: {
+                pendingBusinesses: [],
+                totalPendingBusinesses: 0,
+                currentBusiness: null,
+            },
+            users: {
+                allUsers: [],
+                totalUsers: 0,
+                currentUser: null,
+                userPosts: [],
+                totalUserPosts: 0,
+                userComments: [],
+                totalUserComments: 0
+            },
+            locations: {
+                allLocations: [],
+                totalLocations: 0,
+                currentLocation: null,
+                businessCount: 0,
+                postCount: 0
+            },
+            posts: {
+                allPosts: [],
+                totalPosts: 0,
+                currentPost: null,
+                postComments: []
+            },
+
             // Loading states
             dashboardLoading: false,
             usersLoading: false,
             reportsLoading: false,
             reportDetailsLoading: false,
+            businessesLoading: false,
+            usersLoading: false,
+            locationsLoading: false,
+            postsLoading: false,
 
             // Error states
             dashboardError: null,
             usersError: null,
             reportsError: null,
+            businessesError: null,
+            usersError: null,
+            locationsError: null,
+            postsError: null,
 
             // Auth actions
             login: async (credentials) => {
@@ -129,35 +166,32 @@ const useAdminStore = create(
 
             // Dashboard actions
             fetchDashboardStats: async () => {
-                set({ dashboardLoading: true, dashboardError: null })
+                set({ dashboardLoading: true, dashboardError: null });
                 try {
-                    // Using existing backend endpoints
-                    const [usersResponse, postsResponse, locationsResponse] = await Promise.all([
-                        api.get('/user/getAll?limit=1'),
-                        api.get('/post/getAll?limit=1'),
-                        api.get('/location/getAll?limit=1')
-                    ])
-
-                    // Calculate total counts from pagination
-                    const stats = {
-                        totalUsers: usersResponse.data.pagination?.totalUsers || 0,
-                        totalPosts: postsResponse.data.pagination?.totalPosts || 0,
-                        totalLocations: locationsResponse.data.pagination?.totalLocations || 0
+                    const response = await api.get('/admin/dashboard/stats');
+            
+                    if (response.data.success) {
+                        set({
+                            stats: {
+                                userCount: response.data.stats.userCount,
+                                postCount: response.data.stats.postCount,
+                                locationCount: response.data.stats.locationCount,
+                                businessCount: response.data.stats.businessCount
+                            },
+                            recentUsers: response.data.stats.recentUsers || [],
+                            dashboardLoading: false
+                        });
+                    } else {
+                        set({
+                            dashboardLoading: false,
+                            dashboardError: response.data.message || 'Failed to fetch dashboard data'
+                        });
                     }
-
-                    // Get recent users
-                    const recentUsersResponse = await api.get('/user/getAll?page=1&limit=5')
-
-                    set({
-                        stats,
-                        recentUsers: recentUsersResponse.data.users || [],
-                        dashboardLoading: false
-                    })
                 } catch (error) {
                     set({
                         dashboardLoading: false,
                         dashboardError: error.response?.data?.message || 'Failed to fetch dashboard data'
-                    })
+                    });
                 }
             },
 
@@ -445,11 +479,695 @@ const useAdminStore = create(
                 });
             },
 
+            // Business actions
+            // Fetch pending businesses
+            fetchPendingBusinesses: async (page = 1) => {
+                set({ businessesLoading: true, businessesError: null });
+                try {
+                    const response = await api.get(`/admin/businesses/pending?page=${page}`);
+
+                    if (response.data.success) {
+                        set({
+                            businesses: {
+                                ...get().businesses,
+                                pendingBusinesses: response.data.businesses,
+                                totalPendingBusinesses: response.data.pagination.totalBusinesses
+                            },
+                            businessesLoading: false
+                        });
+                    } else {
+                        set({
+                            businessesLoading: false,
+                            businessesError: response.data.message || 'Failed to fetch pending businesses'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        businessesLoading: false,
+                        businessesError: error.response?.data?.message || 'Failed to fetch pending businesses'
+                    });
+                }
+            },
+
+            // Fetch business details
+            fetchBusinessDetails: async (businessId) => {
+                set({ businessesLoading: true, businessesError: null });
+                try {
+                    const response = await api.get(`/admin/businesses/${businessId}`);
+
+                    if (response.data.success) {
+                        set({
+                            businesses: {
+                                ...get().businesses,
+                                currentBusiness: response.data.business
+                            },
+                            businessesLoading: false
+                        });
+                    } else {
+                        set({
+                            businessesLoading: false,
+                            businessesError: response.data.message || 'Failed to fetch business details'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        businessesLoading: false,
+                        businessesError: error.response?.data?.message || 'Failed to fetch business details'
+                    });
+                }
+            },
+
+            // Update business status
+            updateBusinessStatus: async (businessId, status, adminNotes = '') => {
+                set({ businessesLoading: true, businessesError: null });
+                try {
+                    const response = await api.post('/admin/businesses/update-status', {
+                        businessId,
+                        status,
+                        adminNotes
+                    });
+
+                    if (response.data.success) {
+                        // Update the current business if it's the one being viewed
+                        if (get().businesses.currentBusiness && get().businesses.currentBusiness._id === businessId) {
+                            set({
+                                businesses: {
+                                    ...get().businesses,
+                                    currentBusiness: response.data.business
+                                }
+                            });
+                        }
+
+                        // Refresh the pending businesses list
+                        await get().fetchPendingBusinesses();
+
+                        set({ businessesLoading: false });
+                        return true;
+                    } else {
+                        set({
+                            businessesLoading: false,
+                            businessesError: response.data.message || 'Failed to update business status'
+                        });
+                        return false;
+                    }
+                } catch (error) {
+                    set({
+                        businessesLoading: false,
+                        businessesError: error.response?.data?.message || 'Failed to update business status'
+                    });
+                    return false;
+                }
+            },
+
+            // Clear current business
+            clearCurrentBusiness: () => {
+                set({
+                    businesses: {
+                        ...get().businesses,
+                        currentBusiness: null
+                    }
+                });
+            },
+            // Fetch all users
+            fetchUsers: async (page = 1, search = '') => {
+                set({ usersLoading: true, usersError: null });
+                try {
+                    let url = `/admin/users?page=${page}`;
+                    if (search) {
+                        url += `&search=${encodeURIComponent(search)}`;
+                    }
+
+                    const response = await api.get(url);
+
+                    if (response.data.success) {
+                        set({
+                            users: {
+                                ...get().users,
+                                allUsers: response.data.users,
+                                totalUsers: response.data.pagination.totalUsers
+                            },
+                            usersLoading: false
+                        });
+                    } else {
+                        set({
+                            usersLoading: false,
+                            usersError: response.data.message || 'Failed to fetch users'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        usersLoading: false,
+                        usersError: error.response?.data?.message || 'Failed to fetch users'
+                    });
+                }
+            },
+
+            // Fetch user details
+            fetchUserDetails: async (userId, postsPage = 1, commentsPage = 1) => {
+                set({ usersLoading: true, usersError: null });
+                try {
+                    const response = await api.get(`/admin/users/${userId}?postsPage=${postsPage}&commentsPage=${commentsPage}`);
+
+                    if (response.data.success) {
+                        set({
+                            users: {
+                                ...get().users,
+                                currentUser: response.data.user,
+                                userPosts: response.data.posts.items,
+                                totalUserPosts: response.data.posts.pagination.totalPosts,
+                                userComments: response.data.comments.items,
+                                totalUserComments: response.data.comments.pagination.totalComments
+                            },
+                            usersLoading: false
+                        });
+                    } else {
+                        set({
+                            usersLoading: false,
+                            usersError: response.data.message || 'Failed to fetch user details'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        usersLoading: false,
+                        usersError: error.response?.data?.message || 'Failed to fetch user details'
+                    });
+                }
+            },
+
+            // Delete user post
+            deleteUserPost: async (postId) => {
+                set({ usersLoading: true, usersError: null });
+                try {
+                    const response = await api.delete(`/admin/users/posts/${postId}`);
+
+                    if (response.data.success) {
+                        // Remove the deleted post from the store
+                        set({
+                            users: {
+                                ...get().users,
+                                userPosts: get().users.userPosts.filter(post => post._id !== postId),
+                                totalUserPosts: get().users.totalUserPosts - 1
+                            },
+                            usersLoading: false
+                        });
+                        return true;
+                    } else {
+                        set({
+                            usersLoading: false,
+                            usersError: response.data.message || 'Failed to delete post'
+                        });
+                        return false;
+                    }
+                } catch (error) {
+                    set({
+                        usersLoading: false,
+                        usersError: error.response?.data?.message || 'Failed to delete post'
+                    });
+                    return false;
+                }
+            },
+
+            // Delete user comment
+            deleteUserComment: async (commentId) => {
+                set({ usersLoading: true, usersError: null });
+                try {
+                    const response = await api.delete(`/admin/users/comments/${commentId}`);
+
+                    if (response.data.success) {
+                        // Remove the deleted comment from the store
+                        set({
+                            users: {
+                                ...get().users,
+                                userComments: get().users.userComments.filter(comment => comment._id !== commentId),
+                                totalUserComments: get().users.totalUserComments - 1
+                            },
+                            usersLoading: false
+                        });
+                        return true;
+                    } else {
+                        set({
+                            usersLoading: false,
+                            usersError: response.data.message || 'Failed to delete comment'
+                        });
+                        return false;
+                    }
+                } catch (error) {
+                    set({
+                        usersLoading: false,
+                        usersError: error.response?.data?.message || 'Failed to delete comment'
+                    });
+                    return false;
+                }
+            },
+
+            // Ban/unban user
+            banUser: async (userId, banned, reason = '') => {
+                set({ usersLoading: true, usersError: null });
+                try {
+                    const response = await api.post(`/admin/users/${userId}/ban`, {
+                        banned,
+                        reason
+                    });
+
+                    if (response.data.success) {
+                        // Update the current user if it's the one being viewed
+                        if (get().users.currentUser && get().users.currentUser._id === userId) {
+                            set({
+                                users: {
+                                    ...get().users,
+                                    currentUser: {
+                                        ...get().users.currentUser,
+                                        isDeactivated: banned
+                                    }
+                                }
+                            });
+                        }
+
+                        // Update the user in the users list
+                        set({
+                            users: {
+                                ...get().users,
+                                allUsers: get().users.allUsers.map(user =>
+                                    user._id === userId
+                                        ? { ...user, isDeactivated: banned }
+                                        : user
+                                )
+                            },
+                            usersLoading: false
+                        });
+                        return true;
+                    } else {
+                        set({
+                            usersLoading: false,
+                            usersError: response.data.message || 'Failed to update user ban status'
+                        });
+                        return false;
+                    }
+                } catch (error) {
+                    set({
+                        usersLoading: false,
+                        usersError: error.response?.data?.message || 'Failed to update user ban status'
+                    });
+                    return false;
+                }
+            },
+
+            // Update user role
+            updateUserRole: async (userId, role) => {
+                set({ usersLoading: true, usersError: null });
+                try {
+                    const response = await api.post(`/admin/users/${userId}/role`, {
+                        role
+                    });
+
+                    if (response.data.success) {
+                        // Update the current user if it's the one being viewed
+                        if (get().users.currentUser && get().users.currentUser._id === userId) {
+                            set({
+                                users: {
+                                    ...get().users,
+                                    currentUser: {
+                                        ...get().users.currentUser,
+                                        role
+                                    }
+                                }
+                            });
+                        }
+
+                        // Update the user in the users list
+                        set({
+                            users: {
+                                ...get().users,
+                                allUsers: get().users.allUsers.map(user =>
+                                    user._id === userId
+                                        ? { ...user, role }
+                                        : user
+                                )
+                            },
+                            usersLoading: false
+                        });
+                        return true;
+                    } else {
+                        set({
+                            usersLoading: false,
+                            usersError: response.data.message || 'Failed to update user role'
+                        });
+                        return false;
+                    }
+                } catch (error) {
+                    set({
+                        usersLoading: false,
+                        usersError: error.response?.data?.message || 'Failed to update user role'
+                    });
+                    return false;
+                }
+            },
+
+            // Clear current user
+            clearCurrentUser: () => {
+                set({
+                    users: {
+                        ...get().users,
+                        currentUser: null,
+                        userPosts: [],
+                        userComments: []
+                    }
+                });
+            },
+            // Fetch all locations
+            fetchLocations: async (page = 1, search = '') => {
+                set({ locationsLoading: true, locationsError: null });
+                try {
+                    let url = `/admin/locations?page=${page}`;
+                    if (search) {
+                        url += `&search=${encodeURIComponent(search)}`;
+                    }
+
+                    const response = await api.get(url);
+
+                    if (response.data.success) {
+                        set({
+                            locations: {
+                                ...get().locations,
+                                allLocations: response.data.locations,
+                                totalLocations: response.data.pagination.totalLocations
+                            },
+                            locationsLoading: false
+                        });
+                    } else {
+                        set({
+                            locationsLoading: false,
+                            locationsError: response.data.message || 'Failed to fetch locations'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        locationsLoading: false,
+                        locationsError: error.response?.data?.message || 'Failed to fetch locations'
+                    });
+                }
+            },
+
+            // Fetch location details
+            fetchLocationDetails: async (locationId) => {
+                set({ locationsLoading: true, locationsError: null });
+                try {
+                    const response = await api.get(`/admin/locations/${locationId}`);
+
+                    if (response.data.success) {
+                        set({
+                            locations: {
+                                ...get().locations,
+                                currentLocation: response.data.location,
+                                businessCount: response.data.businessCount,
+                                postCount: response.data.postCount
+                            },
+                            locationsLoading: false
+                        });
+                    } else {
+                        set({
+                            locationsLoading: false,
+                            locationsError: response.data.message || 'Failed to fetch location details'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        locationsLoading: false,
+                        locationsError: error.response?.data?.message || 'Failed to fetch location details'
+                    });
+                }
+            },
+
+            // Create new location
+            createLocation: async (locationData) => {
+                set({ locationsLoading: true, locationsError: null });
+                try {
+                    const response = await api.post('/admin/locations', locationData);
+
+                    if (response.data.success) {
+                        // Refresh the locations list
+                        await get().fetchLocations();
+
+                        set({ locationsLoading: false });
+                        return { success: true, location: response.data.location };
+                    } else {
+                        set({
+                            locationsLoading: false,
+                            locationsError: response.data.message || 'Failed to create location'
+                        });
+                        return { success: false, error: response.data.message };
+                    }
+                } catch (error) {
+                    const errorMessage = error.response?.data?.message || 'Failed to create location';
+                    set({
+                        locationsLoading: false,
+                        locationsError: errorMessage
+                    });
+                    return { success: false, error: errorMessage };
+                }
+            },
+
+            // Update location
+            updateLocation: async (locationId, locationData) => {
+                set({ locationsLoading: true, locationsError: null });
+                try {
+                    const response = await api.put(`/admin/locations/${locationId}`, locationData);
+
+                    if (response.data.success) {
+                        set({
+                            locations: {
+                                ...get().locations,
+                                currentLocation: response.data.location
+                            },
+                            locationsLoading: false
+                        });
+                        return { success: true };
+                    } else {
+                        set({
+                            locationsLoading: false,
+                            locationsError: response.data.message || 'Failed to update location'
+                        });
+                        return { success: false, error: response.data.message };
+                    }
+                } catch (error) {
+                    const errorMessage = error.response?.data?.message || 'Failed to update location';
+                    set({
+                        locationsLoading: false,
+                        locationsError: errorMessage
+                    });
+                    return { success: false, error: errorMessage };
+                }
+            },
+
+            // Delete location
+            deleteLocation: async (locationId) => {
+                set({ locationsLoading: true, locationsError: null });
+                try {
+                    const response = await api.delete(`/admin/locations/${locationId}`);
+
+                    if (response.data.success) {
+                        // Clear current location and refresh locations list
+                        set({
+                            locations: {
+                                ...get().locations,
+                                currentLocation: null
+                            }
+                        });
+
+                        await get().fetchLocations();
+
+                        set({ locationsLoading: false });
+                        return { success: true };
+                    } else {
+                        set({
+                            locationsLoading: false,
+                            locationsError: response.data.message || 'Failed to delete location'
+                        });
+                        return { success: false, error: response.data.message };
+                    }
+                } catch (error) {
+                    const errorMessage = error.response?.data?.message || 'Failed to delete location';
+                    set({
+                        locationsLoading: false,
+                        locationsError: errorMessage
+                    });
+                    return { success: false, error: errorMessage };
+                }
+            },
+
+            // Clear current location
+            clearCurrentLocation: () => {
+                set({
+                    locations: {
+                        ...get().locations,
+                        currentLocation: null
+                    }
+                });
+            },
+
+            // Fetch all posts
+            fetchPosts: async (page = 1, search = '') => {
+                set({ postsLoading: true, postsError: null });
+                try {
+                    let url = `/admin/posts?page=${page}`;
+                    if (search) {
+                        url += `&search=${encodeURIComponent(search)}`;
+                    }
+
+                    const response = await api.get(url);
+
+                    if (response.data.success) {
+                        set({
+                            posts: {
+                                ...get().posts,
+                                allPosts: response.data.posts,
+                                totalPosts: response.data.pagination.totalPosts
+                            },
+                            postsLoading: false
+                        });
+                    } else {
+                        set({
+                            postsLoading: false,
+                            postsError: response.data.message || 'Failed to fetch posts'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        postsLoading: false,
+                        postsError: error.response?.data?.message || 'Failed to fetch posts'
+                    });
+                }
+            },
+
+            // Fetch post details
+            fetchPostDetails: async (postId) => {
+                set({ postsLoading: true, postsError: null });
+                try {
+                    const response = await api.get(`/admin/posts/${postId}`);
+
+                    if (response.data.success) {
+                        set({
+                            posts: {
+                                ...get().posts,
+                                currentPost: response.data.post,
+                                postComments: response.data.comments
+                            },
+                            postsLoading: false
+                        });
+                    } else {
+                        set({
+                            postsLoading: false,
+                            postsError: response.data.message || 'Failed to fetch post details'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        postsLoading: false,
+                        postsError: error.response?.data?.message || 'Failed to fetch post details'
+                    });
+                }
+            },
+
+            // Delete post
+            deletePost: async (postId) => {
+                set({ postsLoading: true, postsError: null });
+                try {
+                    const response = await api.delete(`/admin/posts/${postId}`);
+
+                    if (response.data.success) {
+                        set({
+                            posts: {
+                                ...get().posts,
+                                currentPost: null,
+                                postComments: []
+                            },
+                            postsLoading: false
+                        });
+                        return { success: true };
+                    } else {
+                        set({
+                            postsLoading: false,
+                            postsError: response.data.message || 'Failed to delete post'
+                        });
+                        return { success: false, error: response.data.message };
+                    }
+                } catch (error) {
+                    const errorMessage = error.response?.data?.message || 'Failed to delete post';
+                    set({
+                        postsLoading: false,
+                        postsError: errorMessage
+                    });
+                    return { success: false, error: errorMessage };
+                }
+            },
+
+            // Delete comment
+            deleteComment: async (commentId) => {
+                set({ postsLoading: true, postsError: null });
+                try {
+                    const response = await api.delete(`/admin/comments/${commentId}`);
+
+                    if (response.data.success) {
+                        // Update comments list by removing the deleted comment and any replies
+                        set({
+                            posts: {
+                                ...get().posts,
+                                postComments: get().posts.postComments.filter(comment => {
+                                    // Remove the comment if it matches the deleted comment ID
+                                    if (comment._id === commentId) {
+                                        return false;
+                                    }
+
+                                    // If it's a top-level comment, filter out any deleted replies
+                                    if (comment.replies) {
+                                        comment.replies = comment.replies.filter(
+                                            reply => reply._id !== commentId
+                                        );
+                                    }
+
+                                    return true;
+                                })
+                            },
+                            postsLoading: false
+                        });
+                        return { success: true };
+                    } else {
+                        set({
+                            postsLoading: false,
+                            postsError: response.data.message || 'Failed to delete comment'
+                        });
+                        return { success: false, error: response.data.message };
+                    }
+                } catch (error) {
+                    const errorMessage = error.response?.data?.message || 'Failed to delete comment';
+                    set({
+                        postsLoading: false,
+                        postsError: errorMessage
+                    });
+                    return { success: false, error: errorMessage };
+                }
+            },
+
+            // Clear current post
+            clearCurrentPost: () => {
+                set({
+                    posts: {
+                        ...get().posts,
+                        currentPost: null,
+                        postComments: []
+                    }
+                });
+            },
+
             clearErrors: () => set({
                 authError: null,
                 dashboardError: null,
                 usersError: null,
-                reportsError: null
+                reportsError: null,
+                businessesError: null,
+                usersError: null,
+                locationsError: null,
+                postsError: null
             })
         }),
         {

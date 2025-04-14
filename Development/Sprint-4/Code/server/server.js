@@ -1,15 +1,3 @@
-/*
-
-Filename: server.js
-
-This file is the entry point for the server. It creates an express app and listens on a port for incoming requests.
-
-Routes, schemas, controllers will be defined in their own files/folders.
-
-This file contain initial setup for the server, such as connecting to the database, setting up middleware, etc.
-
-*/
-
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import http from 'http';
@@ -19,13 +7,11 @@ import app from './app.js';
 
 // Initializing dotenv file
 dotenv.config({ path: './config.env' });
-// const app = (await import('./app.js')).default; //importing using this so that app.js can access the environment variables
-
 
 const environment = process.argv[2] || 'remote';
 const MONGO_URI = environment === 'local' ? process.env.MONGODB_URI_LOCAL : process.env.MONGODB_URI_REMOTE;
 
-//Local if mongodb compass is being used
+// Use the provided port or default to 8000
 const PORT = process.env.PORT || 8000;
 
 mongoose.connect(MONGO_URI)
@@ -37,7 +23,7 @@ mongoose.connect(MONGO_URI)
     // socket server will run in paraller to express server
     const io = setupSocket(server);         
 
-    // Starting the server and listening for incoming requests
+    // Start the server and listen for incoming requests
     server.listen(PORT, () => {
         console.log(`[SERVER] ${environment.toUpperCase()} server running on port ${PORT} at ${new Date().toLocaleString()}`);
     });
