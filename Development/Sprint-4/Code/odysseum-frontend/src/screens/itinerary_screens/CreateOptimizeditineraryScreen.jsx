@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, Button, Image, ActivityIndicator, StyleSheet, ScrollView } from "react-native";
-import axiosInstance from "../utils/axios";
-import { TemplateContext } from "../../app/itinerary/_layout";
+import axiosInstance from "../../utils/axios";
+import { TemplateContext } from "../../../app/itinerary/_layout";
 
 const CreateOptimizedItineraryScreen = () => {
     const [query, setQuery] = useState("");
@@ -82,8 +82,8 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         justifyContent: "center",  
         alignItems: "center", 
-        paddingBottom: 50, 
         width: "100%", 
+        paddingBottom: 900,
     },
     container: {
         width: "100%", 

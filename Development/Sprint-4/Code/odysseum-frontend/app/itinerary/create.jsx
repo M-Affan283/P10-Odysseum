@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { View, Text, Image, StyleSheet } from "react-native";
-import CreateItineraryScreen from '../../src/screens/CreateItineraryScreen'
+import CreateItineraryScreen from '../../src/screens/itinerary_screens/CreateItineraryScreen'
 import { TemplateContext } from './_layout'
 
 const CreateItinerary = () => {
@@ -10,7 +10,7 @@ const CreateItinerary = () => {
     <View style={styles.container}>
       <Text style={styles.header}> Create Itinerary</Text>
       {selectedTemplate ? (
-        <Text style={styles.template}>Template: {selectedTemplate.title}</Text>
+        <Text style={styles.template}>Template: template selected</Text>
       ) : (
         <Text style={styles.template}>Template: No template selected.</Text>
       )}

@@ -1,8 +1,8 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Keyboard, Image } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
-import axiosInstance from "../utils/axios";
+import axiosInstance from "../../utils/axios";
 import Toast from "react-native-toast-message";
-import { TemplateContext } from "../../app/itinerary/_layout";
+import { TemplateContext } from "../../../app/itinerary/_layout";
 
 const CreateItineraryScreen = () => {
   const [isKeyboardVisible, setKeyboardVisible] = useState(false)
@@ -70,8 +70,8 @@ const CreateItineraryScreen = () => {
     setImageUri(null);
     try {
       const response = await axiosInstance.post("/itinerary/create",
-          { destinations, template_id: selectedTemplate.id },
-          { responseType: "blob" }    // Receiving data as blob
+          { destinations, template_id: selectedTemplate?.template_id },
+          { responseType: "blob" } 
         );
 
       // Converting blob to base64 and reading
@@ -162,7 +162,7 @@ const CreateItineraryScreen = () => {
       />
       {imageUri && (
           <View style={styles.imageContainer}>
-              <Text style={styles.imageTitle}>Generated Itinerary:</Text>
+              <Text style={styles.header2}>Generated Itinerary:</Text>
               <Image source={{ uri: imageUri }} style={styles.image} />
           </View>
       )}
@@ -197,6 +197,13 @@ const styles = StyleSheet.create({
     paddingVertical: 20 
   },
   header: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
+    // marginBottom: 20,
+  },
+  header2: {
     fontSize: 24,
     fontWeight: "bold",
     color: "white",

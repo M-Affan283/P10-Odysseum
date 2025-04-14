@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Blueprint
 from waitress import serve
 import logging
-from llm_component import review_summariser
+from llm_component import review_summariser, ItineraryProcessor
 from dotenv import load_dotenv
 import os
 
@@ -17,17 +17,17 @@ app.logger.setLevel(logging.INFO)
 logger = logging.getLogger('flask.app')
 
 # Create a Blueprint for the /api/llm/ prefix
-llm_bp = Blueprint('llm', __name__, url_prefix='/api/llm/summary')
+llm_bp = Blueprint('llm', __name__, url_prefix='/api/llm')
 
 # Home route
-@llm_bp.route('/')
+@llm_bp.route('/summary/')
 def home():
     app.logger.info('Home page requested')
     review_summariser.connect_to_db()
     return jsonify({'message': 'Welcome to the LLM API!'})
 
 # Route to handle business summary
-@llm_bp.route('/businessSummary')
+@llm_bp.route('/summary/businessSummary')
 def businessSummary():
     try:
         # Log the incoming request
@@ -50,7 +50,7 @@ def businessSummary():
 
 
 # Route to handle location summary
-@llm_bp.route('/locationSummary')
+@llm_bp.route('/summary/locationSummary')
 def locationSummary():
     try:
         # Log the incoming request
@@ -72,6 +72,22 @@ def locationSummary():
         app.logger.error(f"Error in /locationSummary route: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+
+@llm_bp.route('/itinerary/process', methods=['POST'])
+def process_itinerary():
+    try:
+        itinerary_data = request.get_json()
+        if not itinerary_data:
+            app.logger.warning('No itinerary data in the request')
+            return jsonify({'error': 'Itinerary data is required'}), 400
+        
+        optimization = itinerary_data.get('optimization')
+        itinerary_requirements = ItineraryProcessor.run(itinerary_data, optimization)
+        return jsonify({'i_reqs': itinerary_requirements}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error in itinerary processing route: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 # Register the Blueprint with the Flask app
 app.register_blueprint(llm_bp)

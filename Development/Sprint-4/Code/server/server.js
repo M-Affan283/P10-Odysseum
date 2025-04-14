@@ -31,9 +31,7 @@ const PORT = process.env.PORT || 8000;
 mongoose.connect(MONGO_URI)
 .then(async()=>
 {
-    console.log("Connected to MongoDB");
-    
-
+    console.log("\n[SERVER] Connected to MongoDB");
     // Initializing HTTP server and socket server
     const server = http.createServer(app)
     // socket server will run in paraller to express server
@@ -41,10 +39,10 @@ mongoose.connect(MONGO_URI)
 
     // Starting the server and listening for incoming requests
     server.listen(PORT, () => {
-        console.log(`[${environment.toUpperCase()}] Server running on port ${PORT} at ${new Date().toLocaleString()}`);
+        console.log(`[SERVER] ${environment.toUpperCase()} server running on port ${PORT} at ${new Date().toLocaleString()}`);
     });
 })
 .catch((error)=> {
-    console.log("Could not connect");
+    console.log("\n[SERVER] Could not connect");
     console.log(ERROR_MESSAGES.DATABASE_CONNECTION_ERROR, ": ", error);
 });

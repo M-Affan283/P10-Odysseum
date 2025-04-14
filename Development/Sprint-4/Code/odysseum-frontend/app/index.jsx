@@ -9,7 +9,10 @@ import DiscoverLocationsScreen from "../src/screens/DiscoverLocationsScreen";
 import PostCard from "../src/components/PostCard";
 import UserSearchScreen from "../src/screens/UserSearchScreen";
 import MainSearchScreen from "../src/screens/MainSearchScreen";
-import CreateItineraryScreen from "../src/screens/CreateItineraryScreen";
+
+// Itinerary Screens
+import CreateItineraryScreen from "../src/screens/itinerary_screens/CreateItineraryScreen";
+
 import ReviewsScreen from "../src/screens/ReviewsScreen";
 import BusinessLocationScreen from "../src/screens/BusinessLocationScreen";
 import LocationDetailsScreen from "../src/screens/LocationDetailsScreen";

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { View, Text, Image, StyleSheet } from "react-native";
-import CreateOptimizedItineraryScreen from '../../src/screens/CreateOptimizeditineraryScreen';
+import CreateOptimizedItineraryScreen from '../../src/screens/itinerary_screens/CreateOptimizeditineraryScreen';
 import { TemplateContext } from './_layout'
 
 const CreateOptimizedItinerary = () => {
@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
     textAlign: "center",
+    marginTop: 24,
   },
   templateImage: { 
     width: 300, 
