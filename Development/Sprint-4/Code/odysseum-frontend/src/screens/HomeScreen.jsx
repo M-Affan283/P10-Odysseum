@@ -135,14 +135,32 @@ const HomeScreen = () => {
               refetch();
             }}
           >
-            <Text style={styles.titleText}>Odysseum</Text>
-            <Text style={styles.subtitleText}>Hello @{user.username}</Text>
+            <Text style={{ 
+              color: "#ffffff",
+              fontSize: 34,
+              textShadowColor: 'rgba(123, 97, 255, 0.6)',
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 4
+            }} className="font-dsbold">Odysseum</Text>
+            <Text style={{ 
+              color: "rgba(255,255,255,0.7)", 
+              fontSize: 16,
+              fontWeight: '500',
+              letterSpacing: 0.5
+            }}>Hello @{user.username}</Text>
           </TouchableOpacity>
   
           {/* Right: Chat button */}
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => router.push('/chat')}
+          <TouchableOpacity 
+            className="bg-[#211655] mr-4 rounded-full p-2" 
+            onPress={() => router.push("/chat")}
+            style={{
+              shadowColor: "#7b61ff",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 4
+            }}
           >
             <ChatBubbleLeftRightIcon size={30} color="#f8f8ff" />
           </TouchableOpacity>
