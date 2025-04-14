@@ -1,0 +1,4 @@
+Contains unit and integration tests for your application, ensuring that different parts of the app work as expected.
+│   └── Examples:
+│       ├── userController.test.js (Tests for user controller)
+│       └── postRoutes.test.js (Tests for post routes)

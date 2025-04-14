@@ -8,7 +8,7 @@ import { addReview } from "../controllers/ReviewController/addReview.js";
 import { editReview, upvoteReview, downvoteReview } from "../controllers/ReviewController/updateReview.js";
 import { getReviewById, getReviewsByEntity, getReviewsByUser } from "../controllers/ReviewController/getReview.js";
 import { deleteReviewById } from "../controllers/ReviewController/deleteReview.js";
-import upload from "../middleware/multerMiddleware.js";
+import upload from "../middlewares/multerMiddleware.js";
 
 const reviewRouter = express.Router();
 

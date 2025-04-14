@@ -44,7 +44,7 @@ const PostCard = (({post}) => {
 
                     <View className="flex-row items-center py-1">
                         <MapPinIcon size={15} color="gray" />
-                        <Text style={{color: "gray", paddingHorizontal: 5}}>{post?.location || "Lahore, Pakistan"}</Text>
+                        <Text style={{ color: "gray", paddingHorizontal: 5 }}>{post?.locationId?.name || "No location"}</Text>
                     </View>
 
                     <Text style={{color: "gray", paddingHorizontal: 5}}>{calculateDuration(post?.createdAt)}</Text>

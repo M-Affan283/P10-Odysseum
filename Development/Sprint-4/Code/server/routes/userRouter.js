@@ -20,9 +20,9 @@ import { updateUserUsername, updateProfile, updateUserBio, updateUserPassword } 
 import { bookmarkLocation, bookMarkBusiness } from "../controllers/BookmarkController/addBookmark.js";
 import { getUserLocationBookmarks,getUserBusinessBookmarks } from "../controllers/BookmarkController/getBookmark.js";
 
-import { verifyToken } from "../middleware/tokenVerification.js";
+import { verifyToken } from "../middlewares/tokenVerification.js";
 import { refreshToken } from "../controllers/UserController/refreshToken.js";
-import upload from "../middleware/multerMiddleware.js";
+import upload from "../middlewares/multerMiddleware.js";
 
 const userRouter = express.Router();
 
