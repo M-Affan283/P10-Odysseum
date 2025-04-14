@@ -77,14 +77,14 @@ const useUserStore = create(
   persist(
     (set) => ({
       // Initial state - Using tempUser for development purposes
-      user: tempUser,
-      isLoggedIn: true, // Set to true for testing, should be false in production
+      user: null,
+      isLoggedIn: false, // Set to true for testing, should be false in production
 
       // Actions
       setUser: (user) => set({ user: user, isLoggedIn: true }),
 
       logout: async () => {
-        set({ user: null, isLoggedIn: false }); // Make sure to also set user to null
+        set({ isLoggedIn: false }); // Make sure to also set user to null
         await AsyncStorage.removeItem("user-storage"); // Remove user from storage
         deleteAccessToken(); // Remove token from secure storage
       },
