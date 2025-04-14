@@ -231,7 +231,7 @@ const BusinessProfileScreen = ({ businessId }) => {
   {
     return (
       <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-        <Text className="text-white text-xl font-dsbold mb-3">LLM Summary</Text>
+        <Text className="text-white text-xl font-dsbold mb-3">Review Summary</Text>
         <View className="space-y-2">
           <Text className="text-white">{llmSummary ? llmSummary : "Loading..."}</Text>
         </View>
@@ -327,7 +327,7 @@ const BusinessProfileScreen = ({ businessId }) => {
     },
     {
       key: 'llm',
-      title: 'LLM Summary',
+      title: 'Reviews',
       onPress: () => setSelectedButton('llm')
     },
     {
