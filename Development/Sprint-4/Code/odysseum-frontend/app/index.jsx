@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { Redirect } from "expo-router";
 import WelcomeScreen from "../src/screens/WelcomeScreen";
 import HomeScreen from "../src/screens/HomeScreen";
 import useUserStore from "../src/context/userStore";
@@ -34,21 +35,24 @@ import useUserStore from "../src/context/userStore";
 // import ManageProfileScreen from "../src/screens/ManageProfileScreen";
 // import MainCreateScreen from "../src/screens/MainCreateScreen";
 
-
 export default function App() {
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
 
-  // Directly render HomeScreen if user is logged in
-  return isLoggedIn ? <HomeScreen /> : <WelcomeScreen />;
-}
+  // Redirect to the tab-based home route if logged in
+  if (isLoggedIn) {
+    return <Redirect href="/(tabs)/home" />;
+  }
 
+  // Show welcome screen if not logged in
+  return <WelcomeScreen />;
+}
 
 // Component testing
 // export default function App() {
 
 //   return (
 //     <>
-//       <WelcomeScreen /> 
+//       <WelcomeScreen />
 //       {/* <HomeScreen /> */}
 //       {/* <LoginScreen /> */}
 //       {/* <BookmarkScreen /> */}
