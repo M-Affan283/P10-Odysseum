@@ -116,14 +116,14 @@ const UserBookingsScreen = () => {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-primary">
+    <SafeAreaView className="flex-1 bg-primary">
           
       <View className="m-4">
         <View className="flex-row items-center space-x-2">
           <TouchableOpacity onPress={() => router.back()} className="py-4">
             <ArrowLeftIcon size={30} color='white' />
           </TouchableOpacity>
-          <Text className="text-3xl font-dsbold text-purple-500">Manage Service Bookings</Text>
+          <Text className="text-3xl font-dsbold text-purple-500">Your Bookings</Text>
         </View>
       </View>
       

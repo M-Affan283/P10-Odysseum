@@ -3,22 +3,19 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Image,
   StatusBar,
+  Dimensions,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
 import {
   ChevronLeftIcon,
   BriefcaseIcon,
-  MapIcon,
-  MagnifyingGlassIcon,
+  MapPinIcon,
 } from "react-native-heroicons/solid";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import axiosInstance from "../utils/axios";
-// import tempBusinesses from "./tempfiles/tempbusinesses";
 import { FlatList } from "react-native-gesture-handler";
 import icons from "../../assets/icons/icons";
 import Toast from "react-native-toast-message";
@@ -69,13 +66,12 @@ const categories = [
 ];
 
 const BusinessLocationScreen = ({ locationId, locationName }) => {
-  const [searchQuery, setSearchQuery] = useState("");
   const [popularBusinesses, setPopularBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const screenWidth = Dimensions.get("window").width;
 
   const getPopularBusinesses = async () => {
     console.log("Retrieving popular businesses...");
-
     setLoading(true);
 
     axiosInstance
@@ -102,45 +98,117 @@ const BusinessLocationScreen = ({ locationId, locationName }) => {
   }, []);
 
   return (
-    <View className="flex-1 bg-primary">
-      <StatusBar barStyle="light-content" backgroundColor="#28154e" />
-      <View>
-        <View className="pt-12 pb-6 bg-[#28154e] w-full rounded-b-3xl shadow-lg">
-          <View className="px-6 flex-row items-center">
+    <View className="flex-1 bg-[#070f1b]">
+      <StatusBar barStyle="light-content" backgroundColor="#1e0a3c" />
+
+      {/* Modern minimalist header with blurred background */}
+      <LinearGradient colors={["#0d0521", "#1a0b38"]} className="shadow-xl">
+        <View className="pt-14 pb-4 px-5">
+          <View className="flex-row items-center">
             <TouchableOpacity
               onPress={() => router.back()}
-              className="mr-4 p-2 bg-[#3a1f67] rounded-full"
+              className="p-2 bg-[#3a1f67]/40 rounded-full"
             >
-              <ChevronLeftIcon size={24} strokeWidth={4} color="white" />
+              <ChevronLeftIcon size={22} strokeWidth={2.5} color="white" />
             </TouchableOpacity>
 
-            <View className="flex-col flex-1">
-              <Text className="font-dsbold text-white text-2xl">
-                Discover Businesses
+            <View className="flex-1 ml-4">
+              <Text className="text-gray-400 font-medium text-xs">
+                EXPLORING
               </Text>
-              <Text className="font-dsbold text-white text-lg opacity-90">
+              <Text className="font-dsbold text-white text-xl">
                 {locationName}
               </Text>
             </View>
+
+            {/* Floating action buttons - minimalist with increased size */}
+            <View className="flex-row space-x-3">
+              <TouchableOpacity
+                className="p-3 bg-[#4a269d]/40 rounded-full"
+                activeOpacity={0.7}
+                onPress={() =>
+                  router.push({
+                    pathname: `/business/location/${locationId}/all`,
+                    params: { name: locationName },
+                  })
+                }
+              >
+                <BriefcaseIcon size={22} color="white" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="p-3 bg-[#4a269d]/40 rounded-full"
+                activeOpacity={0.7}
+                onPress={() =>
+                  router.push({
+                    pathname: `/business/location/${locationId}/heatmap`,
+                    params: { name: locationName },
+                  })
+                }
+              >
+                <MapPinIcon size={22} color="white" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </LinearGradient>
+
+      {/* Main Content with modern UI */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        {/* Category Section */}
+        <View className="mt-6">
+          <View className="mx-5 flex-row justify-between items-center mb-3">
+            <Text className="font-dsbold text-white text-2xl">
+              Browse by Category
+            </Text>
           </View>
 
-          {/* Search Bar */}
-          <View className="mx-6 mt-4 flex-row items-center bg-[#3a1f67] rounded-xl px-3 py-2">
-            <MagnifyingGlassIcon size={20} color="#a0a0a0" />
-            <TextInput
-              placeholder="Search businesses..."
-              placeholderTextColor="#a0a0a0"
-              className="flex-1 pl-2 text-white font-medium"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
+          {/* Modern Category Grid */}
+          <View className="px-4">
+            <View className="flex-row flex-wrap justify-between">
+              {categories.slice(0, 8).map((category, index) => (
+                <CategoryTile
+                  key={index}
+                  category={category}
+                  locationId={locationId}
+                  locationName={locationName}
+                  width={(screenWidth - 40) / 4}
+                />
+              ))}
+            </View>
 
-          <View className="flex-row mt-6 justify-center items-center gap-x-4 px-6">
-            {/* Button to view all businesses */}
+            {/* Show More Categories Row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="mt-2"
+              contentContainerStyle={{ paddingRight: 20 }}
+            >
+              {categories.slice(8).map((category, index) => (
+                <CategoryTile
+                  key={index}
+                  category={category}
+                  locationId={locationId}
+                  locationName={locationName}
+                  horizontal={true}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+
+        {/* Popular Businesses Section */}
+        <View className="mt-6">
+          <View className="mx-5 flex-row justify-between items-center mb-3">
+            <Text className="font-dsbold text-white text-2xl">
+              Popular Spots
+            </Text>
             <TouchableOpacity
-              className="flex-1"
-              activeOpacity={0.8}
+              className="bg-[#3a1f67]/40 px-3 py-1 rounded-full"
               onPress={() =>
                 router.push({
                   pathname: `/business/location/${locationId}/all`,
@@ -148,206 +216,181 @@ const BusinessLocationScreen = ({ locationId, locationName }) => {
                 })
               }
             >
-              <LinearGradient
-                colors={["#d53f8c", "#97266d"]}
-                className="py-3 px-4 rounded-xl"
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <View className="flex-row items-center justify-center">
-                  <BriefcaseIcon size={22} color="white" />
-                  <Text className="text-white font-dsbold text-base ml-2">
-                    View All
-                  </Text>
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Button for heatmap */}
-            <TouchableOpacity
-              className="flex-1"
-              activeOpacity={0.8}
-              onPress={() =>
-                router.push({
-                  pathname: `/business/location/${locationId}/heatmap`,
-                  params: { name: locationName },
-                })
-              }
-            >
-              <LinearGradient
-                colors={["#3182ce", "#2c5282"]}
-                className="py-3 px-4 rounded-xl"
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <View className="flex-row items-center justify-center">
-                  <MapIcon size={22} color="white" />
-                  <Text className="text-white font-dsbold text-base ml-2">
-                    Heatmap
-                  </Text>
-                </View>
-              </LinearGradient>
+              <Text className="text-purple-300 font-dsbold text-lg">
+                View All
+              </Text>
             </TouchableOpacity>
           </View>
+
+          <BusinessSlider businesses={popularBusinesses} loading={loading} />
         </View>
-
-        <View className="flex-col gap-y-2">
-          <CategorySlider locationId={locationId} locationName={locationName} />
-          <PopularBusinessesSlider
-            businesses={popularBusinesses}
-            loading={loading}
-          />
-        </View>
-      </View>
-    </View>
-  );
-};
-
-const CategorySlider = ({ locationId, locationName }) => {
-  return (
-    <View className="space-y-3 py-5">
-      <View className="mx-6 flex-row justify-between items-center">
-        <Text className="font-dsbold text-white text-xl">Categories</Text>
-      </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="px-2"
-        nestedScrollEnabled={true}
-      >
-        {categories.map((category, index) => (
-          <TouchableOpacity
-            key={index}
-            className="items-center mx-2"
-            style={{ width: 90 }}
-            activeOpacity={0.7}
-            onPress={() =>
-              router.push({
-                pathname: `/business/location/${locationId}/${category?.name}`,
-                params: { name: locationName },
-              })
-            }
-          >
-            <View
-              className="rounded-2xl overflow-hidden bg-[#221242] p-3 shadow-md"
-              style={{ width: 70, height: 70 }}
-            >
-              <Image
-                source={category?.icon}
-                className="w-full h-full"
-                style={{ tintColor: "#a0aec0" }}
-                resizeMode="contain"
-              />
-            </View>
-            <Text className="text-[#a0aec0] font-medium text-center mt-2">
-              {category?.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
       </ScrollView>
     </View>
   );
 };
 
-const PopularBusinessesSlider = ({ businesses, loading }) => {
+// Modernized Category Tile Component
+const CategoryTile = ({
+  category,
+  locationId,
+  locationName,
+  width = 75,
+  horizontal = false,
+}) => {
+  return (
+    <TouchableOpacity
+      className={`${horizontal ? "mb-0 mr-4" : "mb-4"}`}
+      style={{ width: horizontal ? 100 : width }}
+      activeOpacity={0.7}
+      onPress={() =>
+        router.push({
+          pathname: `/business/location/${locationId}/${category?.name}`,
+          params: { name: locationName },
+        })
+      }
+    >
+      <LinearGradient
+        colors={["#2d1654", "#221242"]}
+        className="rounded-2xl p-3 shadow-md items-center justify-center"
+        style={{
+          height: horizontal ? 40 : width,
+          width: horizontal ? 100 : width,
+        }}
+      >
+        {!horizontal && (
+          <Image
+            source={category?.icon}
+            style={{
+              width: width * 0.5,
+              height: width * 0.5,
+              tintColor: "#a0aec0",
+            }}
+            resizeMode="contain"
+          />
+        )}
+
+        <Text
+          className={`text-[#a0aec0] font-medium text-center ${
+            horizontal ? "" : "mt-2"
+          } text-xs`}
+          numberOfLines={1}
+        >
+          {category?.name}
+        </Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+};
+
+// Redesigned Business Slider Component
+const BusinessSlider = ({ businesses, loading }) => {
   const BusinessCard = ({ business }) => {
     return (
       <TouchableOpacity
-        className="mx-3 rounded-xl overflow-hidden shadow-lg"
+        className="mx-3 rounded-2xl overflow-hidden shadow-xl"
         activeOpacity={0.7}
         onPress={() => router.push(`/business/profile/${business?._id}`)}
-        style={{ width: 250, height: 300 }} // Fixed dimensions for consistent card size
+        style={{ width: 240, height: 280 }}
       >
-        <LinearGradient
-          colors={["rgba(34, 18, 66, 0.95)", "rgba(34, 18, 66, 0.85)"]}
-          className="p-2 rounded-xl h-full"
-        >
+        {/* Image with gradient overlay */}
+        <View className="h-full w-full">
           <Image
             source={
               business?.imageUrls?.length > 0
                 ? { uri: business?.mediaUrls[0] }
                 : images.BusinessSearchImg
             }
-            style={{ width: "100%", height: 170 }}
-            className="rounded-xl"
+            style={{ width: "100%", height: "100%" }}
+            className="absolute"
             resizeMode="cover"
           />
 
-          <View className="mt-2 px-2 pb-2 flex-1">
-            <View className="flex-row items-center gap-1 py-1">
-              <Image
-                source={icons.category}
-                style={{ width: 15, height: 15, tintColor: "#a0aec0" }}
-              />
-              <Text className="text-[#a0aec0] font-medium text-xs">
-                {business?.category}
-              </Text>
+          {/* Content with gradient overlay */}
+          <LinearGradient
+            colors={[
+              "rgba(0, 0, 0, 0)",
+              "rgba(0, 0, 0, 0.7)",
+              "rgba(0, 0, 0, 0.9)",
+            ]}
+            className="h-full w-full justify-end p-3"
+          >
+            {/* Category and Rating */}
+            <View className="flex-row items-center justify-between mb-1">
+              <View className="bg-black/70 px-2 py-1 rounded-full">
+                <Text className="text-[#a0aec0] font-medium text-xs">
+                  {business?.category}
+                </Text>
+              </View>
 
-              <View className="flex-row justify-end flex-1 gap-x-1">
+              <View className="flex-row items-center bg-black/70 px-2 py-1 rounded-full">
                 <Image
                   source={icons.star}
-                  style={{ width: 18, height: 18, tintColor: "#ed8936" }}
+                  style={{ width: 14, height: 14, tintColor: "#ed8936" }}
                 />
-                <Text className="text-[#a0aec0] font-medium text-sm">
-                  {business?.averageRating}
+                <Text className="text-[#a0aec0] font-medium text-xs ml-1">
+                  {business?.averageRating || "New"}
                 </Text>
               </View>
             </View>
 
-            <View className="space-y-2 mt-1">
-              <Text 
-                className="font-dsbold text-xl text-white"
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {business?.name}
-              </Text>
-              <Text 
-                className="text-[#a0aec0] font-medium text-sm"
-                numberOfLines={2}
-                ellipsizeMode="tail"
-              >
-                {business?.address}
-              </Text>
-            </View>
-          </View>
-        </LinearGradient>
+            {/* Business Details */}
+            <Text
+              className="font-dsbold text-white text-xl"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {business?.name}
+            </Text>
+
+            <Text
+              className="text-[#a0aec0] font-medium text-sm mt-1"
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {business?.address}
+            </Text>
+          </LinearGradient>
+        </View>
       </TouchableOpacity>
     );
   };
 
-  return (
-    <View className="space-y-3 py-1">
-      <View className="mx-6 flex-row justify-between items-center">
-        <Text className="font-dsbold text-white text-xl">
-          Popular Businesses
+  if (loading) {
+    return (
+      <View className="items-center justify-center py-10">
+        <LottieView
+          source={require("../../assets/animations/Loading1.json")}
+          autoPlay
+          loop
+          style={{ width: 120, height: 120 }}
+        />
+      </View>
+    );
+  }
+
+  if (businesses.length === 0) {
+    return (
+      <View className="items-center justify-center py-10 mx-10">
+        <Image
+          source={icons.store}
+          style={{ width: 50, height: 50, tintColor: "#a0aec0", opacity: 0.5 }}
+        />
+        <Text className="text-[#a0aec0] font-medium text-base mt-3 text-center">
+          No popular businesses found in this area
         </Text>
       </View>
+    );
+  }
 
-      <FlatList
-        data={businesses}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        ListEmptyComponent={() => {
-          if (loading) {
-            return (
-              <View className="items-center justify-center ml-28">
-                <LottieView
-                  source={require("../../assets/animations/Loading1.json")}
-                  autoPlay
-                  loop
-                  style={{ width: 150, height: 150 }}
-                />
-              </View>
-            );
-          }
-          return null;
-        }}
-        renderItem={({ item, index }) => <BusinessCard business={item} />}
-      />
-    </View>
+  return (
+    <FlatList
+      data={businesses}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingLeft: 2, paddingRight: 20 }}
+      renderItem={({ item }) => <BusinessCard business={item} />}
+      keyExtractor={(item) => item._id}
+    />
   );
 };
 
