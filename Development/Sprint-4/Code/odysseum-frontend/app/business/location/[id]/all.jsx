@@ -7,8 +7,11 @@ const BusinessViewAll = () => {
 
   const { id, name } = useLocalSearchParams()
 
+  console.log("BusinessViewAll", id, name)
+
   return (
-    <BusinessViewAllScreen locationId={id} locationName={name} />
+    // <BusinessViewAllScreen locationId={id} locationName={name} />
+    <View></View>
   )
 }
 
