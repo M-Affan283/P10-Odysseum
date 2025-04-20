@@ -305,7 +305,7 @@ const getBusinessMapData = async (req, res) =>
     const location = await Location.findById(locationId);
     if(!location) return res.status(404).json({ error: "Location not found" });
 
-    const businesses = await Business.find({ locationId: locationId }).select('_id name averageRating coordinates heatmapScore');
+    const businesses = await Business.find({ locationId: locationId }).select('_id name category averageRating coordinates heatmapScore');
     
     const retBusinesses = businesses.map(business => ({
       ...business._doc,

@@ -154,7 +154,8 @@ const getFollowingPosts = async (req, res) => {
       let liked = post.likes && post.likes.includes(requestorId);
       return {
         ...(post._doc ? post._doc : post),
-        liked
+        liked,
+        likesCount: post.likes.length,
       };
     });
 
