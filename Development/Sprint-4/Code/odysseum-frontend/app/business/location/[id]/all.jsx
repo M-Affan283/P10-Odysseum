@@ -10,8 +10,8 @@ const BusinessViewAll = () => {
   console.log("BusinessViewAll", id, name)
 
   return (
-    // <BusinessViewAllScreen locationId={id} locationName={name} />
-    <View></View>
+    <BusinessViewAllScreen locationId={id} locationName={name} />
+    // <View></View>
   )
 }
 
