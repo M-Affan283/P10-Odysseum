@@ -1,0 +1,72 @@
+Collecting workspace information# Odysseum Frontend Routes Structure
+
+Based on the project structure in the odysseum-frontend app folder, here's a comprehensive list of all the routes in the application:
+
+## Root Routes
+- `/` (main index route) - index.jsx
+
+## Authentication Routes
+- `/sign-in` - app/(auth)/sign-in.jsx/sign-in.jsx)
+- `/sign-up` - app/(auth)/sign-up.jsx/sign-up.jsx)
+
+## Main Tab Routes
+- `/home` - app/(tabs)/home.jsx/home.jsx)
+- `/search` - app/(tabs)/search.jsx/search.jsx)
+- `/create` - app/(tabs)/create.jsx/create.jsx)
+- `/bookmark` - app/(tabs)/bookmark.jsx/bookmark.jsx)
+- `/profile` - app/(tabs)/profile.jsx/profile.jsx)
+
+## Post Routes
+- `/post/[id]` - [app/post/[id].jsx](app/post/[id].jsx)
+- `/post/index` - index.jsx
+
+## User Routes
+- `/user/[id]` - [app/user/[id].jsx](app/user/[id].jsx)
+- `/user/index` - index.jsx
+- `/user/booking/bookings` - app/user/booking/bookings.jsx
+- `/user/booking/[id]` - [app/user/booking/[id].jsx](app/user/booking/[id].jsx)
+
+## Location Routes
+- `/location/index` - index.jsx
+- `/location/[id]/index` - [app/location/[id]/index.jsx](app/location/[id]/index.jsx)
+- `/location/[id]/posts` - [app/location/[id]/posts.jsx](app/location/[id]/posts.jsx)
+
+## Business Routes
+- `/business/index` - index.jsx
+- `/business/location/[id]` - [app/business/location/[id].jsx](app/business/location/[id].jsx)
+- `/business/location/[id]/[category]` - [app/business/location/[id]/[category].jsx](app/business/location/[id]/[category].jsx)
+- `/business/location/[id]/all` - [app/business/location/[id]/all.jsx](app/business/location/[id]/all.jsx)
+- `/business/location/[id]/heatmap` - [app/business/location/[id]/heatmap.jsx](app/business/location/[id]/heatmap.jsx)
+- `/business/profile/[id]` - [app/business/profile/[id].jsx](app/business/profile/[id].jsx)
+
+## Service Routes
+- `/service/business/[id]` - [app/service/business/[id].jsx](app/service/business/[id].jsx)
+- `/service/profile/[id]` - [app/service/profile/[id].jsx](app/service/profile/[id].jsx)
+- `/service/[id]/booking` - [app/service/[id]/booking.jsx](app/service/[id]/booking.jsx)
+- `/service/bookings/[id]` - [app/service/bookings/[id].jsx](app/service/bookings/[id].jsx)
+
+## Review Routes
+- `/review/business/[id]` - [app/review/business/[id].jsx](app/review/business/[id].jsx)
+- `/review/location/[id]` - [app/review/location/[id].jsx](app/review/location/[id].jsx)
+
+## Settings Routes
+- `/settings/index` - index.jsx
+- `/settings/business/index` - index.jsx
+- `/settings/business/create` - create.jsx
+- `/settings/business/manage` - app/settings/business/manage.jsx
+- `/settings/service/create/[createId]` - [app/settings/service/create/[createId].jsx](app/settings/service/create/[createId].jsx)
+- `/settings/service/manage/[manageId]` - [app/settings/service/manage/[manageId].jsx](app/settings/service/manage/[manageId].jsx)
+- `/settings/profile/index` - index.jsx
+- `/settings/profile/manage` - app/settings/profile/manage.jsx
+- `/settings/profile/password` - app/settings/profile/password.jsx
+
+## Itinerary Routes
+- `/itinerary/templates` - templates.jsx
+- `/itinerary/create_itinerary` - app/itinerary/create_itinerary.jsx
+- `/itinerary/create` - create.jsx
+- `/itinerary/AI_create` - app/itinerary/AI_create.jsx
+
+## Chat Routes
+- `/chat` - Likely contains chat-related screens
+
+Each route group has its own _layout.jsx file that defines the navigation structure and shared properties for that section of the app.
