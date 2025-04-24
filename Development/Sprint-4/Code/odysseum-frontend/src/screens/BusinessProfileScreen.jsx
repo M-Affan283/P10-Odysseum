@@ -178,21 +178,14 @@ const BusinessProfileScreen = ({ businessId }) => {
     if (item.name === "Share") {
       // Handle share functionality separately
       return;
-    } 
-    else if (item.name === "Reviews" || item.name === "Services") 
-    {
+    } else if (item.name === "Reviews" || item.name === "Services") {
       // For internal navigation, use router.push
       router.push({ pathname: item.url, params: { name: business?.name } });
-    } 
-    else 
-    {
+    } else {
       // For external links, use Linking.openURL
-      try 
-      {
+      try {
         Linking.openURL(item.url);
-      } 
-      catch (error) 
-      {
+      } catch (error) {
         console.log("Error opening URL:", error);
         Toast.show({
           type: "error",
@@ -393,7 +386,7 @@ const BusinessProfileScreen = ({ businessId }) => {
                   width: "100%",
                   height: "100%",
                 }}
-                customMapStyle={themes.aubergine}
+                // customMapStyle={themes.aubergine}
                 initialRegion={{
                   latitude: business?.coordinates?.coordinates[1] || 0,
                   longitude: business?.coordinates?.coordinates[0] || 0,
@@ -596,13 +589,13 @@ const BusinessProfileScreen = ({ businessId }) => {
                   borderColor: "#7b61ff",
                 }}
               />
-              <View className="ml-3">
+              <View className="ml-3 flex-1">
                 <Text className="font-bold text-lg text-white">
                   {business?.name || "Business Name"}
                 </Text>
-                <View className="flex-row items-center mt-1">
-                  <MapPinIcon size={16} color="gray" />
-                  <Text className="text-white/60 ml-1">
+                <View className="flex-row items-start mt-1">
+                  <MapPinIcon size={16} color="gray" style={{ marginTop: 3 }} />
+                  <Text className="text-white/60 ml-1 flex-shrink-1 flex-wrap">
                     {business?.address || "No address"}
                   </Text>
                 </View>

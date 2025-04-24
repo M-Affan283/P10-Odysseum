@@ -68,7 +68,8 @@
     "react-native-toast-message": "^2.2.1",
     "socket.io-client": "^4.8.1",
     "uuid": "^11.1.0",
-    "zustand": "^5.0.1"
+    "zustand": "^5.0.1",
+    "expo-dev-client": "~4.0.29"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

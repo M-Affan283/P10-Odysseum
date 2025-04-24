@@ -447,7 +447,7 @@ const DateSelectScreen = ({
   return (
     <View className="flex-1">
       <TouchableOpacity
-        onPress={() => router.replace(`/service/profile/${service._id}`)}
+        onPress={() => router.back()}
         className="p-3"
       >
         <XMarkIcon size={30} color="white" />
@@ -515,7 +515,7 @@ const DateSelectScreen = ({
                   <View key={index} className="bg-gray-700 p-3 rounded mb-2">
                     <View className="flex-row justify-between">
                       <Text className="text-gray-400">Date:</Text>
-                      <Text className="text-white">{date.date}</Text>
+                      <Text className="text-white">{new Date(date.date).toLocaleDateString("en-GB")}</Text>
                     </View>
                     <View className="flex-row justify-between">
                       <Text className="text-gray-400">Remaining Capacity:</Text>
@@ -754,7 +754,7 @@ const BookingInfoScreen = ({
   return (
     <View className="flex-1">
       <TouchableOpacity
-        onPress={() => router.replace(`/service/profile/${service._id}`)}
+        onPress={() => router.back()}
         className="p-3"
       >
         <XMarkIcon size={30} color="white" />
@@ -849,12 +849,12 @@ const BookingInfoScreen = ({
             <ArrowRightIcon size={40} color="black" />
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => console.log(JSON.stringify(form))}
             className="bg-purple-500 h-14 p-2 rounded-full mt-10"
           >
             <Text className="text-white text-lg font-dsbold">Debug</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </ScrollView>
     </View>
@@ -950,7 +950,7 @@ const PaymentScreen = ({
   return (
     <View className="flex-1">
       <TouchableOpacity
-        onPress={() => router.replace(`/service/profile/${service._id}`)}
+        onPress={() => router.back()}
         className="p-3"
       >
         <XMarkIcon size={30} color="white" />
@@ -1125,12 +1125,12 @@ const PaymentScreen = ({
             <ArrowRightIcon size={40} color="black" />
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => console.log(form.paymentDetails)}
             className="bg-purple-500 h-14 p-2 rounded-full mt-10"
           >
             <Text className="text-white text-lg font-dsbold">Debug</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </ScrollView>
     </View>
@@ -1507,7 +1507,7 @@ const SuccessScreen = ({ uploading, error }) => {
 
       <View className="flex-row gap-x-10 mb-3">
         <TouchableOpacity
-          onPress={() => router.replace(`/service/profile/${service._id}`)}
+          onPress={() => router.back()}
           className="bg-purple-500 p-3 rounded-full mt-10"
         >
           <Text className="text-white text-lg">Back to Profile</Text>
