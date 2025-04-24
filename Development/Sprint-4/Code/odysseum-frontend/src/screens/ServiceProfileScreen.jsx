@@ -231,7 +231,13 @@ const ServiceProfileScreen = ({ serviceId }) => {
                             Specific Dates
                           </Text>
                           <Text className="text-white text-base">
-                            {price.conditions.specificDates?.join(", ")}
+                            {/* {price.conditions.specificDates?.join(", ")} */}
+                            {/* convert to human readable and join */}
+                            {price.conditions.specificDates
+                              ?.map((date) =>
+                                new Date(date).toLocaleDateString("en-GB")
+                              )
+                              .join(", ")}
                           </Text>
                         </View>
                       )}
@@ -313,7 +319,7 @@ const ServiceProfileScreen = ({ serviceId }) => {
               <View key={index} className="bg-gray-900/60 rounded-xl p-3 mb-3">
                 <View className="flex-row justify-between items-center mb-3">
                   <Text className="text-white/60 text-base">Date</Text>
-                  <Text className="text-white text-base">{date.date}</Text>
+                  <Text className="text-white text-base">{`${new Date(date.date).toLocaleDateString("en-GB")}`}</Text>
                 </View>
                 <View className="flex-row justify-between items-center mb-3">
                   <Text className="text-white/60 text-base">

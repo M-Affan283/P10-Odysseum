@@ -3213,12 +3213,12 @@ const reviewScreen = ({
             <ArrowRightIcon size={28} color="white" />
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={printForm}
             className="bg-blue-900 h-14 px-4 rounded-full items-center justify-center mx-3"
           >
             <Text className="text-white font-semibold">Debug</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </ScrollView>
     </View>
