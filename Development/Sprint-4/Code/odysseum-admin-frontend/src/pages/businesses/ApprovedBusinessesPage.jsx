@@ -2,14 +2,23 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout from '../../components/layouts/MainLayout';
 import useAdminStore from '../../store/adminStore';
+import { SearchOutlined, ShopOutlined } from '@ant-design/icons';
 
-const PendingBusinessesPage = () => {
-    const { fetchPendingBusinesses, businesses, businessesLoading, businessesError } = useAdminStore();
+const ApprovedBusinessesPage = () => {
+    const { fetchApprovedBusinesses, businesses, businessesLoading, businessesError } = useAdminStore();
     const [page, setPage] = useState(1);
+    const [search, setSearch] = useState('');
+    const [searchInput, setSearchInput] = useState('');
 
     useEffect(() => {
-        fetchPendingBusinesses(page);
-    }, [fetchPendingBusinesses, page]);
+        fetchApprovedBusinesses(page, search);
+    }, [fetchApprovedBusinesses, page, search]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        setSearch(searchInput);
+        setPage(1);
+    };
 
     const handlePageChange = (newPage) => {
         if (newPage > 0) {
@@ -17,17 +26,41 @@ const PendingBusinessesPage = () => {
         }
     };
 
+    // Format date for display
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
     return (
         <MainLayout>
             <div className="p-6 max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-white">Pending Business Requests</h1>
-                    <Link 
-                        to="/businesses/approved" 
-                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                    >
-                        View Approved Businesses
-                    </Link>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h1 className="text-2xl font-bold text-white">Approved Businesses</h1>
+
+                    <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                        <form onSubmit={handleSearch} className="flex flex-1">
+                            <input
+                                type="text"
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                placeholder="Search businesses..."
+                                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-l-md text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                            <button
+                                type="submit"
+                                className="px-4 py-2 bg-purple-600 text-white rounded-r-md hover:bg-purple-700 focus:outline-none"
+                            >
+                                <SearchOutlined />
+                            </button>
+                        </form>
+                        <Link
+                            to="/businesses/pending"
+                            className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                        >
+                            View Pending Requests
+                        </Link>
+                    </div>
                 </div>
 
                 {businessesError && (
@@ -44,7 +77,7 @@ const PendingBusinessesPage = () => {
                             <thead className="bg-gray-700">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                        Business Name
+                                        Business
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Owner
@@ -56,7 +89,7 @@ const PendingBusinessesPage = () => {
                                         Location
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                        Date Submitted
+                                        Approved On
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Actions
@@ -73,18 +106,39 @@ const PendingBusinessesPage = () => {
                                             <div className="mt-2">Loading businesses...</div>
                                         </td>
                                     </tr>
-                                ) : businesses.pendingBusinesses.length === 0 ? (
+                                ) : businesses.approvedBusinesses?.length === 0 ? (
                                     <tr>
                                         <td colSpan="6" className="px-6 py-4 text-center text-gray-400">
-                                            No pending business requests found
+                                            No approved businesses found
                                         </td>
                                     </tr>
                                 ) : (
-                                    businesses.pendingBusinesses.map((business) => (
+                                    businesses.approvedBusinesses?.map((business) => (
                                         <tr key={business._id} className="hover:bg-gray-700/50">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-white">
-                                                    {business.name}
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center">
+                                                    <div className="h-10 w-10 flex-shrink-0 mr-3">
+                                                        {business.mediaUrls && business.mediaUrls.length > 0 ? (
+                                                            <img
+                                                                src={business.mediaUrls[0]}
+                                                                alt={business.name}
+                                                                className="h-10 w-10 rounded object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-10 w-10 bg-purple-600 rounded flex items-center justify-center">
+                                                                <ShopOutlined className="text-white" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-medium text-white">
+                                                            {business.name}
+                                                        </div>
+                                                        <div className="text-xs text-gray-400">
+                                                            {business.address?.substring(0, 30)}
+                                                            {business.address?.length > 30 ? '...' : ''}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -100,21 +154,22 @@ const PendingBusinessesPage = () => {
                                                         <div className="text-sm font-medium text-white">
                                                             {business.ownerId?.username || 'Unknown User'}
                                                         </div>
-                                                        <div className="text-sm text-gray-400">
-                                                            {business.ownerId?.email}
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-white">{business.category}</div>
+                                                <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-800 text-gray-100">
+                                                    {business.category}
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-white">{business.locationId?.name || 'Unknown Location'}</div>
+                                                <div className="text-sm text-white">
+                                                    {business.locationId?.name || 'Unknown Location'}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-400">
-                                                    {new Date(business.createdAt).toLocaleDateString()}
+                                                    {formatDate(business.updatedAt)}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -133,11 +188,11 @@ const PendingBusinessesPage = () => {
                     </div>
 
                     {/* Pagination */}
-                    {businesses.totalPendingBusinesses > 0 && (
+                    {businesses.totalApprovedBusinesses > 0 && (
                         <div className="px-6 py-4 flex items-center justify-between border-t border-gray-700">
                             <div className="text-sm text-gray-400">
                                 Showing page {page} of{' '}
-                                {Math.ceil(businesses.totalPendingBusinesses / 10)}
+                                {Math.ceil(businesses.totalApprovedBusinesses / 10)}
                             </div>
                             <div className="flex space-x-2">
                                 <button
@@ -150,7 +205,7 @@ const PendingBusinessesPage = () => {
                                 <button
                                     onClick={() => handlePageChange(page + 1)}
                                     disabled={
-                                        page >= Math.ceil(businesses.totalPendingBusinesses / 10) ||
+                                        page >= Math.ceil(businesses.totalApprovedBusinesses / 10) ||
                                         businessesLoading
                                     }
                                     className="px-4 py-2 bg-gray-700 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
@@ -166,4 +221,4 @@ const PendingBusinessesPage = () => {
     );
 };
 
-export default PendingBusinessesPage;
+export default ApprovedBusinessesPage;

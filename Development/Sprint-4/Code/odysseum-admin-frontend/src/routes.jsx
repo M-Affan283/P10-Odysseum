@@ -7,6 +7,7 @@ import UserReportDetailsPage from './pages/reports/UserReportDetailsPage'
 import PostReportsPage from './pages/reports/PostReportsPage'
 import PostReportDetailsPage from './pages/reports/PostReportDetailsPage'
 import PendingBusinessesPage from './pages/businesses/PendingBusinessesPage';
+import ApprovedBusinessesPage from './pages/businesses/ApprovedBusinessesPage';
 import BusinessDetailsPage from './pages/businesses/BusinessDetailsPage';
 import UsersPage from './pages/users/UsersPage';
 import UserDetailsPage from './pages/users/UserDetailsPage';
@@ -80,7 +81,19 @@ export const Routes = () => {
             {/* Business Routes */}
             <Route path="/businesses" element={
                 <ProtectedRoute>
+                    <Navigate to="/businesses/pending" replace />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/businesses/pending" element={
+                <ProtectedRoute>
                     <PendingBusinessesPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/businesses/approved" element={
+                <ProtectedRoute>
+                    <ApprovedBusinessesPage />
                 </ProtectedRoute>
             } />
 
@@ -90,6 +103,7 @@ export const Routes = () => {
                 </ProtectedRoute>
             } />
 
+            
             {/* User Routes */}
             <Route path="/users" element={
                 <ProtectedRoute>

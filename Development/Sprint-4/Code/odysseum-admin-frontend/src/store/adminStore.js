@@ -169,28 +169,23 @@ const useAdminStore = create(
                 set({ dashboardLoading: true, dashboardError: null });
                 try {
                     const response = await api.get('/admin/dashboard/stats');
-            
+
                     if (response.data.success) {
                         set({
-                            stats: {
-                                userCount: response.data.stats.userCount,
-                                postCount: response.data.stats.postCount,
-                                locationCount: response.data.stats.locationCount,
-                                businessCount: response.data.stats.businessCount
-                            },
+                            stats: response.data.stats,
                             recentUsers: response.data.stats.recentUsers || [],
                             dashboardLoading: false
                         });
                     } else {
                         set({
                             dashboardLoading: false,
-                            dashboardError: response.data.message || 'Failed to fetch dashboard data'
+                            dashboardError: response.data.message || 'Failed to load dashboard stats'
                         });
                     }
                 } catch (error) {
                     set({
                         dashboardLoading: false,
-                        dashboardError: error.response?.data?.message || 'Failed to fetch dashboard data'
+                        dashboardError: error.response?.data?.message || 'Error loading dashboard stats'
                     });
                 }
             },
@@ -508,6 +503,42 @@ const useAdminStore = create(
                     });
                 }
             },
+            // Fetch approved businesses
+
+            fetchApprovedBusinesses: async (page = 1, search = '') => {
+                set({ businessesLoading: true, businessesError: null });
+                try {
+                    // Use the new endpoint
+                    let url = `/admin/business-list/approved?page=${page}`;
+                    if (search) {
+                        url += `&search=${encodeURIComponent(search)}`;
+                    }
+            
+                    const response = await api.get(url);
+                    
+                    if (response.data.success) {
+                        set({
+                            businesses: {
+                                ...get().businesses,
+                                approvedBusinesses: response.data.businesses,
+                                totalApprovedBusinesses: response.data.pagination.totalBusinesses
+                            },
+                            businessesLoading: false
+                        });
+                    } else {
+                        set({
+                            businessesLoading: false,
+                            businessesError: response.data.message || 'Failed to fetch approved businesses'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        businessesLoading: false,
+                        businessesError: error.response?.data?.message || 'Failed to fetch approved businesses'
+                    });
+                }
+            },
+           
 
             // Fetch business details
             fetchBusinessDetails: async (businessId) => {

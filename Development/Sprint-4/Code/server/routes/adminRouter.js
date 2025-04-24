@@ -34,6 +34,8 @@ import { getPostDetails } from "../controllers/AdminController/getPostDetails.js
 import { deletePost } from "../controllers/AdminController/deletePost.js";
 import { deleteComment } from "../controllers/AdminController/deleteComment.js";
 import { verifyAdminToken } from "../middleware/adminTokenVerification.js";
+import { getApprovedBusinesses } from "../controllers/AdminController/getApprovedBusinesses.js";
+
 
 const adminRouter = express.Router();
 
@@ -81,5 +83,8 @@ adminRouter.get("/posts", getPosts);
 adminRouter.get("/posts/:postId", getPostDetails);
 adminRouter.delete("/posts/:postId", deletePost);
 adminRouter.delete("/comments/:commentId", deleteComment);
+
+adminRouter.get("/business-list/approved", verifyAdminToken, getApprovedBusinesses);
+
 
 export default adminRouter;
