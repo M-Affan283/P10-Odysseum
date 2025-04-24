@@ -20,6 +20,7 @@ const normalizeTime = (hours, minutes) => {
 
 const createItinerary = async (req, res) => {
     const { destinations, template_id } = req.body
+
     if (!destinations || !Array.isArray(destinations) || destinations.length < 2) {
         return res.status(400).json({ 
             message: ERROR_MESSAGES.INVALID_ITINERARY
@@ -48,7 +49,7 @@ const createItinerary = async (req, res) => {
             }
             formattedItinerary[dayKey].push(description);
         });
-
+        
         // Creating a new itinerary instance and saving to database
         const newItinerary = await Itinerary.create({ destinations: sortedDestinations });
         const formattedItineraryJSON = JSON.stringify(formattedItinerary);
@@ -66,6 +67,9 @@ const createItinerary = async (req, res) => {
         pythonProcess.stderr.on("data", (data) => {
             errorOutput += data.toString();
         });
+
+
+        console.log("HERE")
 
         pythonProcess.on("close", (code) => {
             if (code === 0) {
