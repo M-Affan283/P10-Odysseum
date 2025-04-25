@@ -7,7 +7,9 @@ import UserReportDetailsPage from './pages/reports/UserReportDetailsPage'
 import PostReportsPage from './pages/reports/PostReportsPage'
 import PostReportDetailsPage from './pages/reports/PostReportDetailsPage'
 import PendingBusinessesPage from './pages/businesses/PendingBusinessesPage';
+import ApprovedBusinessesPage from './pages/businesses/ApprovedBusinessesPage';
 import BusinessDetailsPage from './pages/businesses/BusinessDetailsPage';
+import ApprovedBusinessDetailsPage from './pages/businesses/ApprovedBusinessDetailsPage';
 import UsersPage from './pages/users/UsersPage';
 import UserDetailsPage from './pages/users/UserDetailsPage';
 import LocationsPage from './pages/locations/LocationsPage';
@@ -80,16 +82,43 @@ export const Routes = () => {
             {/* Business Routes */}
             <Route path="/businesses" element={
                 <ProtectedRoute>
+                    <Navigate to="/businesses/pending" replace />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/businesses/pending" element={
+                <ProtectedRoute>
                     <PendingBusinessesPage />
                 </ProtectedRoute>
             } />
 
-            <Route path="/businesses/:businessId" element={
+            <Route path="/businesses/approved" element={
+                <ProtectedRoute>
+                    <ApprovedBusinessesPage />
+                </ProtectedRoute>
+            } />
+
+            {/* Pending Business Details */}
+            <Route path="/businesses/pending/:businessId" element={
                 <ProtectedRoute>
                     <BusinessDetailsPage />
                 </ProtectedRoute>
             } />
 
+            {/* Approved Business Details */}
+            <Route path="/businesses/approved/:businessId" element={
+                <ProtectedRoute>
+                    <ApprovedBusinessDetailsPage />
+                </ProtectedRoute>
+            } />
+
+            {/* Legacy route for backward compatibility */}
+            <Route path="/businesses/:businessId" element={
+                <ProtectedRoute>
+                    <BusinessDetailsPage />
+                </ProtectedRoute>
+            } />
+            
             {/* User Routes */}
             <Route path="/users" element={
                 <ProtectedRoute>

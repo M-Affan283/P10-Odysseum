@@ -1,26 +1,31 @@
 import { useEffect } from 'react';
-import { 
-  Row, 
-  Col, 
-  Card, 
-  Statistic, 
-  Avatar, 
-  List, 
-  Typography, 
-  Spin, 
-  Alert, 
+import {
+  Row,
+  Col,
+  Card,
+  Statistic,
+  Avatar,
+  List,
+  Typography,
+  Spin,
+  Alert,
   Button,
   Descriptions
 } from 'antd';
-import { 
-  UserOutlined, 
-  FileTextOutlined, 
+import {
+  UserOutlined,
+  FileTextOutlined,
   EnvironmentOutlined,
   TeamOutlined,
-  ProfileOutlined
+  ProfileOutlined,
+  ShopOutlined,
+  WarningOutlined,
+  CheckCircleOutlined,
+  BellOutlined
 } from '@ant-design/icons';
 import useAdminStore from '../../store/adminStore';
 import MainLayout from '../../components/layouts/MainLayout';
+import { Link, useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
@@ -41,6 +46,7 @@ const UserListItem = ({ user }) => (
 );
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const {
     user,
     stats,
@@ -54,7 +60,9 @@ const DashboardPage = () => {
     fetchDashboardStats();
   }, [fetchDashboardStats]);
 
-  const iconStyle = { fontSize: 36, color: '#722ed1' };
+  const handleStatClick = (path) => {
+    navigate(path);
+  };
 
   return (
     <MainLayout>
@@ -69,19 +77,18 @@ const DashboardPage = () => {
 
         {/* Error message */}
         {dashboardError && (
-            <Alert
-                message={<span style={{ color: 'white' }}>Error loading dashboard data</span>}
-                description={<span style={{ color: 'white' }}>{dashboardError}</span>}
-                type="error"
-                showIcon
-                style={{ 
-                marginBottom: 24, 
-                background: 'rgba(255, 0, 0, 0.1)', 
-                border: '1px solid #5c0011',
-                color: 'white'  // This sets the main text color to white
-                }}
-                // For the message title and icon color
-            />
+          <Alert
+            message={<span style={{ color: 'white' }}>Error loading dashboard data</span>}
+            description={<span style={{ color: 'white' }}>{dashboardError}</span>}
+            type="error"
+            showIcon
+            style={{
+              marginBottom: 24,
+              background: 'rgba(255, 0, 0, 0.1)',
+              border: '1px solid #5c0011',
+              color: 'white'  // This sets the main text color to white
+            }}
+          />
         )}
 
         {/* Loading state */}
@@ -91,45 +98,130 @@ const DashboardPage = () => {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {/* Stats Row */}
+            {/* Stats Row - Main counts */}
             <Row gutter={[24, 24]}>
-              <Col xs={24} sm={12} lg={8}>
-                <Card 
+              <Col xs={24} sm={12} lg={6}>
+                <Card
                   bordered={false}
-                  style={{ background: '#1f1a2e', borderRadius: 8 }}
+                  style={{ background: '#1f1a2e', borderRadius: 8, cursor: 'pointer' }}
+                  onClick={() => handleStatClick('/users')}
+                  hoverable
                 >
                   <Statistic
                     title={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Total Users</Text>}
-                    value={stats?.totalUsers || 0}
+                    value={stats?.userCount || 0}
                     valueStyle={{ color: 'white' }}
                     prefix={<TeamOutlined style={{ color: '#722ed1' }} />}
                   />
                 </Card>
               </Col>
-              <Col xs={24} sm={12} lg={8}>
-                <Card 
+              <Col xs={24} sm={12} lg={6}>
+                <Card
                   bordered={false}
-                  style={{ background: '#1f1a2e', borderRadius: 8 }}
+                  style={{ background: '#1f1a2e', borderRadius: 8, cursor: 'pointer' }}
+                  onClick={() => handleStatClick('/posts')}
+                  hoverable
                 >
                   <Statistic
                     title={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Total Posts</Text>}
-                    value={stats?.totalPosts || 0}
+                    value={stats?.postCount || 0}
                     valueStyle={{ color: 'white' }}
                     prefix={<FileTextOutlined style={{ color: '#1890ff' }} />}
                   />
                 </Card>
               </Col>
-              <Col xs={24} sm={12} lg={8}>
-                <Card 
+              <Col xs={24} sm={12} lg={6}>
+                <Card
                   bordered={false}
-                  style={{ background: '#1f1a2e', borderRadius: 8 }}
+                  style={{ background: '#1f1a2e', borderRadius: 8, cursor: 'pointer' }}
+                  onClick={() => handleStatClick('/locations')}
+                  hoverable
                 >
                   <Statistic
                     title={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Total Locations</Text>}
-                    value={stats?.totalLocations || 0}
+                    value={stats?.locationCount || 0}
                     valueStyle={{ color: 'white' }}
                     prefix={<EnvironmentOutlined style={{ color: '#52c41a' }} />}
                   />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card
+                  bordered={false}
+                  style={{ background: '#1f1a2e', borderRadius: 8, cursor: 'pointer' }}
+                  onClick={() => handleStatClick('/businesses/approved')}
+                  hoverable
+                >
+                  <Statistic
+                    title={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Total Businesses</Text>}
+                    value={stats?.businessCount || 0}
+                    valueStyle={{ color: 'white' }}
+                    prefix={<ShopOutlined style={{ color: '#f5a623' }} />}
+                  />
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Pending Items Row */}
+            <Row gutter={[24, 24]}>
+              <Col xs={24} sm={12} lg={8}>
+                <Card
+                  bordered={false}
+                  style={{ background: '#1f1a2e', borderRadius: 8, cursor: 'pointer' }}
+                  onClick={() => handleStatClick('/reports/users')}
+                  hoverable
+                >
+                  <Statistic
+                    title={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Pending User Reports</Text>}
+                    value={stats?.pendingUserReports || 0}
+                    valueStyle={{ color: 'white' }}
+                    prefix={<WarningOutlined style={{ color: stats?.pendingUserReports > 0 ? '#ff4d4f' : '#8c8c8c' }} />}
+                  />
+                  {stats?.pendingUserReports > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <Text style={{ color: '#722ed1' }}>View Reports →</Text>
+                    </div>
+                  )}
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={8}>
+                <Card
+                  bordered={false}
+                  style={{ background: '#1f1a2e', borderRadius: 8, cursor: 'pointer' }}
+                  onClick={() => handleStatClick('/reports/posts')}
+                  hoverable
+                >
+                  <Statistic
+                    title={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Pending Post Reports</Text>}
+                    value={stats?.pendingPostReports || 0}
+                    valueStyle={{ color: 'white' }}
+                    prefix={<WarningOutlined style={{ color: stats?.pendingPostReports > 0 ? '#ff4d4f' : '#8c8c8c' }} />}
+                  />
+                  {stats?.pendingPostReports > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <Text style={{ color: '#722ed1' }}>View Reports →</Text>
+                    </div>
+                  )}
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={8}>
+                <Card
+                  bordered={false}
+                  style={{ background: '#1f1a2e', borderRadius: 8, cursor: 'pointer' }}
+                  onClick={() => handleStatClick('/businesses/pending')}
+                  hoverable
+                >
+                  <Statistic
+                    title={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Pending Business Approvals</Text>}
+                    value={stats?.pendingBusinessCount || 0}
+                    valueStyle={{ color: 'white' }}
+                    prefix={<BellOutlined style={{ color: stats?.pendingBusinessCount > 0 ? '#faad14' : '#8c8c8c' }} />}
+                  />
+                  {stats?.pendingBusinessCount > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <Text style={{ color: '#722ed1' }}>View Requests →</Text>
+                    </div>
+                  )}
                 </Card>
               </Col>
             </Row>
@@ -146,17 +238,17 @@ const DashboardPage = () => {
               style={{ background: '#1f1a2e', borderRadius: 8 }}
             >
               <Descriptions layout="vertical" column={{ xs: 1, sm: 2, md: 3 }} colon={false}>
-                <Descriptions.Item 
+                <Descriptions.Item
                   label={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Username</Text>}
                 >
                   <Text style={{ color: 'white' }}>{user?.username}</Text>
                 </Descriptions.Item>
-                <Descriptions.Item 
+                <Descriptions.Item
                   label={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Email</Text>}
                 >
                   <Text style={{ color: 'white' }}>{user?.email}</Text>
                 </Descriptions.Item>
-                <Descriptions.Item 
+                <Descriptions.Item
                   label={<Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Role</Text>}
                 >
                   <Text style={{ color: 'white', textTransform: 'capitalize' }}>{user?.role}</Text>
@@ -173,9 +265,9 @@ const DashboardPage = () => {
                 </div>
               }
               extra={
-                <Button type="link" style={{ color: '#722ed1' }}>
+                <Link to="/users" style={{ color: '#722ed1' }}>
                   View all
-                </Button>
+                </Link>
               }
               bordered={false}
               style={{ background: '#1f1a2e', borderRadius: 8 }}
@@ -186,10 +278,10 @@ const DashboardPage = () => {
                 locale={{
                   emptyText: <Text type="secondary" style={{ display: 'block', textAlign: 'center', padding: '24px 0' }}>No users found</Text>
                 }}
-                style={{ 
-                  '.ant-list-item': { 
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)' 
-                  } 
+                style={{
+                  '.ant-list-item': {
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                  }
                 }}
               />
             </Card>

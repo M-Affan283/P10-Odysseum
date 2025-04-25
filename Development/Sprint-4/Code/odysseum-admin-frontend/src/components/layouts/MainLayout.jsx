@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useAdminStore from '../../store/adminStore';
-import {
-  HomeOutlined,
-  TeamOutlined,
-  FileTextOutlined,
-  UserOutlined,
-  EnvironmentOutlined,
-  MenuUnfoldOutlined,
-  MenuFoldOutlined,
+import { 
+  HomeOutlined, 
+  TeamOutlined, 
+  FileTextOutlined, 
+  UserOutlined, 
+  EnvironmentOutlined, 
+  MenuUnfoldOutlined, 
+  MenuFoldOutlined, 
   LogoutOutlined,
   ShopOutlined
 } from '@ant-design/icons';
@@ -23,7 +23,7 @@ const MainLayout = ({ children }) => {
   const { user, logout } = useAdminStore();
   const navigate = useNavigate();
   const location = useLocation();
-
+  
   const { token: { colorBgContainer, borderRadiusLG } } = theme.useToken();
 
   const handleLogout = () => {
@@ -42,6 +42,7 @@ const MainLayout = ({ children }) => {
     if (location.pathname.startsWith('/users')) return '4';
     if (location.pathname.startsWith('/posts')) return '5';
     if (location.pathname.startsWith('/locations')) return '6';
+    if (location.pathname.startsWith('/businesses')) return '7';
     return '1'; // Dashboard is default
   };
 
@@ -78,8 +79,8 @@ const MainLayout = ({ children }) => {
     },
     {
       key: '7',
-      icon: <ShopOutlined />, 
-      label: <Link to="/businesses">Business Requests</Link>
+      icon: <ShopOutlined />,
+      label: <Link to="/businesses/pending">Businesses</Link>
     }
   ];
 
@@ -88,15 +89,15 @@ const MainLayout = ({ children }) => {
       <Avatar style={{ backgroundColor: '#722ed1' }} size="large">
         {user?.username?.charAt(0).toUpperCase() || 'A'}
       </Avatar>
-
+      
       {!collapsed && (
         <div style={{ marginLeft: 12 }}>
           <Text style={{ color: 'white' }}>{user?.username || 'Admin'}</Text>
           <br />
-          <Button
-            type="link"
-            size="small"
-            icon={<LogoutOutlined />}
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<LogoutOutlined />} 
             style={{ color: 'rgba(255, 255, 255, 0.65)', padding: 0 }}
             onClick={handleLogout}
           >
@@ -118,12 +119,12 @@ const MainLayout = ({ children }) => {
         style={{ position: 'sticky', height: '100vh', top: 0, left: 0 }}
         trigger={null} // Remove the default trigger
       >
-        <div style={{
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 16px',
+        <div style={{ 
+          height: 64, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          padding: '0 16px', 
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
         }}>
           {!collapsed && <Title level={5} style={{ margin: 0, color: '#722ed1' }}>Odysseum Admin</Title>}
@@ -134,14 +135,14 @@ const MainLayout = ({ children }) => {
             style={{ color: 'white', fontSize: '16px' }}
           />
         </div>
-
+        
         <Menu
           theme="dark"
           mode="inline"
           selectedKeys={[getCurrentSelectedKey()]}
           items={menuItems}
         />
-
+        
         <div style={{ position: 'absolute', bottom: 0, width: '100%', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
           {userMenu}
         </div>
@@ -162,7 +163,7 @@ const MainLayout = ({ children }) => {
         <div style={{ height: 64, display: 'flex', alignItems: 'center', padding: '0 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
           <Title level={5} style={{ margin: 0, color: '#722ed1' }}>Odysseum Admin</Title>
         </div>
-
+        
         <Menu
           theme="dark"
           mode="inline"
@@ -170,7 +171,7 @@ const MainLayout = ({ children }) => {
           items={menuItems}
           onClick={() => setMobileDrawerOpen(false)}
         />
-
+        
         <div style={{ position: 'absolute', bottom: 0, width: '100%', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
           {userMenu}
         </div>
@@ -193,8 +194,8 @@ const MainLayout = ({ children }) => {
 
         {/* Main Content */}
         <Content style={{ margin: '16px', overflow: 'initial' }}>
-          <div style={{
-            padding: 24,
+          <div style={{ 
+            padding: 24, 
             background: '#16111f',
             borderRadius: borderRadiusLG,
             minHeight: 'calc(100vh - 112px)'
