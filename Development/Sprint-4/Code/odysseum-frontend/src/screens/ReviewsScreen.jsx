@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StarRatingDisplay } from "react-native-star-rating-widget";
 import {
@@ -20,6 +20,7 @@ import {
   HandThumbDownIcon,
   PencilSquareIcon,
   TrashIcon,
+  RocketLaunchIcon,
 } from "react-native-heroicons/solid";
 import { calculateDuration } from "../utils/dateTimCalc";
 import { router } from "expo-router";
@@ -31,6 +32,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
 import Toast from "react-native-toast-message";
+import LottieView from "lottie-react-native";
 
 const getQueryReviews = async ({
   entityType,
@@ -144,45 +146,77 @@ const ReviewsScreen = ({ entityType, entityId, entityName }) => {
       });
   };
 
-  const ListHeaderComponent = () => {
+  const ListHeaderComponent = useCallback(() => {
     return (
-      <View className="mt-2 px-4">
+      <LinearGradient
+        colors={["rgba(17, 9, 47, 0.9)", "rgba(7, 15, 27, 0.5)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        className="px-4 pb-4 pt-2 rounded-b-3xl mb-4"
+      >
         <View className="flex-row items-center mb-5">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="p-3 bg-[#1e293b] rounded-full"
+            className="p-3 bg-[#211655] rounded-full"
+            style={{
+              shadowColor: "#7b61ff",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 3,
+              elevation: 4,
+            }}
           >
             <ChevronLeftIcon size={28} strokeWidth={2.5} color="#60a5fa" />
           </TouchableOpacity>
 
-          <Text className="font-dsbold text-white text-2xl ml-4 flex-1">
-            {entityName}
+          <Text
+            className="font-dsbold text-white text-2xl ml-4 flex-1"
+            style={{
+              textShadowColor: "rgba(123, 97, 255, 0.5)",
+              textShadowOffset: { width: 0, height: 1 },
+              textShadowRadius: 3,
+            }}
+          >
+            {entityName || "Reviews"}
           </Text>
         </View>
 
-        <View className="flex-row justify-between items-center mb-2">
+        <View className="flex-row justify-between items-center">
           <Text className="text-gray-300 font-semibold text-xl">Reviews</Text>
-          <Text className="text-blue-400">{reviews.length} total</Text>
+          <View className="bg-[#211655]/60 px-3 py-1 rounded-full">
+            <Text className="text-blue-400 font-medium">
+              {reviews.length} total
+            </Text>
+          </View>
         </View>
-      </View>
+      </LinearGradient>
     );
-  };
+  }, [entityName, reviews.length]);
 
   const ListEmptyComponent = () => {
-    if (isFetching) {
+    if (isFetching && !isFetchingNextPage) {
       return (
         <View className="flex-1 mt-10 justify-center items-center">
-          <ActivityIndicator size="large" color="#60a5fa" />
+          <LottieView
+            source={require("../../assets/animations/Loading2.json")}
+            className="w-[120px] h-[120px]"
+            autoPlay
+            loop
+          />
           <Text className="mt-3 text-gray-400">Loading reviews...</Text>
         </View>
       );
     } else if (error) {
       return (
-        <View className="flex-1 mt-10 justify-center items-center">
-          <Text className="text-lg text-red-400">Failed to fetch reviews</Text>
-          <Text className="text-sm text-gray-400 mt-1">{error.message}</Text>
+        <View className="flex-1 mt-10 justify-center items-center p-4 bg-[#191b2a] rounded-2xl mx-4">
+          <Text className="text-lg text-red-400 font-medium mb-2">
+            Failed to fetch reviews
+          </Text>
+          <Text className="text-sm text-gray-400 mt-1 text-center">
+            {error.message}
+          </Text>
           <TouchableOpacity
-            className="mt-5 bg-blue-600 py-2 px-6 rounded-full"
+            className="mt-5 bg-[#3d2a84] py-2.5 px-6 rounded-full"
             onPress={handleRefresh}
           >
             <Text className="text-white font-semibold">Retry</Text>
@@ -191,10 +225,12 @@ const ReviewsScreen = ({ entityType, entityId, entityName }) => {
       );
     } else if (reviews?.length === 0) {
       return (
-        <View className="flex-1 mt-10 justify-center items-center">
-          <Text className="text-lg text-gray-400">No reviews yet</Text>
+        <View className="flex-1 mt-10 justify-center items-center p-6 bg-[#191b2a] rounded-2xl mx-4">
+          <Text className="text-lg text-gray-300 font-medium mb-3">
+            No reviews yet
+          </Text>
           <TouchableOpacity
-            className="mt-5 bg-blue-600 py-2 px-6 rounded-full"
+            className="mt-2 bg-[#3d2a84] py-3 px-7 rounded-full"
             onPress={() => setAddReviewModalVisible(true)}
           >
             <Text className="text-white font-semibold">
@@ -207,9 +243,37 @@ const ReviewsScreen = ({ entityType, entityId, entityName }) => {
     return null;
   };
 
+  const ListFooterComponent = useCallback(() => {
+    if (isFetchingNextPage) {
+      return (
+        <View className="items-center justify-center py-5">
+          <LottieView
+            source={require("../../assets/animations/Loading2.json")}
+            className="w-[60px] h-[60px]"
+            autoPlay
+            loop
+          />
+        </View>
+      );
+    }
+
+    if (!hasNextPage && reviews.length > 0) {
+      return (
+        <View className="items-center justify-center py-5 flex-row">
+          <RocketLaunchIcon size={20} color="#7b61ff" />
+          <Text className="text-white/80 text-base font-medium ml-2">
+            End of Reviews
+          </Text>
+        </View>
+      );
+    }
+
+    return null;
+  }, [isFetchingNextPage, hasNextPage, reviews.length]);
+
   const renderItem = ({ item }) => {
     return (
-      <View className="mx-4 mb-4">
+      <View className="mx-4 mb-6">
         <ReviewCard
           review={item}
           upvote={upvoteReview}
@@ -227,13 +291,14 @@ const ReviewsScreen = ({ entityType, entityId, entityName }) => {
         <FlatList
           data={reviews}
           keyExtractor={(item) => item._id}
-          contentContainerStyle={{ paddingBottom: 50 }}
+          contentContainerStyle={{ paddingBottom: 80 }}
           onEndReached={loadMoreReviews}
           onEndReachedThreshold={0.5}
           refreshing={isFetching && !isFetchingNextPage}
           onRefresh={handleRefresh}
           ListHeaderComponent={ListHeaderComponent}
           ListEmptyComponent={ListEmptyComponent}
+          ListFooterComponent={ListFooterComponent}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
         />
@@ -244,7 +309,14 @@ const ReviewsScreen = ({ entityType, entityId, entityName }) => {
         >
           <LinearGradient
             colors={["#8C00E3", "#1e40af"]}
-            className="w-16 h-16 rounded-full justify-center items-center shadow-lg"
+            className="w-16 h-16 rounded-full justify-center items-center"
+            style={{
+              shadowColor: "#7b61ff",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.5,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
           >
             <PencilSquareIcon size={28} color="white" />
           </LinearGradient>
@@ -328,74 +400,46 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
     );
   };
 
-  const CardFooter = () => {
-    return (
-      <View className="flex-row justify-between items-center mt-4 px-2 pb-1">
-        <View className="flex-row items-center">
-          <TouchableOpacity
-            onPress={handleUpvote}
-            className={`p-2 mr-2 rounded-full ${
-              upvoted ? "bg-blue-900/30" : "bg-gray-800/30"
-            }`}
-          >
-            <HandThumbUpIcon
-              size={22}
-              color={upvoted ? "#60a5fa" : "#9ca3af"}
-            />
-          </TouchableOpacity>
-          <Text className="text-gray-400 mr-3">
-            {review?.upvotes?.length || 0}
-          </Text>
-
-          <TouchableOpacity
-            onPress={handleDownvote}
-            className={`p-2 mr-2 rounded-full ${
-              downvoted ? "bg-blue-900/30" : "bg-gray-800/30"
-            }`}
-          >
-            <HandThumbDownIcon
-              size={22}
-              color={downvoted ? "#60a5fa" : "#9ca3af"}
-            />
-          </TouchableOpacity>
-          <Text className="text-gray-400">
-            {review?.downvotes?.length || 0}
-          </Text>
-        </View>
-
-        <TouchableOpacity className="p-2 rounded-full bg-gray-800/30">
-          <ShareIcon size={22} color="#9ca3af" />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   return (
     <LinearGradient
-      colors={["#1e293b", "#111827"]}
-      className="rounded-2xl overflow-hidden"
+      colors={["#1e293b", "#101624"]}
+      className="rounded-2xl overflow-hidden shadow-lg"
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
+      style={{
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
+      }}
     >
-      <View className="px-4">
-        <View className="flex-row items-center justify-between py-4 border-b border-gray-800">
-          <View className="flex-row items-center">
-            <Image
-              source={{ uri: review?.creatorId?.profilePicture }}
-              className="rounded-full"
-              style={{ width: 40, height: 40 }}
-              resizeMode="cover"
-            />
-            <View className="ml-3">
-              <Text className="text-white font-semibold">
-                {review?.creatorId?.username || "Username"}
-              </Text>
-              <Text className="text-gray-400 text-xs">
-                {calculateDuration(review?.createdAt)}
-              </Text>
-            </View>
+      {/* Header section with user info */}
+      <View className="flex-row items-center justify-between p-4 border-b border-gray-800/50">
+        <View className="flex-row items-center">
+          <Image
+            source={{
+              uri:
+                review?.creatorId?.profilePicture ||
+                "https://i.imgur.com/6VBx3io.png",
+            }}
+            className="rounded-full"
+            style={{ width: 46, height: 46 }}
+            resizeMode="cover"
+          />
+          <View className="ml-3">
+            <Text className="text-white font-semibold text-base">
+              {review?.creatorId?.username || "Anonymous User"}
+            </Text>
+            <Text className="text-blue-400/80 text-xs">
+              {review?.createdAt
+                ? calculateDuration(review?.createdAt)
+                : "Unknown time"}
+            </Text>
           </View>
+        </View>
 
+        <View className="flex-row items-center">
           {isOwnReview && (
             <TouchableOpacity
               onPress={() => setDeleteConfirmVisible(true)}
@@ -405,45 +449,53 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
             </TouchableOpacity>
           )}
         </View>
+      </View>
 
-        <View className="flex-row justify-between items-center py-3">
-          <Text className="text-lg text-white font-semibold flex-1">
-            {review?.title}
+      <View className="p-4">
+        {/* Rating and title section */}
+        <View className="flex-row justify-between items-center mb-3">
+          <Text className="text-xl text-white font-bold flex-1 mr-2">
+            {review?.title || "Untitled Review"}
           </Text>
-          <StarRatingDisplay
-            rating={review?.rating}
-            starSize={20}
-            color="#f59e0b"
-          />
+          <View className="bg-[#211655]/50 p-1.5 rounded-lg">
+            <StarRatingDisplay
+              rating={review?.rating || 0}
+              starSize={18}
+              color="#f59e0b"
+            />
+          </View>
         </View>
 
+        {/* Review content */}
         <Text
           onPress={() => setShowMore(!showMore)}
           numberOfLines={showMore ? undefined : 3}
-          className="text-gray-300 leading-5"
+          className="text-gray-300 leading-6 text-[15px]"
         >
-          {review?.reviewContent}
+          {review?.reviewContent || "No review content"}
         </Text>
 
-        {review?.reviewContent && review?.reviewContent.length > 200 && (
-          <Text
+        {review?.reviewContent && review?.reviewContent.length > 150 && (
+          <TouchableOpacity
             onPress={() => setShowMore(!showMore)}
-            className="text-blue-400 text-center mt-2"
+            className="bg-[#211655]/30 py-1 px-3 rounded-full self-start mt-2"
           >
-            {showMore ? "See Less" : "See More"}
-          </Text>
+            <Text className="text-blue-400 text-xs">
+              {showMore ? "See Less" : "See More"}
+            </Text>
+          </TouchableOpacity>
         )}
 
-        {/* Display review images if available - Updated with fixed height container */}
+        {/* Display review images */}
         {review?.imageUrls && review?.imageUrls?.length > 0 && (
-          <View className="mt-4 mb-4">
-            <View className="items-center" style={{ height: 240 }}>
+          <View className="mt-4 mb-2">
+            <View className="items-center" style={{ height: 220 }}>
               <Carousel
                 data={review?.imageUrls}
                 loop={review?.imageUrls.length > 1}
                 ref={carouselRef}
                 width={300}
-                height={200}
+                height={180}
                 scrollAnimationDuration={100}
                 style={{ alignItems: "center", justifyContent: "center" }}
                 onProgressChange={progress}
@@ -461,7 +513,11 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
                   >
                     <Image
                       source={{ uri: item }}
-                      style={{ width: 300, height: 200, borderRadius: 10 }}
+                      style={{
+                        width: 300,
+                        height: 180,
+                        borderRadius: 12,
+                      }}
                       resizeMode="cover"
                     />
                   </TouchableOpacity>
@@ -473,10 +529,10 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
                   progress={progress}
                   data={review?.imageUrls}
                   onPress={onPressPagination}
-                  size={5}
+                  size={6}
                   dotStyle={{ backgroundColor: "gray", borderRadius: 100 }}
                   activeDotStyle={{
-                    backgroundColor: "white",
+                    backgroundColor: "#60a5fa",
                     overflow: "hidden",
                     aspectRatio: 1,
                     borderRadius: 15,
@@ -489,37 +545,77 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
           </View>
         )}
 
+        {/* Entity details */}
         <LinearGradient
-          colors={["#1e293b", "#0f172a"]}
-          className="rounded-lg p-3 mt-2"
+          colors={["#211655", "#0f172a"]}
+          className="rounded-xl p-3.5 mt-3"
         >
           <View className="flex-row justify-between">
             <View>
               <Text className="font-semibold text-xs text-gray-400">
                 Category
               </Text>
-              <Text className="text-gray-200">
+              <Text className="text-gray-200 font-medium">
                 {review?.entityType === "Location"
                   ? "Municipality"
-                  : review?.entityId?.category}
+                  : review?.entityId?.category || "Unknown"}
               </Text>
             </View>
             <View>
               <Text className="font-semibold text-xs text-gray-400">
-                {review?.entityType}
+                {review?.entityType || "Entity"}
               </Text>
-              <Text className="text-gray-200">{review?.entityId?.name}</Text>
+              <Text className="text-gray-200 font-medium">
+                {review?.entityId?.name || "Unknown"}
+              </Text>
             </View>
           </View>
         </LinearGradient>
 
-        <CardFooter />
+        {/* Footer with buttons */}
+        <View className="flex-row justify-between items-center mt-4 px-1">
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={handleUpvote}
+              className={`p-2.5 mr-2 rounded-full ${
+                upvoted ? "bg-blue-900/60" : "bg-gray-800/30"
+              }`}
+            >
+              <HandThumbUpIcon
+                size={20}
+                color={upvoted ? "#60a5fa" : "#9ca3af"}
+              />
+            </TouchableOpacity>
+            <Text className="text-gray-400 mr-4 min-w-[20px]">
+              {review?.upvotes?.length || 0}
+            </Text>
+
+            <TouchableOpacity
+              onPress={handleDownvote}
+              className={`p-2.5 mr-2 rounded-full ${
+                downvoted ? "bg-blue-900/60" : "bg-gray-800/30"
+              }`}
+            >
+              <HandThumbDownIcon
+                size={20}
+                color={downvoted ? "#60a5fa" : "#9ca3af"}
+              />
+            </TouchableOpacity>
+            <Text className="text-gray-400 min-w-[20px]">
+              {review?.downvotes?.length || 0}
+            </Text>
+          </View>
+
+          <TouchableOpacity className="p-2.5 rounded-full bg-gray-800/30">
+            <ShareIcon size={20} color="#9ca3af" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Full screen image viewer */}
       {imageViewerVisible && (
         <TouchableOpacity
-          className="absolute top-0 left-0 right-0 bottom-0 bg-black/90 z-50 justify-center items-center"
+          className="absolute top-0 left-0 right-0 bottom-0 bg-black/95 z-50 justify-center items-center"
           activeOpacity={1}
           onPress={() => setImageViewerVisible(false)}
         >
@@ -563,7 +659,7 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
           </Text>
 
           <TouchableOpacity
-            className="absolute top-10 right-5 bg-gray-800/50 p-2 rounded-full"
+            className="absolute top-10 right-5 bg-gray-800/70 p-3 rounded-full"
             onPress={() => setImageViewerVisible(false)}
           >
             <XMarkIcon size={24} color="white" />
@@ -578,9 +674,12 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
         animationType="fade"
         onRequestClose={() => !isDeleting && setDeleteConfirmVisible(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black/70">
-          <View className="bg-[#1e293b] p-6 rounded-2xl w-[80%] max-w-[350px]">
-            <Text className="text-white text-lg font-bold mb-4">
+        <View className="flex-1 justify-center items-center bg-black/80">
+          <LinearGradient
+            colors={["#211655", "#101624"]}
+            className="p-6 rounded-2xl w-[85%] max-w-[350px]"
+          >
+            <Text className="text-white text-xl font-bold mb-4">
               Delete Review
             </Text>
             <Text className="text-gray-300 mb-5">
@@ -591,7 +690,7 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
             <View className="flex-row justify-between">
               <TouchableOpacity
                 onPress={() => setDeleteConfirmVisible(false)}
-                className="py-3 px-5 rounded-lg bg-gray-700"
+                className="py-3 px-6 rounded-lg bg-gray-700"
                 disabled={isDeleting}
               >
                 <Text className="text-white font-semibold">Cancel</Text>
@@ -599,7 +698,7 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
 
               <TouchableOpacity
                 onPress={handleDeleteConfirm}
-                className="py-3 px-5 rounded-lg bg-red-600"
+                className="py-3 px-6 rounded-lg bg-red-600"
                 disabled={isDeleting}
               >
                 {isDeleting ? (
@@ -614,7 +713,7 @@ const ReviewCard = ({ review, upvote, downvote, userId, deleteReview }) => {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </LinearGradient>
         </View>
       </Modal>
     </LinearGradient>

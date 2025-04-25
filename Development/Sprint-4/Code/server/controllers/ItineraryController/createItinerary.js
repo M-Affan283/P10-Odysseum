@@ -19,6 +19,8 @@ const normalizeTime = (hours, minutes) => {
 }
 
 const createItinerary = async (req, res) => {
+    console.log("[BACKEND] Create Manual Itinerary")
+    
     const { destinations, template_id } = req.body
     if (!destinations || !Array.isArray(destinations) || destinations.length < 2) {
         return res.status(400).json({ 
@@ -48,7 +50,7 @@ const createItinerary = async (req, res) => {
             }
             formattedItinerary[dayKey].push(description);
         });
-
+        
         // Creating a new itinerary instance and saving to database
         const newItinerary = await Itinerary.create({ destinations: sortedDestinations });
         const formattedItineraryJSON = JSON.stringify(formattedItinerary);

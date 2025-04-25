@@ -1,96 +1,109 @@
-import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  FlatList,
+  Dimensions,
+  Animated,
+} from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "../utils/axios";
 import llmaxiosInstance from "../utils/llm_axios";
 import useUserStore from "../context/userStore";
 import { router } from "expo-router";
 import Carousel, { Pagination } from "react-native-reanimated-carousel";
-import { ChevronLeftIcon, BookmarkIcon, MapPinIcon, PhoneIcon, InboxIcon, GlobeAltIcon, ShareIcon, PencilSquareIcon, BuildingStorefrontIcon } from "react-native-heroicons/solid";
+import {
+  ChevronLeftIcon,
+  BookmarkIcon,
+  MapPinIcon,
+  PhoneIcon,
+  InboxIcon,
+  GlobeAltIcon,
+  ShareIcon,
+  PencilSquareIcon,
+  BuildingStorefrontIcon,
+} from "react-native-heroicons/solid";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSharedValue } from "react-native-reanimated";
 import { useQuery } from "@tanstack/react-query";
 import images from "../../assets/images/images";
 import themes from "../../assets/themes/themes";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import * as Linking from "expo-linking"; 
+import * as Linking from "expo-linking";
 import LottieView from "lottie-react-native";
 import Toast from "react-native-toast-message";
+import { LinearGradient } from "expo-linear-gradient";
+import { ImageBackground } from "react-native";
 
-const width = Dimensions.get('window').width;
+const width = Dimensions.get("window").width;
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const tempBusiness = {
-  "owner": "672f358fb3e56fac046d76a5",
-  "name": "Peak Fitness Center",
-  "address": "4000 Mountain Rd, Hilltop",
-  "category": "Fitness",
-  "description": "A top-notch fitness center offering personalized training and wellness classes.",
-  "website": "http://www.peakfitness.com",
-  "mediaUrls": [
-  ],
-  "contactInfo": {
-  "phone": "444-555-6666",
-  "email": "contact@peakfitness.com",
-  "website": "http://www.peakfitness.com"
+  owner: "672f358fb3e56fac046d76a5",
+  name: "Peak Fitness Center",
+  address: "4000 Mountain Rd, Hilltop",
+  category: "Fitness",
+  description:
+    "A top-notch fitness center offering personalized training and wellness classes.",
+  website: "http://www.peakfitness.com",
+  mediaUrls: [],
+  contactInfo: {
+    phone: "444-555-6666",
+    email: "contact@peakfitness.com",
+    website: "http://www.peakfitness.com",
   },
-  "operatingHours": {
-    "monday": "5:30 - 22:00",
-    "tuesday": "5:30 - 22:00",
-    "wednesday": "5:30 - 22:00",
-    "thursday": "5:30 - 22:00",
-    "friday": "5:30 - 20:00",
-    "saturday": "7:00 - 18:00",
-    "sunday": "8:00 - 18:00"
+  operatingHours: {
+    monday: "5:30 - 22:00",
+    tuesday: "5:30 - 22:00",
+    wednesday: "5:30 - 22:00",
+    thursday: "5:30 - 22:00",
+    friday: "5:30 - 20:00",
+    saturday: "7:00 - 18:00",
+    sunday: "8:00 - 18:00",
   },
-  "locationId": "6781353badab4c338ff55148",
-  "coordinates": {
-  "type": "Point",
-  "coordinates": [-120.5000, 38.5000] //mongoDB coordinates are [longitude, latitude]
+  locationId: "6781353badab4c338ff55148",
+  coordinates: {
+    type: "Point",
+    coordinates: [-120.5, 38.5], //mongoDB coordinates are [longitude, latitude]
   },
-  "activityCount": 170,
-  "averageRating": 4.5,
-  "lastInteraction": "2025-01-19T14:20:00Z"
-}
+  activityCount: 170,
+  averageRating: 4.5,
+  lastInteraction: "2025-01-19T14:20:00Z",
+};
 
-const getQueryBusiness = async ({businessId, requestorId}) =>
-{
-  try
-  {
-    const res = await axiosInstance.get(`/business/getById?businessId=${businessId}&requestorId=${requestorId}`);
+const getQueryBusiness = async ({ businessId, requestorId }) => {
+  try {
+    const res = await axiosInstance.get(
+      `/business/getById?businessId=${businessId}&requestorId=${requestorId}`
+    );
     // console.log(res.data)
     return res.data;
-  }
-  catch(error)
-  {
+  } catch (error) {
     console.log(error);
     throw error;
   }
-}
+};
 
 const BusinessProfileScreen = ({ businessId }) => {
-  
-  // const [business, setBusiness] = useState(tempBusiness);
   const [bookmarked, setBookmarked] = useState(false);
-  const [selectedButton, setSelectedButton] = useState('about');
-  const [llmSummary, setLlmSummary] = useState('');
-  const user = useUserStore(state => state.user);
-  const setUser = useUserStore(state => state.setUser);
+  const [selectedButton, setSelectedButton] = useState("about");
+  const [llmSummary, setLlmSummary] = useState("");
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  const { data, isFetching, error, refetch} = useQuery({
-    queryKey: ['business', {businessId}],
-    queryFn: () => getQueryBusiness({businessId, requestorId: user._id}),
-    // enabled: !!businessId
+  const { data, isFetching, error, refetch } = useQuery({
+    queryKey: ["business", { businessId }],
+    queryFn: () => getQueryBusiness({ businessId, requestorId: user._id }),
   });
 
   const business = data?.business || tempBusiness;
-  // const business = tempBusiness;
-  // const isFetching = false;
-
-  // console.log(JSON.stringify(business, null, 2));
 
   useEffect(() => {
-    if(business.bookmarked) setBookmarked(true);
+    if (business.bookmarked) setBookmarked(true);
   }, [business]);
-
 
   const carouselRef = useRef(null);
   const progress = useSharedValue(0);
@@ -98,9 +111,9 @@ const BusinessProfileScreen = ({ businessId }) => {
   const onPressPagination = (index) => {
     carouselRef.current?.scrollTo({
       count: index - progress.value,
-      animated: true
-    })
-  }
+      animated: true,
+    });
+  };
 
   const getSummariserReviews = async () => {
     console.log("Retrieving LLM based review summary...");
@@ -122,64 +135,78 @@ const BusinessProfileScreen = ({ businessId }) => {
     getSummariserReviews();
   }, [businessId]);
 
-
   const actionButtons = [
     {
       id: 1,
-      name: 'Services',
-      icon: <BuildingStorefrontIcon size={30} color="yellow" />,
-      url: `/service/business/${businessId}`
+      name: "Services",
+      icon: <BuildingStorefrontIcon size={24} color="#7b61ff" />,
+      url: `/service/business/${businessId}`,
     },
     {
       id: 2,
-      name: 'Reviews',
-      icon: <PencilSquareIcon size={30} color="orange" />,
-      url: `/review/business/${businessId}`
+      name: "Reviews",
+      icon: <PencilSquareIcon size={24} color="#7b61ff" />,
+      url: `/review/business/${businessId}`,
     },
     {
       id: 3,
-      name: 'Call',
-      icon: <PhoneIcon size={30} color="#3cd221" />,
-      url: `tel:${business?.contactInfo?.phone}`
+      name: "Call",
+      icon: <PhoneIcon size={24} color="#7b61ff" />,
+      url: `tel:${business?.contactInfo?.phone}`,
     },
     {
       id: 4,
-      name: 'Email',
-      icon: <InboxIcon size={30} color="#218cd2" />,
-      url: `mailto:${business?.contactInfo?.email}`
+      name: "Email",
+      icon: <InboxIcon size={24} color="#7b61ff" />,
+      url: `mailto:${business?.contactInfo?.email}`,
     },
     {
       id: 5,
-      name: 'Website',
-      icon: <GlobeAltIcon size={30} color="white" />,
-      url: business?.contactInfo?.website
+      name: "Website",
+      icon: <GlobeAltIcon size={24} color="#7b61ff" />,
+      url: business?.contactInfo?.website,
     },
     {
-      // share button will allow users to share a link to the business. clicking the link will redirect to the business profile in the app
-      // use expo-sharing to implement this feature. url will be like odysseum://business/profile/{businessId}.
       id: 6,
-      name: 'Share',
-      icon: <ShareIcon size={30} color="#ca21d2" />,
-      url: business?.contactInfo?.website
+      name: "Share",
+      icon: <ShareIcon size={24} color="#7b61ff" />,
+      url: business?.contactInfo?.website,
+    },
+  ];
+
+  const handleActionPress = (item) => {
+    if (item.name === "Share") {
+      // Handle share functionality separately
+      return;
+    } else if (item.name === "Reviews" || item.name === "Services") {
+      // For internal navigation, use router.push
+      router.push({ pathname: item.url, params: { name: business?.name } });
+    } else {
+      // For external links, use Linking.openURL
+      try {
+        Linking.openURL(item.url);
+      } catch (error) {
+        console.log("Error opening URL:", error);
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Could not open the link. Please try again later.",
+          position: "bottom",
+          visibilityTime: 3000,
+        });
+      }
     }
-  ]
+  };
 
-  const handleActionPress = (item) =>
-  {
-  
-    if(item.name === 'Share') return;
-    if(item.name === 'Reviews') router.push({pathname: item.url, params: {name: business?.name}});
-    if(item.name === 'Services') router.push(item.url);
-    else Linking.openURL(item.url);
-  }
-
-  const bookmarkBusiness = async () => 
-  {
+  const bookmarkBusiness = async () => {
     console.log("Bookmarking business...");
     setBookmarked(!bookmarked); //optimistic update
 
     axiosInstance
-      .post("/user/bookmarkBusiness", { userId: user._id, businessId: businessId })
+      .post("/user/bookmarkBusiness", {
+        userId: user._id,
+        businessId: businessId,
+      })
       .then(async (res) => {
         // console.log("Bookmarked location: ", res.data.bookmarks);
         await setUser({
@@ -197,182 +224,265 @@ const BusinessProfileScreen = ({ businessId }) => {
           text2: "Could not bookmark business. Please try again later.",
           position: "bottom",
           visibilityTime: 3000,
-        })
+        });
         setBookmarked(!bookmarked); //revert back to original state
       });
   };
 
   const mapRef = useRef(null);
-  
+
   // move the map back to the business location
-  const focusOnBusiness = () => 
-  { 
+  const focusOnBusiness = () => {
     mapRef.current?.animateToRegion({
       latitude: business?.coordinates?.coordinates[1],
       longitude: business?.coordinates?.coordinates[0],
       latitudeDelta: 0.0922,
-      longitudeDelta: 0.042
+      longitudeDelta: 0.042,
     });
-  }
+  };
 
-  const displayAbout = () =>
-  {
+  const displayAbout = () => {
     return (
-      <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+      <View className="bg-[#191a2b] rounded-xl p-5 mb-4 w-full shadow-lg">
         <Text className="text-white text-xl font-dsbold mb-3">About</Text>
-        <View className="space-y-2">
-          <Text className="text-white">{business?.description || 'No description available'}</Text>
+        <View className="space-y-3">
+          <Text className="text-white/90 text-base leading-6">
+            {business?.description || "No description available"}
+          </Text>
         </View>
       </View>
     );
   };
 
-  const displayLLMSummary = () =>
-  {
+  const displayLLMSummary = () => {
     return (
-      <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-        <Text className="text-white text-xl font-dsbold mb-3">LLM Summary</Text>
-        <View className="space-y-2">
-          <Text className="text-white">{llmSummary ? llmSummary : "Loading..."}</Text>
+      <View className="bg-[#191a2b] rounded-xl p-5 mb-4 w-full shadow-lg">
+        <Text className="text-white text-xl font-dsbold mb-3">
+          Review Summary
+        </Text>
+        <View className="space-y-3">
+          {llmSummary ? (
+            <Text className="text-white/90 text-base leading-6">
+              {llmSummary}
+            </Text>
+          ) : (
+            <View className="items-center py-2">
+              <LottieView
+                source={require("../../assets/animations/Loading2.json")}
+                style={{ width: 60, height: 60 }}
+                autoPlay
+                loop
+              />
+            </View>
+          )}
         </View>
       </View>
     );
-  }
+  };
 
-  const displayOperatingHours = () => 
-  {
+  const displayOperatingHours = () => {
     return (
-      <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-        <Text className="text-white text-xl font-dsbold mb-3">Operating Hours</Text>
-        <View className="space-y-2">
-          {
-            Object.entries(business?.operatingHours).map(([day, hours]) => (
-              <View key={day} className="flex-row justify-between">
-                <Text className="text-white">{day}</Text>
-                <Text className="text-white">{hours}</Text>
-              </View>
-            ))
-          }
+      <View className="bg-[#191a2b] rounded-xl p-5 mb-4 w-full shadow-lg">
+        <Text className="text-white text-xl font-dsbold mb-3">
+          Operating Hours
+        </Text>
+        <View className="space-y-3">
+          {Object.entries(business?.operatingHours).map(([day, hours]) => (
+            <View
+              key={day}
+              className="flex-row justify-between py-1 border-b border-gray-700"
+            >
+              <Text className="text-white/90 capitalize text-base">{day}</Text>
+              <Text className="text-white font-medium text-base">{hours}</Text>
+            </View>
+          ))}
         </View>
       </View>
-    )
-  }
+    );
+  };
 
-  const displayContactInfo = () => 
-  {
+  const displayContactInfo = () => {
     return (
-      <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-        <Text className="text-white text-xl font-dsbold mb-3">Contact Information</Text>
-        <View className="space-y-2 gap-y-4">
-          <View className="flex-row items-center gap-x-3">
-            <PhoneIcon size={20} color="gray" />
-            <Text className="text-white">{business?.contactInfo?.phone || 'N/A'}</Text>
-          </View>
-          <View className="flex-row items-center gap-x-3">
-            <InboxIcon size={20} color="gray" />
-            <Text className="text-white">{business?.contactInfo?.email || 'N/A'}</Text>
-          </View>
-          <View className="flex-row items-center gap-x-3">
-            <GlobeAltIcon size={20} color="gray" />
-            <Text className="text-white">{business?.contactInfo?.website || 'N/A'}</Text>
-          </View>
+      <View className="bg-[#191a2b] rounded-xl p-5 mb-4 w-full shadow-lg">
+        <Text className="text-white text-xl font-dsbold mb-3">
+          Contact Information
+        </Text>
+        <View className="space-y-3">
+          <TouchableOpacity
+            className="flex-row items-center p-3 rounded-lg bg-[#232438]"
+            onPress={() =>
+              Linking.openURL(`tel:${business?.contactInfo?.phone}`)
+            }
+          >
+            <PhoneIcon size={20} color="#7b61ff" />
+            <Text className="text-white ml-3 text-base">
+              {business?.contactInfo?.phone || "N/A"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="flex-row items-center p-3 rounded-lg bg-[#232438]"
+            onPress={() =>
+              Linking.openURL(`mailto:${business?.contactInfo?.email}`)
+            }
+          >
+            <InboxIcon size={20} color="#7b61ff" />
+            <Text className="text-white ml-3 text-base">
+              {business?.contactInfo?.email || "N/A"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="flex-row items-center p-3 rounded-lg bg-[#232438]"
+            onPress={() =>
+              business?.contactInfo?.website &&
+              Linking.openURL(business.contactInfo.website)
+            }
+          >
+            <GlobeAltIcon size={20} color="#7b61ff" />
+            <Text className="text-white ml-3 text-base">
+              {business?.contactInfo?.website || "N/A"}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
-    )
-  }
+    );
+  };
 
-  const displayLocation = () =>
-  {
+  const displayLocation = () => {
     return (
-      <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-        <View className="flex-1 mt-5 justify-center items-center">
-            
-            <TouchableOpacity className="flex-row bg-[#ff6b6b] rounded-full py-2 px-2" onPress={focusOnBusiness}>
-              <MapPinIcon size={25} color="white" />
-              <Text className="text-white text-base">Refocus</Text>
+      <View className="bg-[#191a2b] rounded-xl p-5 mb-4 w-full shadow-lg">
+        <Text className="text-white text-xl font-dsbold mb-3">Location</Text>
+        <View className="space-y-4">
+          <Text className="text-white/90 text-base">
+            {business?.address || "No address available"}
+          </Text>
+
+          {/* Map container with fixed dimensions */}
+          <View
+            className="w-full bg-[#232438] rounded-xl p-2 overflow-hidden"
+            style={{ height: 350 }}
+          >
+            <TouchableOpacity
+              className="bg-[#7b61ff] rounded-full py-2 px-4 mb-3 mt-1 flex-row items-center self-center z-10"
+              onPress={focusOnBusiness}
+            >
+              <MapPinIcon size={20} color="white" />
+              <Text className="text-white text-base ml-2 font-medium">
+                Refocus Map
+              </Text>
             </TouchableOpacity>
 
-            <MapView
-              ref={mapRef}
-              className="mt-3"
-              provider={PROVIDER_GOOGLE}
-              style={{ width: 300, height: 300, }}
-              customMapStyle={themes.aubergine}
-              initialRegion={{
-                latitude: business?.coordinates?.coordinates[1] || 0,
-                longitude: business?.coordinates?.coordinates[0] || 0,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.042
-              }}
-            >
-              <Marker
-                coordinate={{
-                  latitude: business?.coordinates?.coordinates[1] || 0,
-                  longitude: business?.coordinates?.coordinates[0] || 0
+            {/* Fixed size map with scrollEnabled={false} to prevent map gestures from affecting parent scroll */}
+            <View className="flex-1 overflow-hidden rounded-xl">
+              <MapView
+                ref={mapRef}
+                provider={PROVIDER_GOOGLE}
+                scrollEnabled={true}
+                zoomEnabled={true}
+                rotateEnabled={false}
+                pitchEnabled={false}
+                style={{
+                  width: "100%",
+                  height: "100%",
                 }}
-                title={business?.name}
-                description={business?.address}
-              />
-            </MapView>
+                // customMapStyle={themes.aubergine}
+                initialRegion={{
+                  latitude: business?.coordinates?.coordinates[1] || 0,
+                  longitude: business?.coordinates?.coordinates[0] || 0,
+                  latitudeDelta: 0.0922,
+                  longitudeDelta: 0.042,
+                }}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: business?.coordinates?.coordinates[1] || 0,
+                    longitude: business?.coordinates?.coordinates[0] || 0,
+                  }}
+                  title={business?.name}
+                  description={business?.address}
+                />
+              </MapView>
+            </View>
           </View>
+        </View>
       </View>
-    )
-  }
+    );
+  };
 
-  const buttonOptions = [
-    {
-      key: 'about',
-      title: 'About',
-      onPress: () => setSelectedButton('about')
-    },
-    {
-      key: 'llm',
-      title: 'LLM Summary',
-      onPress: () => setSelectedButton('llm')
-    },
-    {
-      key: 'hours',
-      title: 'Hours',
-      onPress: () => setSelectedButton('hours')
-    },
-    {
-      key: 'contact',
-      title: 'Contact',
-      onPress: () => setSelectedButton('contact')
-    },
-    {
-      key: 'location',
-      title: 'Location',
-      onPress: () => setSelectedButton('location')
-    },
-  ];
+  const TabButton = ({ title, isActive, onPress }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderBottomWidth: isActive ? 2 : 0,
+        borderBottomColor: "#7b61ff",
+      }}
+    >
+      <Text
+        style={{
+          color: isActive ? "white" : "rgba(255,255,255,0.6)",
+          fontWeight: isActive ? "600" : "400",
+          fontSize: 16,
+        }}
+      >
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
 
-  const renderContent = () => 
-  {
-    switch (selectedButton) 
-    {
-      case 'about':
+  const renderContent = () => {
+    switch (selectedButton) {
+      case "about":
         return displayAbout();
-      case 'llm':
+      case "llm":
         return displayLLMSummary();
-      case 'hours':
+      case "hours":
         return displayOperatingHours();
-      case 'contact':
+      case "contact":
         return displayContactInfo();
-      case 'location':
+      case "location":
         return displayLocation();
       default:
         return displayAbout();
     }
   };
 
+  const ProfileStat = ({ text, subText, icon }) => {
+    return (
+      <View
+        style={{
+          alignItems: "center",
+          backgroundColor: "rgba(255,255,255,0.08)",
+          borderRadius: 15,
+          padding: 12,
+          minWidth: 90,
+        }}
+      >
+        {icon}
+        <Text
+          style={{
+            fontWeight: "600",
+            fontSize: 22,
+            color: "white",
+            marginTop: 5,
+          }}
+        >
+          {text}
+        </Text>
+        <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
+          {subText}
+        </Text>
+      </View>
+    );
+  };
 
-  if(isFetching)
-  {
+  if (isFetching) {
     return (
       <View className="bg-[#070f1b] flex-1 justify-center items-center">
         <LottieView
-          source={require('../../assets/animations/Loading1.json')}
+          source={require("../../assets/animations/Loading1.json")}
           style={{
             width: 150,
             height: 150,
@@ -381,123 +491,205 @@ const BusinessProfileScreen = ({ businessId }) => {
           loop
         />
       </View>
-    )
+    );
   }
 
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [280, 180],
+    extrapolate: "clamp",
+  });
+
   return (
-    <View className="flex-1 bg-[#070f1b]">
-      {/* Fixed carousel at the top */}
-      <View style={{ height: 310, borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}>
-        {
-          business?.mediaUrls.length > 0 ?
-          (
-            <>
-              <Carousel
-                // if no media urls, use default image
-                data={business?.mediaUrls}
-                loop={false}
-                ref={carouselRef}
-                width={width}
-                height={310}
-                scrollAnimationDuration={100}
-                onProgressChange={progress}
-                onConfigurePanGesture={(panGesture) => {
-                    panGesture.activeOffsetX([-5, 5]);
-                    panGesture.failOffsetY([-5, 5]);
+    <SafeAreaView className="flex-1 bg-[#070f1b]">
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+      >
+        {/* Header Section with Background Image */}
+        <Animated.View
+          style={{
+            height: headerHeight,
+          }}
+        >
+          <ImageBackground
+            source={
+              business?.mediaUrls.length > 0
+                ? { uri: business.mediaUrls[0] }
+                : images.BusinessSearchImg
+            }
+            style={{
+              width: "100%",
+              height: "100%",
+              justifyContent: "space-between",
+            }}
+          >
+            <LinearGradient
+              colors={[
+                "rgba(7, 15, 27, 0.5)",
+                "transparent",
+                "rgba(7, 15, 27, 0.7)",
+              ]}
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+              }}
+            />
+
+            <View className="flex-row justify-between p-4">
+              <TouchableOpacity
+                className="bg-black/30 p-2 rounded-full"
+                onPress={() => router.back()}
+              >
+                <ChevronLeftIcon size={24} color="white" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="bg-black/30 p-2 rounded-full"
+                onPress={bookmarkBusiness}
+              >
+                <BookmarkIcon
+                  size={24}
+                  color={bookmarked ? "#ff6b6b" : "white"}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View className="px-5 pb-10">
+              <Text className="text-white/80 text-base font-medium">
+                {business?.category || "Business"}
+              </Text>
+              <Text className="font-bold text-2xl text-white drop-shadow-lg">
+                {business?.name || "Business Name"}
+              </Text>
+            </View>
+          </ImageBackground>
+        </Animated.View>
+
+        {/* Profile Card */}
+        <View className="px-5 -mt-10 z-10">
+          <View className="bg-[#191a2b] rounded-3xl p-5 shadow-lg">
+            <View className="flex-row items-center mb-4">
+              <Image
+                source={
+                  business?.mediaUrls.length > 0
+                    ? { uri: business.mediaUrls[0] }
+                    : images.BusinessSearchImg
+                }
+                style={{
+                  width: 70,
+                  height: 70,
+                  borderRadius: 15,
+                  borderWidth: 3,
+                  borderColor: "#7b61ff",
                 }}
-                style={{ alignItems: "center", justifyContent: "center" }}
-                renderItem={({ item }) => (
-                  <View className="items-center">
-                    <Image
-                      source={{uri: item}}
-                      style={{ width: width, height: 310, borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}
-                      resizeMode="cover"
+              />
+              <View className="ml-3 flex-1">
+                <Text className="font-bold text-lg text-white">
+                  {business?.name || "Business Name"}
+                </Text>
+                <View className="flex-row items-start mt-1">
+                  <MapPinIcon size={16} color="gray" style={{ marginTop: 3 }} />
+                  <Text className="text-white/60 ml-1 flex-shrink-1 flex-wrap">
+                    {business?.address || "No address"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Stats */}
+            <View className="flex-row justify-around py-3">
+              <ProfileStat
+                text={business?.averageRating || "0.0"}
+                subText="Rating"
+                icon={<BuildingStorefrontIcon size={20} color="#7b61ff" />}
+              />
+              {/* <ProfileStat
+                text={business?.activityCount || 0}
+                subText="Activity"
+                icon={<PencilSquareIcon size={20} color="#7b61ff" />}
+              /> */}
+              <TouchableOpacity onPress={bookmarkBusiness}>
+                <ProfileStat
+                  text={bookmarked ? "Saved" : "Save"}
+                  subText="Business"
+                  icon={
+                    <BookmarkIcon
+                      size={20}
+                      color={bookmarked ? "#ff6b6b" : "#7b61ff"}
                     />
-                  </View>
-                )}
+                  }
                 />
-                
-                <Pagination.Basic 
-                  progress={progress}
-                  data={business?.mediaUrls}
-                  onPress={onPressPagination}
-                  size={10}
-                  dotStyle={{backgroundColor: 'gray', borderRadius: 100}}
-                  activeDotStyle={{backgroundColor: 'white', overflow: 'hidden', aspectRatio: 1, borderRadius: 15}}
-                  containerStyle={{gap: 5, marginBottom: 10}}
-                  horizontal
-                />
-              </>
-          )
-          :
-          (
-            <Image source={images.BusinessSearchImg} style={{ width: width, height: 315, borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }} resizeMode="cover" />
-          )
-        }
+              </TouchableOpacity>
+            </View>
 
-      </View>
-
-      {/* Scrollable content below the carousel */}
-      <ScrollView className="flex-1 mt-2">
-        <View className="py-4 px-4">
-          <Text className="font-dsregular text-white text-xl">{business?.category || 'N/A'}</Text>
-          <Text className="font-dsbold text-white text-4xl mt-2">{business?.name || 'N/A'}</Text>
-
-          <View className="flex-row gap-1 items-center mt-2">
-            <MapPinIcon size={20} color="gray" />
-            <Text className="font-regular text-white text-lg">{business?.address || 'N/A'}</Text>
-          </View>
-          
-          <View className="flex-row mt-4">
-            {
-              actionButtons.map((action, index) => (
+            {/* Action Buttons Grid Layout instead of ScrollView */}
+            <View className="mt-4 flex-row flex-wrap justify-between">
+              {actionButtons.slice(0, 6).map((action) => (
                 <TouchableOpacity
-                  key={index}
-                  className="items-center rounded-full mx-auto py-2 mt-2"
+                  key={action.id}
+                  className="items-center bg-[#232438] rounded-xl py-3 px-2 mb-3 w-[48%]"
                   onPress={() => handleActionPress(action)}
                 >
-                  {action.icon}
-                  <Text className="font-dsregular text-white text-lg ">{action.name}</Text>
+                  <View className="flex-row items-center justify-center">
+                    {action.icon}
+                    <Text className="font-medium text-white text-base ml-2">
+                      {action.name}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
-              ))
-            }
-          </View>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-4">
-            <View className="flex-row gap-x-3">
-              {buttonOptions.map((button, index) => (
-                <TouchableOpacity 
-                  key={index}
-                  className={`items-center py-2 px-4 rounded-xl ${selectedButton === button.key ? 'bg-purple-600' : 'bg-gray-800'}`}
-                  onPress={button.onPress}
-                >
-                <Text className="font-dsbold text-white text-lg">{button.title}</Text>
-              </TouchableOpacity>
               ))}
             </View>
-          </ScrollView>
-
-          {/* here display inservice?ation based on what is selected. ideally availablity and pricing should be shown in a simialr as that in reveiwscreen function in service create screen */}
-          <View className="flex-1 mt-5">
-            {renderContent()}
           </View>
-
-          
-
         </View>
-      </ScrollView>
 
-      {/* Back and Bookmark icons */}
-      <SafeAreaView className="flex-row justify-between items-center w-full absolute mt-4">
-        <TouchableOpacity className="p-2 rounded-full ml-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={() => router.back()}>
-          <ChevronLeftIcon size={30} strokeWidth={4} color='white' />
-        </TouchableOpacity>
+        {/* Fixed Position Tab Selector */}
+        <View className="mt-5 mb-2">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+          >
+            <View className="flex-row">
+              <TabButton
+                title="About"
+                isActive={selectedButton === "about"}
+                onPress={() => setSelectedButton("about")}
+              />
+              <TabButton
+                title="Reviews"
+                isActive={selectedButton === "llm"}
+                onPress={() => setSelectedButton("llm")}
+              />
+              <TabButton
+                title="Hours"
+                isActive={selectedButton === "hours"}
+                onPress={() => setSelectedButton("hours")}
+              />
+              <TabButton
+                title="Contact"
+                isActive={selectedButton === "contact"}
+                onPress={() => setSelectedButton("contact")}
+              />
+              <TabButton
+                title="Location"
+                isActive={selectedButton === "location"}
+                onPress={() => setSelectedButton("location")}
+              />
+            </View>
+          </ScrollView>
+        </View>
 
-        <TouchableOpacity className="p-2 rounded-full mr-4" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}} onPress={bookmarkBusiness}>
-          <BookmarkIcon size={30} strokeWidth={4} color={bookmarked ? 'red' : 'white'} />
-        </TouchableOpacity>
-      </SafeAreaView>
-    </View>
+        {/* Content based on selected tab */}
+        <View className="px-5 mt-2 pb-10">{renderContent()}</View>
+      </Animated.ScrollView>
+      <Toast />
+    </SafeAreaView>
   );
 };
 

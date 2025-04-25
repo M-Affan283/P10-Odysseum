@@ -1,4 +1,0 @@
-Contains custom middleware functions for tasks like authentication, error handling, or logging.
-│   └── Examples:
-│       ├── authMiddleware.js (Checks if the user is authenticated)
-│       └── errorHandler.js (Centralized error handling)

@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-const LOCAL_IP = '192.168.100.29'; // Replace with your local IP address
+const LOCAL_IP = '192.168.100.150'; // Replace with your local IP address
 const PORT = '8000';
 
 const config = {

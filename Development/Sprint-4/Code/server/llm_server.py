@@ -1,12 +1,19 @@
 from flask import Flask, request, jsonify, Blueprint
-from waitress import serve
+# from waitress import serve
 import logging
-from llm_component import review_summariser
-from dotenv import load_dotenv
+from llm_component import review_summariser, ItineraryProcessor, ItineraryAiProcessor
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Get the absolute path to the config.env file
+ROOT_DIR = Path(__file__).resolve().parent
+ENV_PATH = ROOT_DIR / "config.env"
+
+# Load environment variables from the absolute path
+load_dotenv(dotenv_path=str(ENV_PATH))
 
 # Initialize Flask app
-load_dotenv(dotenv_path="./config.env")
 app = Flask(__name__)
 
 # Set up logging configuration
@@ -17,17 +24,17 @@ app.logger.setLevel(logging.INFO)
 logger = logging.getLogger('flask.app')
 
 # Create a Blueprint for the /api/llm/ prefix
-llm_bp = Blueprint('llm', __name__, url_prefix='/api/llm/summary')
+llm_bp = Blueprint('llm', __name__, url_prefix='/api/llm')
 
 # Home route
-@llm_bp.route('/')
+@llm_bp.route('/summary/')
 def home():
     app.logger.info('Home page requested')
     review_summariser.connect_to_db()
     return jsonify({'message': 'Welcome to the LLM API!'})
 
 # Route to handle business summary
-@llm_bp.route('/businessSummary')
+@llm_bp.route('/summary/businessSummary')
 def businessSummary():
     try:
         # Log the incoming request
@@ -50,7 +57,7 @@ def businessSummary():
 
 
 # Route to handle location summary
-@llm_bp.route('/locationSummary')
+@llm_bp.route('/summary/locationSummary')
 def locationSummary():
     try:
         # Log the incoming request
@@ -73,6 +80,37 @@ def locationSummary():
         return jsonify({'error': str(e)}), 500
 
 
+@llm_bp.route('/itinerary/process', methods=['POST'])
+def process_itinerary():
+    try:
+        itinerary_data = request.get_json()
+        if not itinerary_data:
+            app.logger.warning('No itinerary data in the request')
+            return jsonify({'error': 'Itinerary data is required'}), 400
+        
+        optimization = itinerary_data.get('optimization')
+        itinerary_requirements = ItineraryProcessor.run(itinerary_data, optimization)
+        return jsonify({'i_reqs': itinerary_requirements}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error in itinerary processing route: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@llm_bp.route('/itinerary/processAiItinerary', methods=['POST'])
+def process_AI_itinerary():
+    try:
+        query = request.get_json()
+        if not query:
+            app.logger.warning('No query in the request')
+            return jsonify({'error': 'query is required'}), 400
+        
+        generated_itinerary = ItineraryAiProcessor.run(query)
+        return jsonify({'i_reqs': generated_itinerary}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error in itinerary generation: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
 # Register the Blueprint with the Flask app
 app.register_blueprint(llm_bp)
 
@@ -80,6 +118,9 @@ if __name__ == '__main__':
     # Log server start
     app.logger.info("Server is starting...")
 
-    # Run using waitress server
+    
+    # Alternatively, if you want to use waitress:
+    # from waitress import serve
     # serve(app, host='0.0.0.0', port=5000)
-    app.run()
+    # Run using Flask development server on all interfaces (0.0.0.0)
+    app.run(host='0.0.0.0', port=5000, debug=True) 
