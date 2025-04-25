@@ -15,26 +15,34 @@ const ItineraryLayout = () => {
           tabBarActiveTintColor: "white",
           tabBarInactiveTintColor: "gray",
           headerShown: false,
+          tabBarHideOnKeyboard: true,
         }}
       >
         <Tabs.Screen
-          name="templates"
+          name="index"
           options={{
             title: "Templates",
             tabBarIcon: ({ color }) => <MapIcon size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="create"
+          name="create_itinerary"
           options={{
-            title: "Create",
+            title: "Itinerary",
             tabBarIcon: ({ color }) => <PencilIcon size={24} color={color} />,
           }}
         />
-        <Tabs.Screen
-          name="create_itinerary"
+        {/* <Tabs.Screen
+          name="create_itinerary_with_ai"
           options={{
-            title: "Planner",
+            title: "ItineraryAI",
+            tabBarIcon: ({ color }) => <PencilIcon size={24} color={color} />,
+          }}
+        /> */}
+        <Tabs.Screen
+          name="create_itinerary_planner"
+          options={{
+            title: "Itinerary Planner",
             tabBarIcon: ({ color }) => <ClipboardIcon size={24} color={color} />,
           }}
         />
