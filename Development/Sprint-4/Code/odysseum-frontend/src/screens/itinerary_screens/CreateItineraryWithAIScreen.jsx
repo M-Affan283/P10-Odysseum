@@ -41,8 +41,10 @@ const CreateItineraryWithAIScreen = () => {
         }
     
         try {
-            const response = await llmaxiosInstance.post("/itinerary/createItineraryAI", compiledData);
-    
+            const response = await llmaxiosInstance.post("/itinerary/processAiItinerary", query);
+            
+            console.log(response)
+
             const blob = response.data;
             fileReaderInstance.onload = () => {
                 setImageUri(fileReaderInstance.result);
