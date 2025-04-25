@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Blueprint
 from waitress import serve
 import logging
-from llm_component import review_summariser, ItineraryProcessor
+from llm_component import review_summariser, ItineraryProcessor, ItineraryAiProcessor
 from dotenv import load_dotenv
 import os
 
@@ -89,6 +89,21 @@ def process_itinerary():
         app.logger.error(f"Error in itinerary processing route: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@llm_bp.route('/itinerary/processAiItinerary', methods=['POST'])
+def process_AI_itinerary():
+    try:
+        query = request.get_json()
+        if not query:
+            app.logger.warning('No query in the request')
+            return jsonify({'error': 'query is required'}), 400
+        
+        generated_itinerary = ItineraryAiProcessor.run(query)
+        return jsonify({'i_reqs': generated_itinerary}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error in itinerary generation: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
 # Register the Blueprint with the Flask app
 app.register_blueprint(llm_bp)
 
