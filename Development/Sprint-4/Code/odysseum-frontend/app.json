@@ -27,7 +27,7 @@
       "package": "com.group10.Odysseum"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
       "expo-router",
