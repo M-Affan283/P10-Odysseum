@@ -475,6 +475,68 @@ const useAdminStore = create(
             },
 
             // Business actions
+            // Fetch approved businesses
+            fetchApprovedBusinesses: async (page = 1, search = '') => {
+                set({ businessesLoading: true, businessesError: null });
+                try {
+                    let url = `/admin/businesses/approved?page=${page}`;
+                    if (search) {
+                        url += `&search=${encodeURIComponent(search)}`;
+                    }
+
+                    const response = await api.get(url);
+
+                    if (response.data.success) {
+                        set({
+                            businesses: {
+                                ...get().businesses,
+                                approvedBusinesses: response.data.businesses,
+                                totalApprovedBusinesses: response.data.pagination.totalBusinesses
+                            },
+                            businessesLoading: false
+                        });
+                    } else {
+                        set({
+                            businessesLoading: false,
+                            businessesError: response.data.message || 'Failed to fetch approved businesses'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        businessesLoading: false,
+                        businessesError: error.response?.data?.message || 'Failed to fetch approved businesses'
+                    });
+                }
+            },
+
+            // Fetch business details - works for both approved and pending businesses
+            fetchBusinessDetails: async (businessId) => {
+                set({ businessesLoading: true, businessesError: null });
+                try {
+                    const response = await api.get(`/admin/businesses/${businessId}`);
+
+                    if (response.data.success) {
+                        set({
+                            businesses: {
+                                ...get().businesses,
+                                currentBusiness: response.data.business
+                            },
+                            businessesLoading: false
+                        });
+                    } else {
+                        set({
+                            businessesLoading: false,
+                            businessesError: response.data.message || 'Failed to fetch business details'
+                        });
+                    }
+                } catch (error) {
+                    set({
+                        businessesLoading: false,
+                        businessesError: error.response?.data?.message || 'Failed to fetch business details'
+                    });
+                }
+            },
+
             // Fetch pending businesses
             fetchPendingBusinesses: async (page = 1) => {
                 set({ businessesLoading: true, businessesError: null });
@@ -503,72 +565,8 @@ const useAdminStore = create(
                     });
                 }
             },
-            // Fetch approved businesses
 
-            fetchApprovedBusinesses: async (page = 1, search = '') => {
-                set({ businessesLoading: true, businessesError: null });
-                try {
-                    // Use the new endpoint
-                    let url = `/admin/business-list/approved?page=${page}`;
-                    if (search) {
-                        url += `&search=${encodeURIComponent(search)}`;
-                    }
-            
-                    const response = await api.get(url);
-                    
-                    if (response.data.success) {
-                        set({
-                            businesses: {
-                                ...get().businesses,
-                                approvedBusinesses: response.data.businesses,
-                                totalApprovedBusinesses: response.data.pagination.totalBusinesses
-                            },
-                            businessesLoading: false
-                        });
-                    } else {
-                        set({
-                            businessesLoading: false,
-                            businessesError: response.data.message || 'Failed to fetch approved businesses'
-                        });
-                    }
-                } catch (error) {
-                    set({
-                        businessesLoading: false,
-                        businessesError: error.response?.data?.message || 'Failed to fetch approved businesses'
-                    });
-                }
-            },
-           
-
-            // Fetch business details
-            fetchBusinessDetails: async (businessId) => {
-                set({ businessesLoading: true, businessesError: null });
-                try {
-                    const response = await api.get(`/admin/businesses/${businessId}`);
-
-                    if (response.data.success) {
-                        set({
-                            businesses: {
-                                ...get().businesses,
-                                currentBusiness: response.data.business
-                            },
-                            businessesLoading: false
-                        });
-                    } else {
-                        set({
-                            businessesLoading: false,
-                            businessesError: response.data.message || 'Failed to fetch business details'
-                        });
-                    }
-                } catch (error) {
-                    set({
-                        businessesLoading: false,
-                        businessesError: error.response?.data?.message || 'Failed to fetch business details'
-                    });
-                }
-            },
-
-            // Update business status
+            // Update business status (approve, reject, move to pending)
             updateBusinessStatus: async (businessId, status, adminNotes = '') => {
                 set({ businessesLoading: true, businessesError: null });
                 try {
@@ -589,8 +587,19 @@ const useAdminStore = create(
                             });
                         }
 
-                        // Refresh the pending businesses list
-                        await get().fetchPendingBusinesses();
+                        // Refresh the appropriate business lists based on status change
+                        if (status === 'Approved') {
+                            // If approving, refresh both lists as the business moves from pending to approved
+                            await get().fetchApprovedBusinesses();
+                            await get().fetchPendingBusinesses();
+                        } else if (status === 'Pending') {
+                            // If moving to pending, refresh both lists as the business moves from approved to pending
+                            await get().fetchApprovedBusinesses();
+                            await get().fetchPendingBusinesses();
+                        } else {
+                            // For other status changes (e.g., Rejected)
+                            await get().fetchApprovedBusinesses();
+                        }
 
                         set({ businessesLoading: false });
                         return true;
@@ -609,6 +618,48 @@ const useAdminStore = create(
                     return false;
                 }
             },
+
+            // Update business status
+            // updateBusinessStatus: async (businessId, status, adminNotes = '') => {
+            //     set({ businessesLoading: true, businessesError: null });
+            //     try {
+            //         const response = await api.post('/admin/businesses/update-status', {
+            //             businessId,
+            //             status,
+            //             adminNotes
+            //         });
+
+            //         if (response.data.success) {
+            //             // Update the current business if it's the one being viewed
+            //             if (get().businesses.currentBusiness && get().businesses.currentBusiness._id === businessId) {
+            //                 set({
+            //                     businesses: {
+            //                         ...get().businesses,
+            //                         currentBusiness: response.data.business
+            //                     }
+            //                 });
+            //             }
+
+            //             // Refresh the pending businesses list
+            //             await get().fetchPendingBusinesses();
+
+            //             set({ businessesLoading: false });
+            //             return true;
+            //         } else {
+            //             set({
+            //                 businessesLoading: false,
+            //                 businessesError: response.data.message || 'Failed to update business status'
+            //             });
+            //             return false;
+            //         }
+            //     } catch (error) {
+            //         set({
+            //             businessesLoading: false,
+            //             businessesError: error.response?.data?.message || 'Failed to update business status'
+            //         });
+            //         return false;
+            //     }
+            // },
 
             // Clear current business
             clearCurrentBusiness: () => {
@@ -1097,6 +1148,14 @@ const useAdminStore = create(
                         postsError: error.response?.data?.message || 'Failed to fetch post details'
                     });
                 }
+            },
+            clearCurrentBusiness: () => {
+                set({
+                    businesses: {
+                        ...get().businesses,
+                        currentBusiness: null
+                    }
+                });
             },
 
             // Delete post

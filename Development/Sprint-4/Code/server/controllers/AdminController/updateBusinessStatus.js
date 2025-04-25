@@ -3,9 +3,7 @@
     Author: Shahrez
     Description: Controller for updating business status
 */
-
 import { Business } from '../../models/Business.js';
-import { User } from '../../models/User.js';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../utils/constants.js';
 
 export const updateBusinessStatus = async (req, res) => {
@@ -21,10 +19,10 @@ export const updateBusinessStatus = async (req, res) => {
         }
 
         // Validate status
-        if (status !== 'Approved' && status !== 'Rejected') {
+        if (!['Approved', 'Rejected', 'Pending'].includes(status)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid status. Status must be either "Approved" or "Rejected"'
+                message: 'Invalid status. Status must be either "Approved", "Rejected", or "Pending"'
             });
         }
 

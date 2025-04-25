@@ -32,6 +32,12 @@ const BusinessDetailsPage = () => {
         const success = await updateBusinessStatus(businessId, status, adminNotes);
         if (success) {
             setShowConfirmation(null);
+            // Navigate to the appropriate page based on the new status
+            if (status === 'Approved') {
+                navigate('/businesses/approved');
+            } else if (status === 'Rejected') {
+                navigate('/businesses/pending');
+            }
         }
     };
 
