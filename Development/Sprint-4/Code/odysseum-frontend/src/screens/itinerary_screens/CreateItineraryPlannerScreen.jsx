@@ -1,53 +1,107 @@
 import { View, StyleSheet, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
-import { TemplateContext } from '../../../app/itinerary/_layout';
+import React, { useState, useEffect, useContext } from 'react';
 import { MapPinIcon, PlusIcon, XMarkIcon, ArrowRightIcon } from "react-native-heroicons/outline";
+import llmaxiosInstance from "../../utils/llm_axios";
 import DisplayLocationsSearchBar from '../../components/LocationsSearchBar';
-import AddStops from './AddStops';
+import AddStopsScreen from './AddStopsScreen';
 import OptimizationScreen from './OptimizationScreen';
 import ItineraryRecommendationsScreen from './ItineraryRecommendationsScreen';
-import llmaxiosInstance from "../../utils/llm_axios";
-import React, { useState, useEffect, useContext } from 'react';
+import ItineraryConfirmationScreen from './ItineraryConfirmationScreen';
+import * as Location from 'expo-location';
 
-const CreateItineraryScreenV2 = ({ navigation }) => {
-  const { selectedTemplate } = useContext(TemplateContext);
+const CreateItineraryPlannerScreen = () => {
   const [itineraryState, setItineraryState] = useState({
-    destinations: [],
-    stopsData: [],
-    optimization: null,
-    compiledData: null,
-    finalSelections: null,
-    recommendationsData: null
+    destinations: [],           // List of selected destination locations
+    stopsData: [],              // List of stops for each destination
+    optimization: null,         // Selected optimization preference
+    compiledData: null,         // Completed itinerary data ready for processing
+    finalSelections: null,      // Final user-selected options
+    recommendationsData: null   // AI generated recommendations
   });
 
+  // Screen visibility states
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [showAddStopsScreen, setShowAddStopsScreen] = useState(false);
   const [showOptimizationScreen, setShowOptimizationScreen] = useState(false);
   const [showConfirmationScreen, setShowConfirmationScreen] = useState(false);
   const [showRecommendationsScreen, setShowRecommendationsScreen] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+
+  // Loading state
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
 
   useEffect(() => {
-    setItineraryState(prev => {
-      const updatedStopsData = prev.destinations.map(destination => {
-        const existing = prev.stopsData.find(sd => sd.id === destination._id);
-        return existing || {
-          id: destination._id,
-          location: destination,
-          stops: [],
-          optimization: null,
-          compiledData: null,
-          finalSelections: null,
-          recommendationsData: null
+    (async () => {
+      // 1. Get User Location
+      if (userLocation === null) {
+        try {
+          let { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') {
+            console.warn('Permission to access location was denied');
+          } else {
+            let location = await Location.getCurrentPositionAsync({});
+            setUserLocation({
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            });
+          }
+        } catch (err) {
+          console.error('Error getting user location:', err);
+        }
+      }
+    
+      // 2. Sync Itinerary Stops
+      setItineraryState(prev => {
+        const updatedStopsData = prev.destinations.map(destination => {
+          const existing = prev.stopsData.find(sd => sd.id === destination._id);
+          return existing || {
+            id: destination._id,
+            location: destination,
+            stops: [],
+            optimization: null,
+            compiledData: null,
+            finalSelections: null,
+            recommendationsData: null,
+          };
+        });
+  
+        return {
+          ...prev,
+          stopsData: updatedStopsData,
         };
       });
-
-      return {
-        ...prev,
-        stopsData: updatedStopsData
-      };
-    });
+    })();
   }, [itineraryState.destinations]);
 
+
+  // ====================
+  // NAVIGATION FUNCTIONS
+  // ====================
+
+  // All screens are disabled - returns to main screen
+  const backToMainScreen = () => {
+    setShowLocationSearch(false);
+    setShowAddStopsScreen(false);
+    setShowOptimizationScreen(false);
+    setShowRecommendationsScreen(false);
+    setShowConfirmationScreen(false);
+  };
+
+  // Opens the location search screen
+  const openLocationSearch = () => setShowLocationSearch(true);
+
+  // Opens the 'AddStops' screen from location search
+  const goToStopsScreen = () => {
+    setShowAddStopsScreen(true);
+    setShowLocationSearch(false);
+  };
+
+
+  // =================
+  // DATA MANIPULATION
+  // =================
+
+  // Removes a destiantion from the itineray
   const removeDestination = (id) => {
     const updatedDestinations = itineraryState.destinations.filter(dest => dest._id !== id);
     setItineraryState(prev => ({
@@ -57,62 +111,7 @@ const CreateItineraryScreenV2 = ({ navigation }) => {
     }));
   };
 
-  const openLocationSearch = () => setShowLocationSearch(true);
-
-  const goToStopsScreen = () => {
-    setShowAddStopsScreen(true);
-    setShowLocationSearch(false);
-  };
-
-  const handleStopsData = (stopsData) => {
-    setItineraryState(prev => ({ ...prev, stopsData }));
-    setShowAddStopsScreen(false);
-    setShowOptimizationScreen(true);
-  };
-
-  const handleOptimizationComplete = async (compiledData) => {
-    setItineraryState(prev => ({
-      ...prev,
-      optimization: compiledData.optimization,
-      compiledData: compiledData
-    }));
-
-    setIsLoadingRecommendations(true);
-
-    try {
-      const response = await llmaxiosInstance.post("/itinerary/process", compiledData);
-      setItineraryState(prev => ({
-        ...prev,
-        recommendationsData: response.data || []
-      }));
-      setShowRecommendationsScreen(true);
-    } catch (error) {
-      console.error('Error sending itinerary to backend:', error);
-      setShowRecommendationsScreen(false);
-      setShowOptimizationScreen(true);
-    } finally {
-      setIsLoadingRecommendations(false);
-      setShowOptimizationScreen(false);
-    }
-  };
-
-  const handleRecommendationsComplete = (finalItinerary) => {
-    setItineraryState(prev => ({
-      ...prev,
-      finalSelections: finalItinerary.selections
-    }));
-    setShowRecommendationsScreen(false);
-    setShowConfirmationScreen(true);
-  };
-
-  const backToMainScreen = () => {
-    setShowLocationSearch(false);
-    setShowAddStopsScreen(false);
-    setShowOptimizationScreen(false);
-    setShowRecommendationsScreen(false);
-    setShowConfirmationScreen(false);
-  };
-
+  // Resets the itinerary to create a new one
   const createNewItinerary = () => {
     setItineraryState({
       destinations: [],
@@ -125,6 +124,66 @@ const CreateItineraryScreenV2 = ({ navigation }) => {
     backToMainScreen();
   };
 
+
+  // =================
+  // HANDLER FUNCTIONS
+  // =================
+
+  // Saves the stops and navigates to optimization screen
+  const handleStopsData = (stopsData) => {
+    setItineraryState(prev => ({ ...prev, stopsData }));
+    setShowAddStopsScreen(false);
+    setShowOptimizationScreen(true);
+  };
+
+  // Saves the optimization and generates recommendations
+  const handleGenerateRecommendations = async (compiledData) => {
+    setItineraryState(prev => ({
+      ...prev,
+      optimization: compiledData.optimization,
+      compiledData: compiledData
+    }));
+
+    // Loading indicator
+    setIsLoadingRecommendations(true);
+
+    try {
+      const response = await llmaxiosInstance.post("/itinerary/process", compiledData);
+      setItineraryState(prev => ({
+        ...prev,
+        recommendationsData: response.data || []
+      }));
+      setIsLoadingRecommendations(false);
+
+      setShowRecommendationsScreen(true);
+      setShowOptimizationScreen(false);
+
+    } catch (error) {
+      console.error('Error sending itinerary to backend:', error);
+      setIsLoadingRecommendations(false);
+      
+      // If failure, return to optimization screen
+      setShowRecommendationsScreen(false);
+      setShowOptimizationScreen(true);
+    }
+  };
+
+  const handleCompletedItinerary = (finalItinerary) => {
+    setItineraryState(prev => ({
+      ...prev,
+      finalSelections: finalItinerary.selections
+    }));
+
+    
+    setShowRecommendationsScreen(false);
+    setShowConfirmationScreen(true);
+  };
+
+  //=============================
+  // CONDITIONAL SCREEN RENDERING
+  //=============================
+
+  // Loading screen while recommendations are being generated
   if (isLoadingRecommendations) {
     return (
       <View style={styles.loadingContainer}>
@@ -138,6 +197,7 @@ const CreateItineraryScreenV2 = ({ navigation }) => {
     );
   }
 
+  // Shows 'DisplayLocationsSearchBar' screen AFTER pressing 'Add Destinations'
   if (showLocationSearch) {
     return (
       <DisplayLocationsSearchBar
@@ -155,9 +215,10 @@ const CreateItineraryScreenV2 = ({ navigation }) => {
     );
   }
 
+  // Shows the 'AddStopsScreen' after pressing 'Continue to Add Stops'
   if (showAddStopsScreen) {
     return (
-      <AddStops
+      <AddStopsScreen
         destinations={itineraryState.destinations}
         stopsData={itineraryState.stopsData}
         onUpdateStops={(updatedStopsData) => setItineraryState(prev => ({ ...prev, stopsData: updatedStopsData }))}
@@ -167,6 +228,7 @@ const CreateItineraryScreenV2 = ({ navigation }) => {
     );
   }
 
+  // Shows the 'OptimizationScreen' after pressing 'Continue to Optimization'
   if (showOptimizationScreen) {
     return (
       <OptimizationScreen
@@ -175,62 +237,40 @@ const CreateItineraryScreenV2 = ({ navigation }) => {
           setShowOptimizationScreen(false);
           setShowAddStopsScreen(true);
         }}
-        onComplete={handleOptimizationComplete}
+        onComplete={handleGenerateRecommendations}
       />
     );
   }
 
+  // Shows the 'ItineraryRecommendationsScreen' after pressing 'Generate Optimized Recommendations'
   if (showRecommendationsScreen) {
     return (
       <ItineraryRecommendationsScreen
         recommendations={itineraryState.recommendationsData}
+        userLocation={userLocation}
         onBack={() => {
           setShowRecommendationsScreen(false);
           setShowOptimizationScreen(true);
         }}
-        onComplete={handleRecommendationsComplete}
+        onComplete={handleCompletedItinerary}
       />
     );
   }
 
   if (showConfirmationScreen) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Itinerary Created!</Text>
-        <View style={styles.confirmationBox}>
-          <Text style={styles.confirmationText}>
-            Your itinerary has been successfully created with {itineraryState.destinations.length} destinations and optimized for {itineraryState.optimization}.
-          </Text>
-          {itineraryState.finalSelections && (
-            <View style={styles.selectionsContainer}>
-              <Text style={styles.selectionsTitle}>Your Selections:</Text>
-              {Object.entries(itineraryState.finalSelections).map(([category, selection]) => (
-                <View key={category} style={styles.selectionItem}>
-                  <Text style={styles.categoryName}>
-                    {category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:
-                  </Text>
-                  <Text style={styles.selectionValue}>{selection}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-        <TouchableOpacity style={styles.continueButton} onPress={createNewItinerary}>
-          <Text style={styles.continueButtonText}>Create Another Itinerary</Text>
-        </TouchableOpacity>
-      </View>
+      <ItineraryConfirmationScreen
+        destinations={itineraryState.destinations}
+        optimization={itineraryState.optimization}
+        finalSelections={itineraryState.finalSelections}
+        onComplete={createNewItinerary}
+      />
     );
   }
 
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create New Itinerary</Text>
-      {selectedTemplate && (
-        <View style={styles.templateInfo}>
-          <Text style={styles.templateText}>Using template: {selectedTemplate.name}</Text>
-        </View>
-      )}
+      <Text style={styles.title}>Plan Your Itinerary</Text>
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Destinations</Text>
         {itineraryState.destinations.length > 0 ? (
@@ -303,4 +343,4 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 16, fontSize: 16, color: "white" },
 });
 
-export default CreateItineraryScreenV2;
+export default CreateItineraryPlannerScreen;

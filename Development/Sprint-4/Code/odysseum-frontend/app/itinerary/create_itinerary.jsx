@@ -1,10 +1,13 @@
-import React, { useContext } from 'react';
-import CreateItineraryScreenV2 from '../../src/screens/itinerary_screens/CreateItineraryScreenV2';
+import React, { useContext } from 'react'
+import CreateItineraryScreen from '../../src/screens/itinerary_screens/CreateItineraryScreen'
+import { TemplateContext } from './_layout'
 
-const CreateItineraryTab = () => {
+const CreateItinerary = () => {
+  const { selectedTemplate } = useContext(TemplateContext)
   return (
-    <CreateItineraryScreenV2 />
+    <CreateItineraryScreen 
+      selectedTemplate={selectedTemplate}
+    />
   );
-}
-
-export default CreateItineraryTab;
+};
+export default CreateItinerary

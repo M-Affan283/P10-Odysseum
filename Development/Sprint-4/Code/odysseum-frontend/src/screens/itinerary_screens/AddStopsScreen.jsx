@@ -8,10 +8,10 @@ const STOP_CATEGORIES = [
   { id: 'restaurant', name: 'Restaurant', color: '#3b82f6' },
   { id: 'entertainment', name: 'Entertainment', color: '#8b5cf6' },
   { id: 'services', name: 'Services', color: '#f59e0b' },
-  { id: 'other', name: 'Other', color: '#523c0b' },
+  // { id: 'other', name: 'Other', color: '#523c0b' },
 ];
 
-const AddStops = ({ destinations, stopsData, onUpdateStops, onBack, onContinue }) => {
+const AddStopsScreen = ({ destinations, stopsData, onUpdateStops, onBack, onContinue }) => {
   // Initialize itinerary with passed stopsData or create new from destinations
   const [itinerary, setItinerary] = useState([]);
   
@@ -96,9 +96,7 @@ const AddStops = ({ destinations, stopsData, onUpdateStops, onBack, onContinue }
       { name: 'Category', color: '#9ca3af' };
   };
 
-  // Check if any stops have been added
   const hasStops = itinerary.some(dest => dest.stops.length > 0);
-  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -200,6 +198,7 @@ const AddStops = ({ destinations, stopsData, onUpdateStops, onBack, onContinue }
     </View>
   );
 };
+export default AddStopsScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -357,5 +356,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-export default AddStops;
