@@ -132,5 +132,4 @@ dist
 temp.js
 .venv
 __pycache__
-
-config.env
+photos2

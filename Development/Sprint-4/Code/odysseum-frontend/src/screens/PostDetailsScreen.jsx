@@ -75,10 +75,11 @@ const PostDetailsScreen = ({ postId }) => {
     }
 
     const likePost = async () => {
+        setLiked(!liked);
         axiosInstance.post('/post/like', {postId: postId, userId: user._id})
         .then((res) => {
             console.log(res.data.message);
-            setLiked(!liked);
+            // setLiked(!liked);
         })
         .catch((error) => {
             console.log(error);
@@ -88,6 +89,7 @@ const PostDetailsScreen = ({ postId }) => {
                 text1: 'Error',
                 text2: error.response.data.error
             });
+            setLiked(!liked);
         });
     }
 
