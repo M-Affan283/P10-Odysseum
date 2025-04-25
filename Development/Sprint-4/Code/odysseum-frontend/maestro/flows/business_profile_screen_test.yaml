@@ -1,0 +1,42 @@
+appId: com.odysseum.app
+---
+- launchApp:
+    clearState: true
+
+# Log in first
+- runFlow:
+    file: login_screen_test.yaml
+    env:
+      SKIP_WELCOME: "true"
+
+# Navigate to a business profile through search
+- tapOn: "Search"
+- assertVisible: "Explore"
+- inputText: "restaurant"
+- tapOn: "Search"
+
+# Tap on a business result
+- tapOn:
+    textStartsWith: "Business"
+    index: 0
+
+# Verify Business Profile elements
+- assertVisible:
+    textContains: "About"
+
+# Test interaction with tabs
+- tapOn: "Services"
+- assertVisible: "Services"
+
+- tapOn: "Reviews"
+- assertVisible: "Reviews"
+
+- tapOn: "Photos"
+- assertVisible: "Photos"
+
+# Test scrolling
+- scroll
+
+# Go back
+- tapOn:
+    id: "backButton"

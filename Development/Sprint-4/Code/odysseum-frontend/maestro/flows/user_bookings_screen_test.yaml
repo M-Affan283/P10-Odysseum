@@ -1,0 +1,48 @@
+appId: com.odysseum.app
+---
+- launchApp:
+    clearState: true
+
+# Log in first
+- runFlow:
+    file: login_screen_test.yaml
+    env:
+      SKIP_WELCOME: "true"
+
+# Navigate to user profile
+- tapOn: "Profile"
+- assertVisible: "Account"
+
+# Navigate to bookings
+- tapOn: "My Bookings"
+- assertVisible: "Your Bookings"
+
+# Test filter tabs
+- tapOn: "All"
+- assertVisible: "All Bookings"
+
+- tapOn: "Upcoming"
+- assertVisible: "Upcoming"
+
+- tapOn: "Past"
+- assertVisible: "Past"
+
+- tapOn: "Cancelled"
+- assertVisible: "Cancelled"
+
+# Test searching
+- tapOn:
+    id: "searchInput"
+- inputText: "restaurant"
+- tapOn: "Search"
+
+# Clear search
+- tapOn:
+    id: "clearSearch"
+
+# Test scrolling
+- scroll
+
+# Go back
+- tapOn:
+    id: "backButton"

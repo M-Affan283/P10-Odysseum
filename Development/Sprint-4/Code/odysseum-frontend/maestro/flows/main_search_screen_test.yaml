@@ -1,0 +1,25 @@
+appId: com.odysseum.app
+---
+- launchApp
+- tapOn: "Login" # First login
+- inputText:
+    id: "email-input"
+    text: "${TEST_USER_EMAIL}"
+- inputText:
+    id: "password-input"
+    text: "${TEST_USER_PASSWORD}"
+- tapOn: "Login"
+- tapOn: "Search" # Navigate to search tab
+- assertVisible: "Explore"
+- assertVisible: "Find your next adventure"
+- scrollUntilVisible:
+    element: "Find Businesses"
+    direction: DOWN
+- tapOn: "Find Users"
+- assertVisible: "User Search"
+- back
+- tapOn: "Discover Locations"
+- assertVisible: "Discover Locations"
+- back
+- tapOn: "Find Businesses"
+- assertVisible: "Business Search"

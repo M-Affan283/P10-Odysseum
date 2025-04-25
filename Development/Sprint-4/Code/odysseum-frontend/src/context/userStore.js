@@ -72,27 +72,26 @@ let tempUser = {
   ],
 };
 
-
 // Creating Zustand store for user management
 const useUserStore = create(
   persist(
     (set) => ({
-      // Initial state
-      user: tempUser || null, // user is an object with properties: _id, firstName, lastName, email, username, role
-      isLoggedIn: true, //cange to false
+      // Initial state - Using tempUser for development purposes
+      user: null,
+      isLoggedIn: false, // Set to true for testing, should be false in production
 
       // Actions
       setUser: (user) => set({ user: user, isLoggedIn: true }),
 
       logout: async () => {
-        set({ user: null, isLoggedIn: false });
+        set({ isLoggedIn: false }); // Make sure to also set user to null
         await AsyncStorage.removeItem("user-storage"); // Remove user from storage
         deleteAccessToken(); // Remove token from secure storage
       },
     }),
     {
       name: "user-storage", // Key for persistence
-      storage: createJSONStorage(()=>AsyncStorage), // Storage medium
+      storage: createJSONStorage(() => AsyncStorage), // Storage medium
     }
   )
 );

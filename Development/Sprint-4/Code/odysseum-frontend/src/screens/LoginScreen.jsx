@@ -13,8 +13,8 @@ import Toast from "react-native-toast-message";
 
 const LoginScreen = () => {
     const [form, setForm] = useState({ //set to empty object later
-        identifier: "affantest",
-        password: "Aff@n123"
+        identifier: "",
+        password: ""
     });
     const [showPassword, setShowPassword] = useState(false);
 

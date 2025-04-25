@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
         trim: true, // removes whitespace from both ends of a string
         maxlength: [50, 'First name cannot be more than 50 characters']
     },
-    
+
     lastName: {
         type: String,
         required: [true, 'Please provide a last name'],
@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
-    
+
     email: {
         type: String,
         required: [true, 'Please provide an email address'],
@@ -65,62 +65,62 @@ const userSchema = new mongoose.Schema({
         trim: true,
         maxlength: [50, 'Username cannot be more than 50 characters']
     },
-    
+
     password: { //will be hashed before saving
         type: String,
         required: [true, 'Please provide a password'],
         minlength: [6, 'Password cannot be less than 6 characters'],
     },
-    
+
     profilePicture: {
         type: String,
         default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
     },
-    
+
     bio: {
         type: String,
         default: '',
         maxlength: [500, 'Bio cannot be more than 500 characters']
     },
-    
+
     location: {
         type: String,
         default: '',
         maxlength: [100, 'Location cannot be more than 100 characters']
     },
-    
+
     followers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-    
+
     following: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-    
+
 
     emailVerified: {
         type: Boolean,
         default: false
     },
-    
+
     role: {
         type: String,
         enum: ['user', 'admin', 'businessOwner'],
         default: 'user'
     },
-    
+
     // verificationToken: String, // for email verification (if we want to add email verification)
     // verificationExpire: Date,
-    
+
     twoFactorEnabled: {
         type: Boolean,
         default: false
     },
 
     twoFactorSecret: String,// for two factor authentication
-    
+
     refreshToken: {
         type: String,
         default: '',
@@ -141,8 +141,13 @@ const userSchema = new mongoose.Schema({
     businessBookmarks: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Business'
-    }]
+    }],
 
-}, {timestamps: true});
+    banReason: {
+        type: String,
+        default: ''
+    }
+
+}, { timestamps: true });
 
 export const User = mongoose.model('User', userSchema, 'User');
