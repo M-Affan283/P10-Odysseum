@@ -1,11 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon } from 'react-native-heroicons/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from 'react-native-heroicons/solid';
 
-const ItineraryRecommendationsScreen = ({ route, navigation, recommendations, onBack = () => navigation?.goBack(), onComplete }) => {
+const ItineraryRecommendationsScreen = ({ route, recommendations, userLocation, onBack, onComplete }) => {
   const recommendationsData = recommendations['i_reqs'];
-
   const [currentLocationIndex, setCurrentLocationIndex] = useState(0);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -16,6 +15,9 @@ const ItineraryRecommendationsScreen = ({ route, navigation, recommendations, on
   const categories = Object.keys(recommendationsData[currentLocation]);
   const currentCategory = categories[currentCategoryIndex];
   const currentRecommendations = recommendationsData[currentLocation][currentCategory];
+
+  const userLatitude = userLocation['latitude']
+  const userLongitude = userLocation['longitude']
 
   const selectOption = (option) => {
     setSelectedOptions(prev => ({
@@ -52,32 +54,51 @@ const ItineraryRecommendationsScreen = ({ route, navigation, recommendations, on
     return category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
   };
 
-  const completeItinerary = () => {
+  const handleCreateItinerary = () => {
     const finalItinerary = {
       selections: selectedOptions,
-      finalSelections: finalSelections || route?.params?.originalData || {}
+      finalSelections: selectedOptions || route?.params?.originalData || {}
     };
-    
-    if (onComplete) {
-      onComplete(finalItinerary);
-      return;
-    }
-    
-    if (navigation) {
-      navigation.navigate("ItineraryConfirmation", { 
-        finalItinerary 
-      });
-    }
+    onComplete(finalItinerary);
   };
 
+  const getDistanceFromLatLonInKM = (lat1, lon1, lat2, lon2) => {
+    const toRad = value => (value * Math.PI) / 180;
+    const R = 6371000; 
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.round((R * c) / 1000); 
+  };
+  
   if (isComplete) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Your Itinerary</Text>
+        <View style={styles.titleRow}>
+          <TouchableOpacity onPress={onBack} style={styles.backIcon}>
+            <ArrowLeftIcon size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Your Itinerary</Text>
+        </View>
+
         <ScrollView style={styles.optionsContainer}>
           {Object.entries(selectedOptions).map(([key, option], i) => (
             <View key={i} style={styles.optionCard}>
-              <Text style={styles.optionTitle}>{key}</Text>
+
+              <Text style={styles.optionTitle}>
+                {(() => {
+                  const categoryName = key.split("-")
+                  const label = categoryName.slice(0, -1).join(' ');
+                  const lastWord = categoryName.slice(-1)[0];
+                  return `${label} - [${lastWord.toUpperCase()}]`;
+                })()}
+              </Text>
+
               <Text style={styles.optionDescription}>
                 {typeof option === 'object' ? option.name : option}
               </Text>
@@ -96,7 +117,7 @@ const ItineraryRecommendationsScreen = ({ route, navigation, recommendations, on
           
           <TouchableOpacity
             style={styles.confirmButton}
-            onPress={completeItinerary}
+            onPress={handleCreateItinerary}
           >
             <Text style={styles.confirmButtonText}>Create Itinerary</Text>
             <CheckCircleIconSolid size={20} color="white" />
@@ -108,8 +129,15 @@ const ItineraryRecommendationsScreen = ({ route, navigation, recommendations, on
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{currentLocation}</Text>
-      <Text style={styles.categoryTitle}>Choose {formatCategoryTitle(currentCategory)}</Text>
+      <View>
+        <View style={styles.titleRow}>
+          <TouchableOpacity onPress={onBack} style={styles.backIcon}>
+            <ArrowLeftIcon size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.title}>{currentLocation}</Text>
+        </View>
+        <Text style={styles.categoryTitle}>Choose {formatCategoryTitle(currentCategory)}</Text>
+      </View>
 
       <ScrollView style={styles.optionsContainer}>
         {currentRecommendations?.map((option, index) => {
@@ -117,7 +145,15 @@ const ItineraryRecommendationsScreen = ({ route, navigation, recommendations, on
           const displayName = typeof option === 'object' && option !== null 
             ? (option.name || 'Unnamed Option') 
             : (option || 'Unnamed Option');
-
+          const locationAddress = option['address']
+          const [longitude, latitude] = option['coordinates']
+          
+          const distanceFromUser = getDistanceFromLatLonInKM(
+            userLatitude, 
+            userLongitude, 
+            latitude,
+            longitude
+          )
           return (
             <TouchableOpacity
               key={index}
@@ -129,6 +165,8 @@ const ItineraryRecommendationsScreen = ({ route, navigation, recommendations, on
             >
               <View style={styles.optionContent}>
                 <Text style={styles.optionTitle}>{displayName}</Text>
+                <Text style={styles.optionDescription}>Address: {locationAddress}</Text>
+                <Text style={styles.optionDescription}>Distance: {distanceFromUser} km</Text>
                 <Text style={styles.optionDescription}>
                   {typeof option === 'object' && option.rating 
                     ? `Rating: ${option.rating}` 
@@ -175,6 +213,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#070f1b',
     padding: 16,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -182,14 +225,22 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   backIcon: {
-    marginRight: 16,
+    padding: 4,
+    marginRight: 8,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#374151',
+    padding: 12,
+    borderRadius: 8,
+    flex: 0.48,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "700",
     color: "white",
-    paddingTop: 24,
-    // flex: 1,
   },
   progressText: {
     color: '#93c5fd',
@@ -198,9 +249,9 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 16,
+    marginTop: 10,
   },
   optionsContainer: {
     flex: 1,
@@ -240,15 +291,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 24,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#374151',
-    padding: 12,
-    borderRadius: 8,
-    flex: 0.48,
-    justifyContent: 'center',
   },
   backButtonText: {
     color: 'white',

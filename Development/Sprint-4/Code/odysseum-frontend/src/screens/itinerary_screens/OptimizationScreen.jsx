@@ -49,9 +49,9 @@ const OptimizationScreen = ({ itinerary, onBack, onComplete }) => {
     // Proceeds if an option is selected
     if (selectedOption) {
       // Compiling all data into a structured dictionary
-      const completeItineraryData = compileItineraryData(itinerary, selectedOption);
-      console.log('Complete itinerary data:', completeItineraryData);
-      onComplete(completeItineraryData);
+      const compiledItineraryData = compileItineraryData(itinerary, selectedOption);
+      console.log('Compiled itinerary data:', compiledItineraryData);
+      onComplete(compiledItineraryData);
     }
   };
 
@@ -105,6 +105,7 @@ const OptimizationScreen = ({ itinerary, onBack, onComplete }) => {
     </View>
   );
 };
+export default OptimizationScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -119,6 +120,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 16,
+    marginTop: 24,
   },
   title: {
     fontSize: 24,
@@ -181,5 +183,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-export default OptimizationScreen;
