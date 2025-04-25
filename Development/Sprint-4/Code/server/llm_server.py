@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify, Blueprint
 import logging
 import os
 from pathlib import Path
-from llm_component import review_summariser
+from llm_component import review_summariser, ItineraryProcessor
 from dotenv import load_dotenv
 
 # Get the absolute path to the config.env file
@@ -79,6 +79,22 @@ def locationSummary():
         app.logger.error(f"Error in /locationSummary route: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+
+@llm_bp.route('/itinerary/process', methods=['POST'])
+def process_itinerary():
+    try:
+        itinerary_data = request.get_json()
+        if not itinerary_data:
+            app.logger.warning('No itinerary data in the request')
+            return jsonify({'error': 'Itinerary data is required'}), 400
+        
+        optimization = itinerary_data.get('optimization')
+        itinerary_requirements = ItineraryProcessor.run(itinerary_data, optimization)
+        return jsonify({'i_reqs': itinerary_requirements}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error in itinerary processing route: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 # Register the Blueprint with the Flask app
 app.register_blueprint(llm_bp)

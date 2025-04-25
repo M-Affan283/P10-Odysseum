@@ -35,7 +35,7 @@ def overlay_text_on_template(route, template_path):
 
 
 TEMPLATES = {
-    "1": "./templates\Doc1.png",
+    "1": "./templates/Doc1.png",
     "2": "./templates/Doc2.png",
     "3": "./templates/Doc3.png",
 }

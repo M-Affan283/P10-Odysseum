@@ -1,5 +1,5 @@
 
-import ItineraryTemplatesScreen from '../../src/screens/ItineraryTemplatesScreen'
+import ItineraryTemplatesScreen from '../../src/screens/itinerary_screens/ItineraryTemplatesScreen'
 import React from 'react'
 
 const ItineraryTemplates = () => {
