@@ -18,6 +18,7 @@ export const getBusinessDetails = async (req, res) => {
             });
         }
 
+        // Fetch business details with populated references
         const business = await Business.findById(businessId)
             .populate('ownerId', 'username firstName lastName email profilePicture')
             .populate('locationId', 'name coordinates');

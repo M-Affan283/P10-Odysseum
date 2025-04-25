@@ -15,9 +15,6 @@ import { getPostReportDetails } from "../controllers/AdminController/getPostRepo
 import { updateReportStatus } from "../controllers/AdminController/updateReportStatus.js";
 import { deleteReportedUser } from "../controllers/AdminController/deleteReportedUser.js";
 import { deleteReportedPost } from "../controllers/AdminController/deleteReportedPost.js";
-import { getPendingBusinesses } from "../controllers/AdminController/getPendingBusinesses.js";
-import { getBusinessDetails } from "../controllers/AdminController/getBusinessDetails.js";
-import { updateBusinessStatus } from "../controllers/AdminController/updateBusinessStatus.js";
 import { getUsers } from "../controllers/AdminController/getUsers.js";
 import { getUserDetails } from "../controllers/AdminController/getUserDetails.js";
 import { deleteUserPost } from "../controllers/AdminController/deleteUserPost.js";
@@ -33,7 +30,13 @@ import { getPosts } from "../controllers/AdminController/getPosts.js";
 import { getPostDetails } from "../controllers/AdminController/getPostDetails.js";
 import { deletePost } from "../controllers/AdminController/deletePost.js";
 import { deleteComment } from "../controllers/AdminController/deleteComment.js";
-import { verifyAdminToken } from "../middlewares/adminTokenVerification.js";
+import { verifyAdminToken } from "../middleware/adminTokenVerification.js";
+import { getApprovedBusinesses } from "../controllers/AdminController/getApprovedBusinesses.js";
+import { getPendingBusinesses } from "../controllers/AdminController/getPendingBusinesses.js";
+import { getBusinessDetails } from "../controllers/AdminController/getBusinessDetails.js";
+import { updateBusinessStatus } from "../controllers/AdminController/updateBusinessStatus.js";
+
+
 
 const adminRouter = express.Router();
 
@@ -56,7 +59,8 @@ adminRouter.post("/reports/update-status", updateReportStatus);
 adminRouter.post("/reports/delete-user", deleteReportedUser);
 adminRouter.post("/reports/delete-post", deleteReportedPost);
 
-// Business management routes
+// Business management routes - consolidated directly in adminRouter
+adminRouter.get("/businesses/approved", getApprovedBusinesses);
 adminRouter.get("/businesses/pending", getPendingBusinesses);
 adminRouter.get("/businesses/:businessId", getBusinessDetails);
 adminRouter.post("/businesses/update-status", updateBusinessStatus);
@@ -81,5 +85,8 @@ adminRouter.get("/posts", getPosts);
 adminRouter.get("/posts/:postId", getPostDetails);
 adminRouter.delete("/posts/:postId", deletePost);
 adminRouter.delete("/comments/:commentId", deleteComment);
+
+adminRouter.get("/business-list/approved", verifyAdminToken, getApprovedBusinesses);
+
 
 export default adminRouter;
