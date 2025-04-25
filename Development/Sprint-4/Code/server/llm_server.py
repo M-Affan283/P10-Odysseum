@@ -1,12 +1,19 @@
 from flask import Flask, request, jsonify, Blueprint
-from waitress import serve
+# from waitress import serve
 import logging
 from llm_component import review_summariser, ItineraryProcessor, ItineraryAiProcessor
-from dotenv import load_dotenv
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Get the absolute path to the config.env file
+ROOT_DIR = Path(__file__).resolve().parent
+ENV_PATH = ROOT_DIR / "config.env"
+
+# Load environment variables from the absolute path
+load_dotenv(dotenv_path=str(ENV_PATH))
 
 # Initialize Flask app
-load_dotenv(dotenv_path="./config.env")
 app = Flask(__name__)
 
 # Set up logging configuration
@@ -111,6 +118,9 @@ if __name__ == '__main__':
     # Log server start
     app.logger.info("Server is starting...")
 
-    # Run using waitress server
+    
+    # Alternatively, if you want to use waitress:
+    # from waitress import serve
     # serve(app, host='0.0.0.0', port=5000)
-    app.run()
+    # Run using Flask development server on all interfaces (0.0.0.0)
+    app.run(host='0.0.0.0', port=5000, debug=True) 
