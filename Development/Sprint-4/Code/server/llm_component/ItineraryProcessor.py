@@ -1,11 +1,5 @@
 import pymongo
-from langchain_groq import ChatGroq
-from langchain.schema import SystemMessage, HumanMessage
 from dotenv import load_dotenv
-from PIL import Image, ImageDraw, ImageFont
-import random
-import json
-import re
 import os
 from openai import AzureOpenAI
 
