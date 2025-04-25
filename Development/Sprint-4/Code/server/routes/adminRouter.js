@@ -30,12 +30,11 @@ import { getPosts } from "../controllers/AdminController/getPosts.js";
 import { getPostDetails } from "../controllers/AdminController/getPostDetails.js";
 import { deletePost } from "../controllers/AdminController/deletePost.js";
 import { deleteComment } from "../controllers/AdminController/deleteComment.js";
-import { verifyAdminToken } from "../middleware/adminTokenVerification.js";
 import { getApprovedBusinesses } from "../controllers/AdminController/getApprovedBusinesses.js";
 import { getPendingBusinesses } from "../controllers/AdminController/getPendingBusinesses.js";
 import { getBusinessDetails } from "../controllers/AdminController/getBusinessDetails.js";
 import { updateBusinessStatus } from "../controllers/AdminController/updateBusinessStatus.js";
-
+import { verifyAdminToken } from "../middlewares/adminTokenVerification.js";
 
 
 const adminRouter = express.Router();
