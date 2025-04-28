@@ -421,13 +421,46 @@ const UserBookingProfileScreen = ({ bookingId }) => {
             <BookingDetailRow
               icon={<ClockIcon color="#9ca3af" size={20} />}
               label="Time Slot"
-              value={`${new Date(booking.timeSlot.startTime).toLocaleTimeString(
-                [],
-                { hour: "2-digit", minute: "2-digit" }
-              )} - ${new Date(booking.timeSlot.endTime).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}`}
+              value={
+                <View>
+                  {/* Show start date and time */}
+                  <View className="items-end mb-1">
+                    <Text className="text-white font-medium">
+                      {new Date(
+                        booking?.timeSlot?.startTime || new Date()
+                      ).toLocaleDateString()}
+                    </Text>
+                    <Text className="text-gray-400 text-sm">
+                      {new Date(
+                        booking?.timeSlot?.startTime || new Date()
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
+                  </View>
+
+                  {/* Divider */}
+                  <Text className="text-gray-500 text-center">to</Text>
+
+                  {/* Show end date and time */}
+                  <View className="items-end mt-1">
+                    <Text className="text-white font-medium">
+                      {new Date(
+                        booking?.timeSlot?.endTime || new Date()
+                      ).toLocaleDateString()}
+                    </Text>
+                    <Text className="text-gray-400 text-sm">
+                      {new Date(
+                        booking?.timeSlot?.endTime || new Date()
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
+                  </View>
+                </View>
+              }
             />
             <BookingDetailRow
               icon={<UserGroupIcon color="#9ca3af" size={20} />}
@@ -908,13 +941,17 @@ const BookingDetailRow = ({
     <View className="flex-1">
       <Text className="text-gray-400">{label}</Text>
     </View>
-    <Text
-      className={`${valueColor} ${
-        bold ? "font-dsbold text-lg" : "font-medium"
-      }`}
-    >
-      {value}
-    </Text>
+    {typeof value === "object" ? (
+      value
+    ) : (
+      <Text
+        className={`${valueColor} ${
+          bold ? "font-dsbold text-lg" : "font-medium"
+        }`}
+      >
+        {value}
+      </Text>
+    )}
   </View>
 );
 
