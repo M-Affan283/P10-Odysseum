@@ -32,13 +32,13 @@ const ItineraryLayout = () => {
             tabBarIcon: ({ color }) => <PencilIcon size={24} color={color} />,
           }}
         />
-        {/* <Tabs.Screen
+        <Tabs.Screen
           name="create_itinerary_with_ai"
           options={{
             title: "ItineraryAI",
             tabBarIcon: ({ color }) => <PencilIcon size={24} color={color} />,
           }}
-        /> */}
+        />
         <Tabs.Screen
           name="create_itinerary_planner"
           options={{
