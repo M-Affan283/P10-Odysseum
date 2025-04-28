@@ -1,0 +1,90 @@
+appId: com.odysseum.app
+---
+- launchApp:
+    clearState: true
+
+# Log in first
+- runFlow:
+    file: login_screen_test.yaml
+    env:
+      SKIP_WELCOME: "true"
+
+# Navigate to Search to find a location
+- tapOn: "Search"
+- assertVisible: "Explore"
+
+# Go to Locations
+- tapOn: "Discover Locations"
+- assertVisible: "Discover Locations"
+
+# Select first location (assuming there's at least one)
+- tapOn:
+    nth: 0
+    className: "android.view.ViewGroup"
+    # This is a general selector that should find the first location card
+    maxResults: 5
+
+# Check for Reviews section in location
+- scrollUntilVisible:
+    element: "Reviews"
+    direction: DOWN
+- tapOn: "Reviews"
+- assertVisible: "Reviews"
+
+# Test review screen functionality
+- assertVisible:
+    text: "Reviews"
+- tapOn:
+    id: "addReviewButton" # This assumes the button has this test ID
+    # If not, use a more general selector like `className` or visual coordinates
+
+# Test Add Review modal
+- assertVisible: "Add Review"
+- tapOn:
+    # Select star rating (4 stars)
+    point: "80%,25%" # Approximate position of the 4th star
+- inputText:
+    id: "reviewTitle"
+    text: "Great place!"
+- inputText:
+    id: "reviewContent"
+    text: "This is a test review. The location is amazing!"
+
+# Cancel the review (to avoid creating test data)
+- tapOn: "Close"
+# Or use a close button selector if available
+# - tapOn:
+#     id: "closeReviewModal"
+
+# Test filtering and sorting if available
+- tapOn: "Back"
+
+# Navigate to Business review
+- tapOn: "Search"
+- tapOn: "Find Businesses"
+- assertVisible: "Business Search"
+
+# Select first business
+- tapOn:
+    nth: 0
+    className: "android.view.ViewGroup"
+    maxResults: 5
+
+# Check for Reviews tab in business
+- scrollUntilVisible:
+    element: "Reviews"
+    direction: DOWN
+- tapOn: "Reviews"
+- assertVisible: "Reviews"
+
+# Test viewing reviews
+- assertVisible:
+    text: "Reviews"
+
+# Test upvote/downvote functionality (if a review exists)
+- tapOn:
+    id: "thumbsUpButton"
+    optional: true
+
+# Go back
+- tapOn: "Back"

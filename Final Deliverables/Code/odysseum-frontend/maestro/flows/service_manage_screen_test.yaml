@@ -1,0 +1,24 @@
+appId: com.odysseum.app
+---
+- launchApp
+- tapOn: "Login" # First login
+- inputText:
+    id: "email-input"
+    text: "${TEST_USER_EMAIL}"
+- inputText:
+    id: "password-input" 
+    text: "${TEST_USER_PASSWORD}"
+- tapOn: "Login"
+- tapOn: "Profile"
+- tapOn: "Settings"
+- tapOn: "Business Management"
+- tapOn: "Manage Services"
+- assertVisible: "Manage Services"
+# Assuming there's at least one service listed
+- tapOn: text: "Website Development" # This would be a dynamic service name
+- assertVisible: "Service Details"
+- tapOn: "Edit Service"
+- back
+- tapOn: "Delete Service"
+- tapOn: "Cancel" # Don't actually delete in test
+- back

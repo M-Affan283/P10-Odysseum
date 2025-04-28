@@ -1,0 +1,25 @@
+appId: com.odysseum.app
+---
+- launchApp
+- tapOn: "Login" # First login
+- inputText:
+    id: "email-input"
+    text: "${TEST_USER_EMAIL}"
+- inputText:
+    id: "password-input"
+    text: "${TEST_USER_PASSWORD}"
+- tapOn: "Login"
+- tapOn: "Create" # Navigate to create tab
+- assertVisible: "Create"
+- assertVisible: "Share your adventures!"
+- tapOn: "Create Post"
+- assertVisible: "Create Post"
+- tapOn: "Add Media"
+- back # Assuming this will cancel media selection
+- inputText:
+    into: "Add a caption..."
+    text: "Test post caption"
+- tapOn: "Add location"
+- assertVisible: "Search locations"
+- back
+- back # Return to create screen
