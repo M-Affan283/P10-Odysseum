@@ -80,10 +80,10 @@ const BookingCreateScreen = ({ serviceId }) => {
     //if online payment
     paymentMethod: "",
     paymentDetails: {
-      cardNumber: "123",
-      expiryDate: "06/2027",
-      cvc: "111",
-      name: "Affan",
+      cardNumber: "",
+      expiryDate: "",
+      cvc: "",
+      name: "",
     },
   });
 
