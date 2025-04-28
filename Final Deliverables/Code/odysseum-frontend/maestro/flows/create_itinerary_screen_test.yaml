@@ -1,0 +1,35 @@
+appId: com.odysseum.app
+---
+- launchApp
+- tapOn: "Login" # First login
+- inputText:
+    id: "email-input"
+    text: "${TEST_USER_EMAIL}"
+- inputText:
+    id: "password-input"
+    text: "${TEST_USER_PASSWORD}"
+- tapOn: "Login"
+- tapOn: "Create" # Navigate to create tab
+- assertVisible: "Create"
+- tapOn: "Create Itinerary"
+- assertVisible: "Enter Destination"
+- inputText:
+    into: "Enter Destination"
+    text: "Paris"
+- inputText:
+    into: "1,2..."
+    text: "1"
+- inputText:
+    into: "HH"
+    text: "09"
+- inputText:
+    into: "MM"
+    text: "30"
+- inputText:
+    into: "Enter description"
+    text: "Visit Eiffel Tower"
+- scrollUntilVisible:
+    element: "Add Destination"
+    direction: DOWN
+- tapOn: "Add Destination"
+- back

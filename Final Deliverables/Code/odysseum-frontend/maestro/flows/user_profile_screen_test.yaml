@@ -1,0 +1,19 @@
+appId: com.odysseum.app
+---
+- launchApp
+- tapOn: "Login" # First login
+- inputText:
+    id: "email-input"
+    text: "${TEST_USER_EMAIL}"
+- inputText:
+    id: "password-input"
+    text: "${TEST_USER_PASSWORD}"
+- tapOn: "Login"
+- tapOn: "Profile" # Navigate to profile tab
+- assertVisible: "Profile"
+- assertVisible: "Posts"
+- assertVisible: "Followers"
+- assertVisible: "Following"
+- tapOn: "Settings"
+- assertVisible: "Settings"
+- back
