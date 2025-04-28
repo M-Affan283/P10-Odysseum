@@ -133,4 +133,9 @@ temp.js
 .venv
 __pycache__
 photos2
-deployment
+deployment/.ebextensions
+deployment/.terraform
+deployment/.ebignore
+deployment/*.zip
+deployment/*tfstate*
+deployment/.terraform.lock.hcl
