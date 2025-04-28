@@ -67,6 +67,12 @@ const BookingCreateScreen = ({ serviceId }) => {
       startTime: "",
       endTime: "",
     },
+    hotelBooking: {
+      isHotel: false,
+      numberOfNights: "",
+      checkInDate: "",
+      checkOutDate: "",
+    },
     payment: {
       status: "",
       //transactions handledin the backend
@@ -74,10 +80,10 @@ const BookingCreateScreen = ({ serviceId }) => {
     //if online payment
     paymentMethod: "",
     paymentDetails: {
-      cardNumber: "",
-      expiryDate: "",
-      cvc: "",
-      name: "",
+      cardNumber: "123",
+      expiryDate: "06/2027",
+      cvc: "111",
+      name: "Affan",
     },
   });
 
@@ -85,12 +91,21 @@ const BookingCreateScreen = ({ serviceId }) => {
     console.log("Creating booking");
     setUploading(true);
 
+    // Prepare the booking data to send to backend
+    let bookingData = {
+      ...form,
+      userId: user._id,
+      serviceId: serviceId,
+    };
+
+    // If it's a hotel booking and we have number of nights information,
+    // ensure timeSlot is set properly based on check-in/check-out dates
+    if (form.hotelBooking.isHotel && form.hotelBooking.numberOfNights) {
+      // timeSlot is already set in the BookingInfoScreen, so we can just pass it along
+    }
+
     axiosInstance
-      .post("/booking/create", {
-        ...form,
-        userId: user._id,
-        serviceId: serviceId,
-      })
+      .post("/booking/create", bookingData)
       .then((res) => {
         console.log(res.data);
         setUploading(false);
@@ -111,7 +126,23 @@ const BookingCreateScreen = ({ serviceId }) => {
       .get(`/service/getById?serviceId=${serviceId}`)
       .then((res) => {
         // console.log(res.data)
-        setService(res.data.service);
+        const serviceData = res.data.service;
+        setService(serviceData);
+
+        // Check if service is a hotel and update form accordingly
+        if (
+          serviceData.category === "Hotel" ||
+          serviceData.subcategory === "Hotel"
+        ) {
+          setForm((prev) => ({
+            ...prev,
+            hotelBooking: {
+              ...prev.hotelBooking,
+              isHotel: true,
+            },
+          }));
+        }
+
         setServiceLoading(false);
       })
       .catch((err) => {
@@ -364,7 +395,14 @@ const DateSelectScreen = ({
 }) => {
   const setBookingDate = (date) => {
     const dateString = date.toISOString();
-    setForm((prevForm) => ({ ...prevForm, bookingDate: dateString }));
+    setForm((prevForm) => ({
+      ...prevForm,
+      bookingDate: dateString,
+      hotelBooking: {
+        ...prevForm.hotelBooking,
+        checkInDate: dateString, // Set check-in date for hotel bookings
+      },
+    }));
 
     // This ensures we're using the actual dateString value, not depending on state
     getServiceAvailability(dateString);
@@ -446,10 +484,7 @@ const DateSelectScreen = ({
 
   return (
     <View className="flex-1">
-      <TouchableOpacity
-        onPress={() => router.back()}
-        className="p-3"
-      >
+      <TouchableOpacity onPress={() => router.back()} className="p-3">
         <XMarkIcon size={30} color="white" />
       </TouchableOpacity>
 
@@ -515,7 +550,9 @@ const DateSelectScreen = ({
                   <View key={index} className="bg-gray-700 p-3 rounded mb-2">
                     <View className="flex-row justify-between">
                       <Text className="text-gray-400">Date:</Text>
-                      <Text className="text-white">{new Date(date.date).toLocaleDateString("en-GB")}</Text>
+                      <Text className="text-white">
+                        {new Date(date.date).toLocaleDateString("en-GB")}
+                      </Text>
                     </View>
                     <View className="flex-row justify-between">
                       <Text className="text-gray-400">Remaining Capacity:</Text>
@@ -649,9 +686,9 @@ const DateSelectScreen = ({
         <View className="flex-row gap-5 py-5 justify-center">
           <TouchableOpacity
             onPress={onBackPress}
-            className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10 items-center justify-center"
+            className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
           >
-            <ArrowLeftIcon size={30} color="black" />
+            <ArrowLeftIcon size={40} color="black" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -661,7 +698,7 @@ const DateSelectScreen = ({
               (availabilityInfo && !availabilityInfo.isAvailable)
                 ? "bg-gray-500"
                 : "bg-purple-500"
-            } w-14 h-14 p-2 rounded-full mt-10 items-center justify-center`}
+            } w-14 h-14 p-2 rounded-full mt-10`}
             disabled={
               !form.bookingDate ||
               (availabilityInfo && !availabilityInfo.isAvailable)
@@ -695,6 +732,8 @@ const BookingInfoScreen = ({
   isEndTimePickerVisible,
   setEndTimePickerVisible,
 }) => {
+  // const [isHotel, setIsHotel] = useState(form.hotelBooking.isHotel);
+
   const handleStartTimeConfirm = (time) => {
     setForm({
       ...form,
@@ -717,25 +756,75 @@ const BookingInfoScreen = ({
     setEndTimePickerVisible(false);
   };
 
-  const validateScreen = () => {
-    if (!form.timeSlot.startTime) {
+  // Function to update number of nights for hotel bookings
+  const updateNumberOfNights = (nights) => {
+    if (isNaN(nights) || nights <= 0) {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Please select a start time.",
+        text2: "Please enter a valid number of nights",
         visibilityTime: 4000,
       });
       return;
     }
 
-    if (!form.timeSlot.endTime) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Please select an end time.",
-        visibilityTime: 4000,
-      });
-      return;
+    // Calculate checkout date based on check-in date and nights
+    const checkInDate = new Date(form.bookingDate);
+    const checkOutDate = new Date(checkInDate);
+    checkOutDate.setDate(checkOutDate.getDate() + parseInt(nights));
+
+    // Default check-in time is 14:00 (2 PM) and check-out time is 12:00 (noon)
+    const checkInTime = "14:00:00";
+    const checkOutTime = "12:00:00";
+
+    setForm({
+      ...form,
+      hotelBooking: {
+        ...form.hotelBooking,
+        isHotel: true,
+        numberOfNights: nights,
+        checkOutDate: checkOutDate.toISOString(),
+      },
+      timeSlot: {
+        startTime: checkInTime,
+        endTime: checkOutTime,
+      },
+    });
+  };
+
+  const validateScreen = () => {
+    if (form.hotelBooking.isHotel) {
+      // Hotel booking validation
+      if (!form.hotelBooking.numberOfNights) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Please enter the number of nights for your stay.",
+          visibilityTime: 4000,
+        });
+        return;
+      }
+    } else {
+      // Regular service booking validation
+      if (!form.timeSlot.startTime) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Please select a start time.",
+          visibilityTime: 4000,
+        });
+        return;
+      }
+
+      if (!form.timeSlot.endTime) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Please select an end time.",
+          visibilityTime: 4000,
+        });
+        return;
+      }
     }
 
     if (!form.numberOfPeople) {
@@ -753,10 +842,7 @@ const BookingInfoScreen = ({
 
   return (
     <View className="flex-1">
-      <TouchableOpacity
-        onPress={() => router.back()}
-        className="p-3"
-      >
+      <TouchableOpacity onPress={() => router.back()} className="p-3">
         <XMarkIcon size={30} color="white" />
       </TouchableOpacity>
 
@@ -770,50 +856,103 @@ const BookingInfoScreen = ({
           Enter Booking Information.
         </Text>
 
-        <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
-          <Text className="text-white text-xl font-dsbold mb-3">
-            Select a Time Slot
-          </Text>
-          <View className="flex-row justify-between items-center">
-            <Text className="text-gray-400">Start Time:</Text>
-            <TouchableOpacity
-              onPress={() => setStartTimePickerVisible(true)}
-              className="bg-gray-700 py-2 px-4 rounded-lg"
-            >
+        {form.hotelBooking.isHotel ? (
+          // Hotel booking form
+          <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+            <Text className="text-white text-xl font-dsbold mb-3">
+              Hotel Stay Details
+            </Text>
+            <View className="flex-row justify-between items-center">
+              <Text className="text-gray-400">Check-in Date:</Text>
               <Text className="text-white">
-                {form.timeSlot.startTime
-                  ? form.timeSlot.startTime
-                  : "Select Start Time"}
+                {form.bookingDate
+                  ? new Date(form.bookingDate).toLocaleDateString("en-GB")
+                  : "Not selected"}
               </Text>
-            </TouchableOpacity>
+            </View>
+            <View className="flex-row justify-between items-center mt-2">
+              <Text className="text-gray-400">Number of Nights:</Text>
+              <TextInput
+                placeholder="Enter number of nights"
+                placeholderTextColor="#4B5563"
+                keyboardType="numeric"
+                style={{
+                  width: 200,
+                  padding: 10,
+                  color: "white",
+                  backgroundColor: "#374151",
+                  borderRadius: 10,
+                }}
+                value={form.hotelBooking.numberOfNights}
+                onChangeText={(text) => updateNumberOfNights(text)}
+              />
+            </View>
+            {form.hotelBooking.checkOutDate && (
+              <View className="flex-row justify-between items-center mt-2">
+                <Text className="text-gray-400">Check-out Date:</Text>
+                <Text className="text-white">
+                  {new Date(form.hotelBooking.checkOutDate).toLocaleDateString(
+                    "en-GB"
+                  )}
+                </Text>
+              </View>
+            )}
+            <View className="p-2 mt-2 bg-gray-700 rounded">
+              <Text className="text-gray-300">
+                Standard check-in time: 2:00 PM
+              </Text>
+              <Text className="text-gray-300">
+                Standard check-out time: 12:00 PM
+              </Text>
+            </View>
+          </View>
+        ) : (
+          // Regular service booking form - time slot selection
+          <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
+            <Text className="text-white text-xl font-dsbold mb-3">
+              Select a Time Slot
+            </Text>
+            <View className="flex-row justify-between items-center">
+              <Text className="text-gray-400">Start Time:</Text>
+              <TouchableOpacity
+                onPress={() => setStartTimePickerVisible(true)}
+                className="bg-gray-700 py-2 px-4 rounded-lg"
+              >
+                <Text className="text-white">
+                  {form.timeSlot.startTime
+                    ? form.timeSlot.startTime
+                    : "Select Start Time"}
+                </Text>
+              </TouchableOpacity>
 
-            <DateTimePickerModal
-              isVisible={isStartTimePickerVisible}
-              mode="time"
-              onConfirm={handleStartTimeConfirm}
-              onCancel={() => setStartTimePickerVisible(false)}
-            />
+              <DateTimePickerModal
+                isVisible={isStartTimePickerVisible}
+                mode="time"
+                onConfirm={handleStartTimeConfirm}
+                onCancel={() => setStartTimePickerVisible(false)}
+              />
+            </View>
+            <View className="flex-row justify-between items-center mt-2">
+              <Text className="text-gray-400">End Time:</Text>
+              <TouchableOpacity
+                onPress={() => setEndTimePickerVisible(true)}
+                className="bg-gray-700 py-2 px-4 rounded-lg"
+              >
+                <Text className="text-white">
+                  {form.timeSlot.endTime
+                    ? form.timeSlot.endTime
+                    : "Select End Time"}
+                </Text>
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={isEndTimePickerVisible}
+                mode="time"
+                onConfirm={handleEndTimeConfirm}
+                onCancel={() => setEndTimePickerVisible(false)}
+              />
+            </View>
           </View>
-          <View className="flex-row justify-between items-center mt-2">
-            <Text className="text-gray-400">End Time:</Text>
-            <TouchableOpacity
-              onPress={() => setEndTimePickerVisible(true)}
-              className="bg-gray-700 py-2 px-4 rounded-lg"
-            >
-              <Text className="text-white">
-                {form.timeSlot.endTime
-                  ? form.timeSlot.endTime
-                  : "Select End Time"}
-              </Text>
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={isEndTimePickerVisible}
-              mode="time"
-              onConfirm={handleEndTimeConfirm}
-              onCancel={() => setEndTimePickerVisible(false)}
-            />
-          </View>
-        </View>
+        )}
 
         <View className="bg-gray-800 rounded-xl p-4 mb-4 w-full">
           <Text className="text-white text-xl font-dsbold mb-3">
@@ -837,24 +976,17 @@ const BookingInfoScreen = ({
         <View className="flex-row gap-5 py-5 justify-center">
           <TouchableOpacity
             onPress={onBackPress}
-            className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
+            className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10 items-center justify-center"
           >
-            <ArrowLeftIcon size={40} color="black" />
+            <ArrowLeftIcon size={30} color="black" />
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={validateScreen}
-            className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10"
+            className="bg-purple-500 w-14 h-14 p-2 rounded-full mt-10 items-center justify-center"
           >
-            <ArrowRightIcon size={40} color="black" />
+            <ArrowRightIcon size={30} color="black" />
           </TouchableOpacity>
-
-          {/* <TouchableOpacity
-            onPress={() => console.log(JSON.stringify(form))}
-            className="bg-purple-500 h-14 p-2 rounded-full mt-10"
-          >
-            <Text className="text-white text-lg font-dsbold">Debug</Text>
-          </TouchableOpacity> */}
         </View>
       </ScrollView>
     </View>
@@ -949,10 +1081,7 @@ const PaymentScreen = ({
 
   return (
     <View className="flex-1">
-      <TouchableOpacity
-        onPress={() => router.back()}
-        className="p-3"
-      >
+      <TouchableOpacity onPress={() => router.back()} className="p-3">
         <XMarkIcon size={30} color="white" />
       </TouchableOpacity>
 
@@ -1126,7 +1255,7 @@ const PaymentScreen = ({
           </TouchableOpacity>
 
           {/* <TouchableOpacity
-            onPress={() => console.log(form.paymentDetails)}
+            onPress={() => console.log(JSON.stringify(form))}
             className="bg-purple-500 h-14 p-2 rounded-full mt-10"
           >
             <Text className="text-white text-lg font-dsbold">Debug</Text>
@@ -1149,7 +1278,7 @@ const ReviewScreen = ({
   const calculateBillingInfo = () => {
     const { pricing, paymentSettings } = service;
     let basePrice = pricing.basePrice;
-    let oldBasePrice = pricing.basePrice
+    let oldBasePrice = pricing.basePrice;
     let specialPrice = null;
 
     // Check for special prices
@@ -1193,42 +1322,63 @@ const ReviewScreen = ({
         pricingDetails = `${basePrice} × ${form.numberOfPeople} people`;
         break;
       case "perHour":
-        const startTime = new Date(
-          `${new Date(form.bookingDate).toISOString().split("T")[0]}T${
-            form.timeSlot.startTime
-          }`
-        );
-        const endTime = new Date(
-          `${new Date(form.bookingDate).toISOString().split("T")[0]}T${
-            form.timeSlot.endTime
-          }`
-        );
-        const durationInHours = Math.ceil(
-          (endTime - startTime) / (1000 * 60 * 60)
-        );
-        totalBeforeTax = basePrice * durationInHours;
-        pricingDetails = `${basePrice} × ${durationInHours} hours`;
+        if (form.hotelBooking.isHotel) {
+          // For hotels, calculate based on nights instead of hours
+          const nights = parseInt(form.hotelBooking.numberOfNights) || 1;
+          totalBeforeTax = basePrice * nights;
+          pricingDetails = `${basePrice} × ${nights} nights`;
+        } else {
+          const startTime = new Date(
+            `${new Date(form.bookingDate).toISOString().split("T")[0]}T${
+              form.timeSlot.startTime
+            }`
+          );
+          const endTime = new Date(
+            `${new Date(form.bookingDate).toISOString().split("T")[0]}T${
+              form.timeSlot.endTime
+            }`
+          );
+          const durationInHours = Math.ceil(
+            (endTime - startTime) / (1000 * 60 * 60)
+          );
+          totalBeforeTax = basePrice * durationInHours;
+          pricingDetails = `${basePrice} × ${durationInHours} hours`;
+        }
         break;
       case "perDay":
-        const startDay = new Date(
-          `${new Date(form.bookingDate).toISOString().split("T")[0]}T${
-            form.timeSlot.startTime
-          }`
-        );
-        const endDay = new Date(
-          `${new Date(form.bookingDate).toISOString().split("T")[0]}T${
-            form.timeSlot.endTime
-          }`
-        );
-        const durationInDays = Math.ceil(
-          (endDay - startDay) / (1000 * 60 * 60 * 24)
-        );
-        totalBeforeTax = basePrice * (durationInDays || 1);
-        pricingDetails = `${basePrice} × ${durationInDays || 1} days`;
+        if (form.hotelBooking.isHotel) {
+          // For hotels, days is same as nights
+          const nights = parseInt(form.hotelBooking.numberOfNights) || 1;
+          totalBeforeTax = basePrice * nights;
+          pricingDetails = `${basePrice} × ${nights} nights`;
+        } else {
+          const startDay = new Date(
+            `${new Date(form.bookingDate).toISOString().split("T")[0]}T${
+              form.timeSlot.startTime
+            }`
+          );
+          const endDay = new Date(
+            `${new Date(form.bookingDate).toISOString().split("T")[0]}T${
+              form.timeSlot.endTime
+            }`
+          );
+          const durationInDays = Math.ceil(
+            (endDay - startDay) / (1000 * 60 * 60 * 24)
+          );
+          totalBeforeTax = basePrice * (durationInDays || 1);
+          pricingDetails = `${basePrice} × ${durationInDays || 1} days`;
+        }
         break;
       case "fixed":
       default:
-        pricingDetails = `Fixed price`;
+        if (form.hotelBooking.isHotel) {
+          // Even for fixed price hotels, we might multiply by nights
+          const nights = parseInt(form.hotelBooking.numberOfNights) || 1;
+          totalBeforeTax = basePrice * nights;
+          pricingDetails = `${basePrice} × ${nights} nights`;
+        } else {
+          pricingDetails = `Fixed price`;
+        }
         break;
     }
 
@@ -1283,20 +1433,57 @@ const ReviewScreen = ({
             <Text className="text-white text-xl font-dsbold mb-3">
               Booking Information
             </Text>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-400">Booking Date:</Text>
-              <Text className="text-white">
-                {new Date(form.bookingDate).toLocaleDateString("en-GB")}
-              </Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-400">Start Time:</Text>
-              <Text className="text-white">{form.timeSlot.startTime}</Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-400">End Time:</Text>
-              <Text className="text-white">{form.timeSlot.endTime}</Text>
-            </View>
+            {form.hotelBooking.isHotel ? (
+              // Hotel booking information
+              <>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Check-in Date:</Text>
+                  <Text className="text-white">
+                    {new Date(form.bookingDate).toLocaleDateString("en-GB")}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Check-in Time:</Text>
+                  <Text className="text-white">{form.timeSlot.startTime}</Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Number of Nights:</Text>
+                  <Text className="text-white">
+                    {form.hotelBooking.numberOfNights}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Check-out Date:</Text>
+                  <Text className="text-white">
+                    {new Date(
+                      form.hotelBooking.checkOutDate
+                    ).toLocaleDateString("en-GB")}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Check-out Time:</Text>
+                  <Text className="text-white">{form.timeSlot.endTime}</Text>
+                </View>
+              </>
+            ) : (
+              // Regular booking information
+              <>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Booking Date:</Text>
+                  <Text className="text-white">
+                    {new Date(form.bookingDate).toLocaleDateString("en-GB")}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">Start Time:</Text>
+                  <Text className="text-white">{form.timeSlot.startTime}</Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-400">End Time:</Text>
+                  <Text className="text-white">{form.timeSlot.endTime}</Text>
+                </View>
+              </>
+            )}
             <View className="flex-row justify-between">
               <Text className="text-gray-400">Number of People:</Text>
               <Text className="text-white">{form.numberOfPeople}</Text>
