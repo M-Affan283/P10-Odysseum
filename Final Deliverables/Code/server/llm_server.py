@@ -105,7 +105,7 @@ def process_AI_itinerary():
             return jsonify({'error': 'query is required'}), 400
         
         generated_itinerary = ItineraryAiProcessor.run(query)
-        return jsonify({'i_reqs': generated_itinerary}), 200
+        return jsonify({'generated_itinerary': generated_itinerary}), 200
 
     except Exception as e:
         app.logger.error(f"Error in itinerary generation: {str(e)}")

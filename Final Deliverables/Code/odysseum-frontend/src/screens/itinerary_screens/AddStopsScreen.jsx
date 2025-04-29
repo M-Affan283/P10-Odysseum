@@ -213,6 +213,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 16,
+    marginTop: 24,
   },
   title: {
     marginTop: 24,

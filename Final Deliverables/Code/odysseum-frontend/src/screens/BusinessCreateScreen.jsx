@@ -217,9 +217,7 @@ const BusinessCreateScreen = () => {
       form.location === null ||
       form.longitude === "" ||
       form.latitude === "" ||
-      form.phone === "" ||
-      form.email === "" ||
-      form.website === ""
+      form.phone === ""
     ) {
       console.log("Please fill in all required fields");
       Toast.show({
