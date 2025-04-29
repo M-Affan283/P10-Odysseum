@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { MapIcon, PencilIcon, SparklesIcon, ClipboardIcon } from "react-native-heroicons/solid";
+import { PhotoIcon, PencilSquareIcon, SparklesIcon, ClipboardDocumentListIcon } from "react-native-heroicons/solid";
 import React, { createContext, useState } from "react";
 
 export const TemplateContext = createContext();
@@ -22,28 +22,28 @@ const ItineraryLayout = () => {
           name="index"
           options={{
             title: "Templates",
-            tabBarIcon: ({ color }) => <MapIcon size={24} color={color} />,
+            tabBarIcon: ({ color }) => <PhotoIcon size={24} color={color} />,
           }}
         />
         <Tabs.Screen
           name="create_itinerary"
           options={{
             title: "Itinerary",
-            tabBarIcon: ({ color }) => <PencilIcon size={24} color={color} />,
+            tabBarIcon: ({ color }) => <PencilSquareIcon size={24} color={color} />,
           }}
         />
         <Tabs.Screen
           name="create_itinerary_with_ai"
           options={{
             title: "ItineraryAI",
-            tabBarIcon: ({ color }) => <PencilIcon size={24} color={color} />,
+            tabBarIcon: ({ color }) => <SparklesIcon size={24} color={color} />,
           }}
         />
         <Tabs.Screen
           name="create_itinerary_planner"
           options={{
             title: "Itinerary Planner",
-            tabBarIcon: ({ color }) => <ClipboardIcon size={24} color={color} />,
+            tabBarIcon: ({ color }) => <ClipboardDocumentListIcon size={24} color={color} />,
           }}
         />
       </Tabs>
