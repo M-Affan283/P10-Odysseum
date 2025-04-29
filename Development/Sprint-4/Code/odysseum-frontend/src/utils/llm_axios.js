@@ -12,9 +12,7 @@ Use this once access token implementation is done.
 import axios from "axios";
 import { getAccessToken, setAccessToken } from "./tokenUtils.js";
 
-// const API_BASE_URL = `https://p10-odysseum-1.onrender.com/api/llm`;
-// const API_BASE_URL = `http://192.168.100.25:5000/api/llm`;
-const API_BASE_URL = `http://192.168.112.214:5000/api/llm`;
+const API_BASE_URL = `https://p10-odysseum-1.onrender.com/api/llm`;
 
 
 const llmaxiosInstance = axios.create({
