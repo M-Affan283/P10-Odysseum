@@ -12,8 +12,10 @@ Use this once access token implementation is done.
 import axios from "axios";
 import { getAccessToken, setAccessToken } from "./tokenUtils.js";
 
-const API_BASE_URL = `https://p10-odysseum.onrender.com/api`;
+// const API_BASE_URL = `https://p10-odysseum.onrender.com/api`;
 // const API_BASE_URL = `http://192.168.100.25:8000/api`;
+const API_BASE_URL = `http://192.168.112.214:8000/api`;
+
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -33,7 +35,7 @@ axiosInstance.interceptors.request.use(
         }
 
         // Debug log
-        // console.log('Making request to:', config.baseURL + config.url);
+        console.log('Making request to:', config.baseURL + config.url);
         // console.log('With headers:', config.headers);
         
         return config;

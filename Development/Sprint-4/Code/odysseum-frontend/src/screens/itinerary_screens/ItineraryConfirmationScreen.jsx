@@ -23,9 +23,12 @@ const ItineraryConfirmationScreen= ({ destinations=[], optimization, finalSelect
                     const categoryName = category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).split("-");
                     const label = categoryName.slice(0, -1).join(' ');
                     const lastWord = categoryName.slice(-1)[0];
+                    console.log("HERE")
+                    console.log(selection)
                     return `${label} - [${lastWord.toUpperCase()}]`;
                   })()}
                 </Text>
+
                 <Text style={styles.selectionValue}>
                   {typeof selection === 'object' 
                     ? (selection.name || JSON.stringify(selection)) 
